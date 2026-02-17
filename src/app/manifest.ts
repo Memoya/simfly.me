@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'Simfly.me',
+        name: 'Simfly.me – Deine Reise-eSIM',
         short_name: 'Simfly',
-        description: 'Premium eSIM solutions for the modern traveler.',
+        description: 'Premium eSIM Lösungen für Thailand, USA, Türkei & weltweit. Sofort online nach der Landung.',
         start_url: '/',
         display: 'standalone',
         background_color: '#ffffff',

@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
+import { prisma } from '@/lib/prisma';
+import { createOrder } from '@/lib/esim';
+import { sendOrderConfirmation } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
-    try {
-        const { prisma } = await import('@/lib/prisma');
-        const { createOrder } = await import('@/lib/esim');
-        const { sendOrderConfirmation } = await import('@/lib/email');
+    console.log('[STRIPE-WEBHOOK] Webhook POST received');
 
+    try {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
             apiVersion: '2023-10-16' as any,
         });
 
         const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
         const body = await request.text();
         const headersList = await headers();
         const sig = headersList.get('stripe-signature') as string;
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         try {
             if (!webhookSecret || webhookSecret === 'mock_secret') {
                 if (process.env.NODE_ENV !== 'production') {
-                    console.warn('[WEBHOOK] Using Mock Secret - Verify this is intended');
+                    console.log('[STRIPE-WEBHOOK] Using Mock Secret');
                     event = JSON.parse(body);
                 } else {
                     return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
@@ -35,16 +35,18 @@ export async function POST(request: Request) {
             }
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-            console.error('Webhook signature verification failed:', errorMessage);
+            console.error(`[STRIPE-WEBHOOK] Signature verification failed: ${errorMessage}`);
             return NextResponse.json({ error: `Webhook Error: ${errorMessage}` }, { status: 400 });
         }
+
+        console.log(`[STRIPE-WEBHOOK] Event type: ${event.type}`);
 
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object as Stripe.Checkout.Session;
             const customerEmail = session.customer_details?.email;
             const sessionId = session.id;
 
-            console.log(`[WEBHOOK] Processing order for session: ${sessionId}`);
+            console.log(`[STRIPE-WEBHOOK] Session ID: ${sessionId}`);
 
             try {
                 const existingOrder = await prisma.order.findUnique({
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
                 });
 
                 if (existingOrder) {
-                    console.log(`[WEBHOOK] Order ${sessionId} already exists. Skipping.`);
+                    console.log(`[STRIPE-WEBHOOK] Order ${sessionId} existed. Skipping.`);
                     return NextResponse.json({ received: true, status: 'already_processed' });
                 }
 
@@ -61,31 +63,42 @@ export async function POST(request: Request) {
                     try {
                         const orderData = JSON.parse(session.metadata.payment_intent_data);
                         items = orderData.items || [];
+                        console.log(`[STRIPE-WEBHOOK] Found ${items.length} items in metadata`);
                     } catch (e) {
-                        console.error("Failed to parse payment_intent_data", e);
+                        console.error(`[STRIPE-WEBHOOK] Metadata parse error: ${e}`);
                     }
-                } else {
-                    console.warn("No item metadata found");
                 }
 
+                if (items.length === 0) {
+                    console.log(`[STRIPE-WEBHOOK] No items in metadata. Fetching from Stripe...`);
+                    const lineItems = await stripe.checkout.sessions.listLineItems(sessionId);
+                    items = lineItems.data.map(li => ({
+                        name: li.description || 'eSIM Bundle',
+                        quantity: li.quantity || 1,
+                        price: (li.amount_total || 0) / 100
+                    }));
+                }
+
+                console.log(`[STRIPE-WEBHOOK] Creating DB records...`);
                 const newOrder = await prisma.order.create({
                     data: {
                         stripeSessionId: sessionId,
                         paymentIntentId: session.payment_intent as string | null,
                         amount: (session.amount_total || 0) / 100,
-                        currency: session.currency || 'usd',
+                        currency: session.currency || 'eur',
                         status: session.payment_status,
                         customerEmail: customerEmail,
                         items: {
                             create: items.map((item: any) => ({
-                                productName: item.name || 'Unknown Bundle',
+                                productName: item.name || 'eSIM Bundle',
                                 quantity: item.quantity || 1,
-                                price: 0
+                                price: item.price || 0
                             }))
                         }
                     },
                     include: { items: true }
                 });
+                console.log(`[STRIPE-WEBHOOK] DB Order Created: ${newOrder.id}`);
 
                 const providerSync = await prisma.providerSync.create({
                     data: {
@@ -100,43 +113,50 @@ export async function POST(request: Request) {
                 const emailIds: string[] = [];
 
                 for (const item of newOrder.items) {
-                    console.log(`[WEBHOOK] Creating eSIM order for: ${item.productName}`);
-                    const result = await createOrder(item.productName);
+                    try {
+                        console.log(`[STRIPE-WEBHOOK] Fulfilling: ${item.productName}`);
+                        const result = await createOrder(item.productName);
 
-                    if (result.success && result.iccid) {
-                        console.log(`[WEBHOOK] eSIM Created. ID: ${result.iccid}`);
+                        if (result.success && result.iccid) {
+                            console.log(`[STRIPE-WEBHOOK] eSIM SUCCESS: ${result.iccid}`);
 
-                        await prisma.orderItem.update({
-                            where: { id: item.id },
-                            data: {
-                                iccid: result.iccid,
-                                matchingId: result.matchingId,
-                                esimGoOrderRef: result.matchingId
-                            }
-                        });
+                            await prisma.orderItem.update({
+                                where: { id: item.id },
+                                data: {
+                                    iccid: result.iccid,
+                                    matchingId: result.matchingId,
+                                    smdpAddress: result.smdpAddress,
+                                    esimGoOrderRef: result.matchingId,
+                                }
+                            });
 
-                        esimResults.push(result);
+                            esimResults.push(result);
 
-                        try {
+                            console.log(`[STRIPE-WEBHOOK] Sending email to ${customerEmail}`);
                             const emailResult = await sendOrderConfirmation({
                                 customerEmail: customerEmail || 'customer@example.com',
                                 orderId: sessionId,
                                 productName: item.productName,
                                 qrCodeUrl: result.qrCodeUrl || '',
                                 dataAmount: 'Standard Data',
-                                duration: '30 Days'
+                                duration: '30 Days',
+                                iccid: result.iccid,
+                                matchingId: result.matchingId,
+                                smdpAddress: result.smdpAddress
                             });
 
-                            if (emailResult.success && emailResult.id) {
-                                console.log(`[WEBHOOK] Email sent. ID: ${emailResult.id}`);
-                                emailIds.push(emailResult.id);
+                            if (emailResult.success) {
+                                console.log(`[STRIPE-WEBHOOK] Email OK. ID: ${emailResult.id}`);
+                                if (emailResult.id) emailIds.push(emailResult.id);
+                            } else {
+                                console.error(`[STRIPE-WEBHOOK] Email FAILED: ${emailResult.error}`);
                             }
-                        } catch (emailErr) {
-                            console.error("Failed to send email", emailErr);
+                        } else {
+                            console.error(`[STRIPE-WEBHOOK] Fulfillment FAILED: ${result.error}`);
+                            allSuccess = false;
                         }
-
-                    } else {
-                        console.error('[WEBHOOK] Failed to create eSIM:', result.error);
+                    } catch (itemErr) {
+                        console.error(`[STRIPE-WEBHOOK] Loop error: ${itemErr}`);
                         allSuccess = false;
                     }
                 }
@@ -151,39 +171,17 @@ export async function POST(request: Request) {
                     }
                 });
 
+                console.log(`[STRIPE-WEBHOOK] DONE processing session ${sessionId}`);
+
             } catch (error) {
-                console.error('[WEBHOOK] Order processing failed:', error);
-                return NextResponse.json({ error: 'Order processing failed' }, { status: 500 });
-            }
-        } else if (event.type === 'charge.refunded') {
-            const charge = event.data.object as Stripe.Charge;
-            const paymentIntentId = charge.payment_intent as string;
-
-            console.log(`[WEBHOOK] Processing refund for payment intent: ${paymentIntentId}`);
-
-            try {
-                const order = await prisma.order.findFirst({
-                    where: { paymentIntentId: paymentIntentId }
-                });
-
-                if (order) {
-                    await prisma.order.update({
-                        where: { id: order.id },
-                        data: { status: 'refunded' }
-                    });
-                    console.log(`[WEBHOOK] Order ${order.id} marked as refunded.`);
-                } else {
-                    console.warn(`[WEBHOOK] No order found for refund PI: ${paymentIntentId}`);
-                }
-            } catch (e) {
-                console.error("Failed to process refund", e);
-                return NextResponse.json({ error: 'Refund processing failed' }, { status: 500 });
+                console.error(`[STRIPE-WEBHOOK] DB Error: ${error}`);
+                return NextResponse.json({ error: 'Database processing failed' }, { status: 500 });
             }
         }
 
         return NextResponse.json({ received: true });
     } catch (outerError) {
-        console.error('[WEBHOOK] Critical error:', outerError);
+        console.error('[STRIPE-WEBHOOK] CRITICAL:', outerError);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

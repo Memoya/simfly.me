@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { sendOrderConfirmation } from '@/lib/email';
 import { verifyAuth, unauthorizedResponse } from '@/lib/auth';
+import QRCode from 'qrcode';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -33,16 +34,25 @@ export async function POST(request: Request) {
             let productName = 'eSIM Bundle';
             let dataAmount = 'Standard';
             let duration = '30 Days';
+            let iccid: string | undefined = undefined;
+            let smdpAddress: string | undefined = undefined;
+            let matchingId: string | undefined = undefined;
 
             if (localOrder && localOrder.items.length > 0) {
                 const item = localOrder.items[0];
                 productName = item.productName;
+                iccid = item.iccid || undefined;
+                matchingId = item.matchingId || undefined;
+                smdpAddress = 'rsp.esim-go.com'; // Default for eSIM Go
 
                 if (item.matchingId) {
                     const smdp = 'rsp.esim-go.com';
-                    qrCodeUrl = `https://chart.googleapis.com/chart?cht=qr&chl=LPA:1$${smdp}$${item.matchingId}&chs=200x200`;
+                    // Generate local QR Code
+                    const qrData = `LPA:1$${smdp}$${item.matchingId}`;
+                    qrCodeUrl = await QRCode.toDataURL(qrData);
                 } else {
-                    qrCodeUrl = 'https://chart.googleapis.com/chart?cht=qr&chl=Processing-Error&chs=200x200';
+                    // Fallback or error QR
+                    qrCodeUrl = await QRCode.toDataURL('Error: No Matching ID found');
                 }
             } else {
                 const session = await stripe.checkout.sessions.retrieve(orderId, {
@@ -59,7 +69,18 @@ export async function POST(request: Request) {
                 const product = firstItem?.price?.product as Stripe.Product;
                 const metadata = product?.metadata || {};
 
-                qrCodeUrl = (session.metadata?.qrCodeUrl as string) || 'https://chart.googleapis.com/chart?cht=qr&chl=eSIM-Ref-Not-Found&chs=200x200';
+                // Generate QR Code from metadata if available, or generate error QR
+                if (session.metadata?.qrCodeUrl) {
+                    // If stored as URL, just use it? No, better to generate fresh if we have data.
+                    // But here we might not have the raw data strings.
+                    // Actually, simulation mode might have stored a URL.
+                    // Let's just use what's there if it's a data URI, otherwise try to generate?
+                    // The previous code used session.metadata.qrCodeUrl directly.
+                    qrCodeUrl = session.metadata.qrCodeUrl;
+                } else {
+                    qrCodeUrl = await QRCode.toDataURL('Error: eSIM Ref Not Found');
+                }
+
                 dataAmount = (metadata.data as string) || 'Standard';
                 duration = (metadata.duration as string) || '30 Days';
             }
@@ -70,7 +91,10 @@ export async function POST(request: Request) {
                 productName,
                 qrCodeUrl,
                 dataAmount,
-                duration
+                duration,
+                iccid,
+                matchingId,
+                smdpAddress
             });
 
             if (sent.success) {

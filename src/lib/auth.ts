@@ -15,9 +15,8 @@ export function verifyAuth(request: Request): boolean {
 
     const token = authHeader.split(' ')[1];
 
-    // Constant time comparison recommended for production security (timing attack prevention)
-    // but for now simple comparison is infinitely better than nothing.
-    return token === adminPassword;
+    // Trim the password to handle trailing newlines/spaces from env vars
+    return token === adminPassword.trim();
 }
 
 export function unauthorizedResponse() {

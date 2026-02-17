@@ -3,7 +3,6 @@ import { i18n, type Locale } from "../../i18n-config";
 import { CurrencyProvider, LOCALE_TO_CURRENCY } from "@/context/CurrencyContext";
 import "./../globals.css";
 
-import { getDictionary } from "@/lib/get-dictionary";
 import { LANG_TO_OG_LOCALE } from "@/lib/lang-locale-map";
 import StructuredData from "@/components/SEO/StructuredData";
 
@@ -12,7 +11,6 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const params = await props.params;
   const lang = params.lang as Locale;
-  // const dict = await getDictionary(lang); // dict usage replaced by hardcoded generic seo for now or mix
 
   const baseUrl = 'https://simfly.me';
 
@@ -55,7 +53,7 @@ export async function generateMetadata(props: {
       google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || '',
     },
     alternates: {
-      canonical: `${baseUrl}/de`, // User requested fixed canonical to /de
+      canonical: `${baseUrl}/${lang}`,
       languages,
     },
   };
@@ -99,10 +97,40 @@ export default async function RootLayout(props: {
             ],
             contactPoint: {
               "@type": "ContactPoint",
-              "telephone": "+49-123-456789",
-              "contactType": "Customer Support",
-              "areaServed": "Global"
+              "email": "hello@simfly.me",
+              "contactType": "customer service"
             }
+          }}
+        />
+        <StructuredData
+          type="FAQPage"
+          data={{
+            mainEntity: [
+              {
+                "@type": "Question",
+                "name": "Was ist eine eSIM?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Eine eSIM ist eine digitale SIM-Karte, mit der du einen Mobilfunktarif bei deinem Anbieter aktivieren kannst, ohne eine physische SIM-Karte verwenden zu müssen."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Wann erhalte ich meinen QR-Code?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Dein QR-Code wird sofort nach erfolgreicher Zahlung per E-Mail verschickt. Du kannst ihn direkt scannen und die eSIM aktivieren."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Funktioniert mein Handy mit Simfly?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Die meisten modernen Smartphones ab 2019 (iPhone 11, Pixel 3, Samsung S20 etc.) unterstützen eSIM. Du kannst dies in unseren Einstellungen unter 'eSIM-Kompatibilität' prüfen."
+                }
+              }
+            ]
           }}
         />
         <StructuredData

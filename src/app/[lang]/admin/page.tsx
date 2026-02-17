@@ -1095,6 +1095,12 @@ export default function AdminPage() {
                                                     <p className="font-bold text-sm">{e.status || 'Unknown'}</p>
                                                     <p className="text-xs text-gray-600 font-mono">{e.iccid}</p>
                                                     <p className="text-xs text-blue-600">{e.bundle}</p>
+                                                    <a
+                                                        href={`apple-esim://install?address=rsp.esim-go.com&matchingId=${orderDetail.local?.items[0]?.matchingId}`}
+                                                        className="text-[10px] text-electric hover:underline font-bold mt-1 inline-block"
+                                                    >
+                                                        iOS Deep Link
+                                                    </a>
                                                 </div>
                                             ))
                                         ) : (
@@ -1110,21 +1116,60 @@ export default function AdminPage() {
                                         <p className="font-bold text-lg">
                                             {orderDetail.email?.last_event || orderDetail.local?.providerSync?.emailStatus || 'Pending'}
                                         </p>
-                                        <p className="text-xs text-gray-500 break-all">ID: {orderDetail.local?.providerSync?.resendMessageId || 'N/A'}</p>
+                                        <p className="text-xs text-gray-500 break-all">ID: {orderDetail.email?.id || orderDetail.local?.providerSync?.resendMessageId || 'N/A'}</p>
                                     </div>
                                 </div>
+
+                                {orderDetail.local?.items.some((i: any) => i.matchingId) && (
+                                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                        <h3 className="font-bold text-sm text-blue-800 mb-2 flex items-center gap-2">
+                                            <RefreshCw className="w-4 h-4" /> Technische Details (Fulfillment)
+                                        </h3>
+                                        {orderDetail.local.items.map((item: any, i: number) => item.matchingId ? (
+                                            <div key={i} className="space-y-3 text-xs">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-500">SM-DP+ Adresse:</span>
+                                                    <span className="font-mono font-bold">{item.smdpAddress || 'rsp.esim-go.com'}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-500">Matching ID:</span>
+                                                    <span className="font-mono font-bold select-all bg-white px-1 border rounded">{item.matchingId}</span>
+                                                </div>
+                                                <div className="pt-2">
+                                                    <a
+                                                        href={`apple-esim://install?address=${item.smdpAddress || 'rsp.esim-go.com'}&matchingId=${item.matchingId}`}
+                                                        className="block text-center bg-navy text-white py-2 rounded-lg font-bold hover:opacity-90 transition-all"
+                                                    >
+                                                        iOS Direct Link testen
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        ) : null)}
+                                    </div>
+                                )}
 
                                 {/* Items */}
                                 <div>
                                     <h3 className="font-bold text-navy mb-3">Gekaufte Artikel</h3>
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
-                                        {orderDetail.local?.items.map((item: any) => (
-                                            <div key={item.id} className="flex justify-between items-center text-sm">
-                                                <span className="font-bold">{item.productName} (x{item.quantity})</span>
-                                                <span className="font-mono text-xs">{item.iccid || 'No ICCID'}</span>
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-3">
+                                        {orderDetail.local?.items && orderDetail.local.items.length > 0 ? (
+                                            orderDetail.local.items.map((item: any) => (
+                                                <div key={item.id} className="border-b border-gray-100 last:border-0 pb-2 last:pb-0">
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="font-bold text-navy">{item.productName} (x{item.quantity})</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center bg-white p-2 rounded border border-gray-200">
+                                                        <span className="text-[10px] uppercase text-gray-400 font-bold">ICCID</span>
+                                                        <span className="font-mono text-sm font-bold text-electric select-all">{item.iccid || 'No ICCID'}</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="p-3 bg-white rounded border border-dashed border-gray-300">
+                                                <p className="text-sm font-bold text-gray-700 mb-1">{selectedOrder.items}</p>
+                                                <p className="text-[10px] text-red-500 uppercase font-bold">In DB nicht gefunden - Prüfe Webhook!</p>
                                             </div>
-                                        ))}
-                                        {!orderDetail.local?.items.length && <p className="text-sm">{selectedOrder.items}</p>}
+                                        )}
                                     </div>
                                 </div>
 

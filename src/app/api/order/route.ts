@@ -41,38 +41,30 @@ export async function GET(request: Request) {
             });
         }
 
-        const orderResponse = await fetch(`${ESIM_GO_URL}/orders`, {
-            method: 'POST',
-            headers: {
-                'X-API-Key': ESIM_GO_API_KEY,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                type: 'transaction',
-                assign: true,
-                Order: [{
-                    type: 'bundle',
-                    quantity: 1,
-                    item: session.metadata?.region === 'Europe' ? 'ESIM_UL_EU_10G' : 'ESIM_UL_US_20G'
-                }]
-            })
+        const { prisma } = await import('@/lib/prisma');
+        const order = await prisma.order.findUnique({
+            where: { stripeSessionId: session_id },
+            include: { items: true }
         });
 
-        if (!orderResponse.ok) {
-            throw new Error(`eSIM Go Order Failed: ${orderResponse.statusText}`);
+        if (!order || !order.items || order.items.length === 0) {
+            // If not in DB yet, return a pending state so the success page can retry or wait
+            return NextResponse.json({
+                status: 'pending',
+                message: 'Bestellung wird verarbeitet...'
+            });
         }
 
-        const orderData = await orderResponse.json();
-        const qrCodeUrl = orderData.qr_url || 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ESIM-REAL-DATA-FROM-API';
+        const item = order.items[0];
 
         return NextResponse.json({
-            qrCodeUrl: qrCodeUrl,
-            iccid: orderData.iccid || 'Unknown',
+            qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=LPA:1$${item.smdpAddress || 'rsp.esim-go.com'}$${item.matchingId}`,
+            iccid: item.iccid || 'In Vorbereitung...',
             status: 'completed'
         });
 
     } catch (err: unknown) {
-        console.error('Order fulfillment error:', err);
+        console.error('Order fetch error:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }

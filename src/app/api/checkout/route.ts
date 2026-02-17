@@ -89,12 +89,14 @@ export async function POST(request: Request) {
 
         const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
 
+        const lang = body.lang || 'de';
+
         const session = await stripe.checkout.sessions.create({
             line_items: lineItems,
             mode: 'payment',
             payment_method_types: ['card', 'paypal', 'klarna', 'amazon_pay'],
-            success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${origin}/`,
+            success_url: `${origin}/${lang}/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/${lang}`,
             metadata: {
                 discount_code: discountCode || null,
                 payment_intent_data: JSON.stringify({

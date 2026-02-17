@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface StructuredDataProps {
-    type: 'LocalBusiness' | 'Product' | 'Organization' | 'BreadcrumbList' | 'WebSite';
+    type: 'LocalBusiness' | 'Product' | 'Organization' | 'BreadcrumbList' | 'WebSite' | 'FAQPage';
     data: Record<string, unknown>;
 }
 

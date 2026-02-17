@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, Globe, Smartphone, ChevronRight, ShoppingBag, X, Check, Menu } from 'lucide-react';
+import { Globe, Search, Smartphone, Check, Menu, X, ShoppingBag, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/store/cart';
 import CartSidebar from '@/components/CartSidebar';
@@ -17,11 +17,16 @@ import { Product, CountryGroup, AdminSettings } from '@/types';
 import GlobeComponent from '@/components/Globe';
 import { useCurrency } from '@/context/CurrencyContext';
 import LanguageCurrencySelector from '@/components/LanguageCurrencySelector';
+import { Marquee } from '@/components/Marquee';
+import { ShinyButton } from '@/components/ShinyButton';
+import { AnimatedBeam } from '@/components/AnimatedBeam';
+import { SpotlightCard } from '@/components/SpotlightCard';
 
 const popularCountriesList = [
   'Thailand', 'United States', 'Turkey', 'Japan',
   'Germany', 'Spain', 'France', 'Italy',
-  'United Kingdom', 'Greece', 'Switzerland', 'Vietnam'
+  'United Kingdom', 'Greece', 'Switzerland', 'Vietnam',
+  'Portugal', 'Indonesia', 'South Korea', 'Mexico', 'United Arab Emirates'
 ];
 
 // Featured deals configuration
@@ -78,10 +83,26 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<AdminSettings | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { formatPrice } = useCurrency();
 
   useEffect(() => {
-    fetch('/api/admin/settings').then(res => res.json()).then(data => setSettings(data)).catch(err => console.error(err));
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const step1Ref = React.useRef<HTMLDivElement>(null);
+  const step2Ref = React.useRef<HTMLDivElement>(null);
+  const step3Ref = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('/api/settings').then(res => res.json()).then(data => setSettings(data)).catch(err => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/settings').then(res => res.json()).then(data => setSettings(data)).catch(err => console.error(err));
   }, []);
 
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
@@ -133,10 +154,12 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
 
   const allCountries = useMemo(() => Object.values(countriesMap), [countriesMap]);
 
-  const regions = useMemo(() =>
-    ['All', ...Array.from(new Set(allCountries.map((c) => c.regionGroup || 'Other'))).sort()],
-    [allCountries]
-  );
+  const regions = useMemo(() => {
+    const rawRegions = Array.from(new Set(allCountries.map((c) => c.regionGroup || 'Other')));
+    const priority = ['Europe', 'Asia', 'Africa', 'Middle East', 'Oceania'];
+    // Filter to show only the most important/common regions to keep the UI clean
+    return ['All', ...priority.filter(p => rawRegions.includes(p))];
+  }, [allCountries]);
 
   const filteredCountries = useMemo(() => {
     return allCountries.filter((country) => {
@@ -197,13 +220,10 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8 font-semibold text-gray-600">
-            <Link href={`/${lang}/check`} className="flex items-center gap-2 hover:text-electric transition-colors">
-              <span className="w-1.5 h-1.5 rounded-full bg-electric animate-pulse"></span>
-              {dictionary.nav.checkData}
-            </Link>
             <a href="#destinations" className="hover:text-electric transition-colors">{dictionary.nav.destinations}</a>
             <a href="#how-it-works" className="hover:text-electric transition-colors">{dictionary.nav.howItWorks}</a>
             <a href="#reviews" className="hover:text-electric transition-colors">{dictionary.nav.reviews}</a>
+            <Link href={`/${lang}/check`} className="hover:text-electric transition-colors">{dictionary.nav.checkData}</Link>
             <LanguageCurrencySelector />
             <button
               onClick={openCart}
@@ -219,7 +239,8 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
           </div>
 
           {/* Mobile Actions */}
-          <div className="flex md:hidden items-center space-x-4">
+          <div className="flex md:hidden items-center space-x-2">
+            <LanguageCurrencySelector />
             <button
               onClick={openCart}
               className="relative p-2 text-navy"
@@ -250,6 +271,12 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                 <a href="#destinations" onClick={() => setIsMenuOpen(false)}>{dictionary.nav.destinations}</a>
                 <a href="#how-it-works" onClick={() => setIsMenuOpen(false)}>{dictionary.nav.howItWorks}</a>
                 <a href="#reviews" onClick={() => setIsMenuOpen(false)}>{dictionary.nav.reviews}</a>
+                <Link href={`/${lang}/check`} onClick={() => setIsMenuOpen(false)} className="text-electric">
+                  {dictionary.nav.checkData}
+                </Link>
+                <div className="pt-2 border-t border-gray-100">
+                  <LanguageCurrencySelector />
+                </div>
               </div>
             </motion.div>
           )}
@@ -347,17 +374,82 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                 )}
               </AnimatePresence>
             </div>
-            {/* Social Proof */}
-            <div className="mt-8 flex items-center justify-center gap-2 opacity-60">
-              <div className="flex -space-x-2">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white" />
-                ))}
-              </div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-black/60">{dictionary.hero.trustedBy}</p>
-            </div>
+
+
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-10 flex justify-center"
+          >
+            <ShinyButton
+              onClick={() => {
+                const destinations = document.getElementById('destinations');
+                if (destinations) destinations.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-8 py-4 text-lg font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-transform"
+            >
+              {dictionary.destinations.choosePlan}
+            </ShinyButton>
           </motion.div>
         </div>
+
+        {/* Marquee Section */}
+        <div className="mt-20 md:mt-32 w-full max-w-7xl mx-auto relative overflow-hidden">
+          <Marquee className="[--duration:30s] [--gap:2rem]" pauseOnHover>
+            {popularCountriesList.map((countryName) => {
+              const country = allCountries.find(c => c.country === countryName);
+              if (!country) return null;
+              return (
+                <div
+                  key={countryName}
+                  onClick={() => setSelectedCountry(country)}
+                  className="flex items-center gap-3 bg-white/50 backdrop-blur-sm px-6 py-3 rounded-2xl border border-black/5 cursor-pointer hover:bg-white transition-colors group"
+                >
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-sm">
+                    <Image
+                      src={getCountryFlagUrl(country.iso, 'w40')}
+                      alt={countryName}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <span className="font-black text-base uppercase tracking-wider">{countryName}</span>
+                </div>
+              );
+            })}
+          </Marquee>
+          <Marquee reverse className="[--duration:25s] [--gap:2rem] mt-4" pauseOnHover>
+            {/* Rotate the list to avoid direct overlaps with the first row */}
+            {[...popularCountriesList.slice(Math.floor(popularCountriesList.length / 2)), ...popularCountriesList.slice(0, Math.floor(popularCountriesList.length / 2))].reverse().map((countryName) => {
+              const country = allCountries.find(c => c.country === countryName);
+              if (!country) return null;
+              return (
+                <div
+                  key={countryName}
+                  onClick={() => setSelectedCountry(country)}
+                  className="flex items-center gap-3 bg-white/50 backdrop-blur-sm px-6 py-3 rounded-2xl border border-black/5 cursor-pointer hover:bg-white transition-colors group"
+                >
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-sm">
+                    <Image
+                      src={getCountryFlagUrl(country.iso, 'w40')}
+                      alt={countryName}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <span className="font-black text-base uppercase tracking-wider">{countryName}</span>
+                </div>
+              );
+            })}
+          </Marquee>
+
+          <div className="absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
+          <div className="absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-white to-transparent pointer-events-none z-10" />
+        </div>
+
       </section>
 
       {/* Popular Slider - Minimalist */}
@@ -395,57 +487,65 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                     trackEvent('VIEW_DEAL', { country: deal.country, error: 'not_found' });
                   }
                 }}
-                className="min-w-[260px] md:min-w-[280px] snap-center bg-white rounded-[1.5rem] p-4 md:p-6 shadow-xl border border-black/5 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300 text-left flex-shrink-0"
+                className="min-w-[180px] md:min-w-[280px] snap-center relative group hover:-translate-y-1 transition-transform duration-300 text-left flex-shrink-0 p-0 bg-transparent border-none outline-none focus:outline-none"
               >
-                <div className="absolute top-0 right-0 bg-electric text-white text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest">
-                  {dictionary.featured.deal}
-                </div>
+                <SpotlightCard className="h-full w-full p-3 md:p-6 rounded-[1.25rem] md:rounded-[1.5rem] border-black/5 shadow-lg md:shadow-xl bg-white relative overflow-hidden">
 
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden shadow-sm">
-                    <Image
-                      src={getCountryFlagUrl(deal.iso, 'w40')}
-                      alt={deal.country}
-                      fill
-                      sizes="40px"
-                      className="object-cover"
+
+
+                  {/* Shimmering DEAL Badge */}
+                  <div className="absolute top-0 right-0 bg-electric text-white text-[9px] md:text-[10px] font-black px-2.5 md:px-3 py-1 rounded-bl-lg md:rounded-bl-xl uppercase tracking-widest overflow-hidden">
+                    <span className="relative z-10">{dictionary.featured.deal}</span>
+                    <motion.div
+                      animate={{ x: ['-100%', '100%'] }}
+                      transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12"
                     />
                   </div>
-                  <div>
-                    <h3 className="font-black text-sm md:text-base leading-none">{deal.country}</h3>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{deal.days} {dictionary.featured.days}</p>
-                  </div>
-                </div>
 
-                <div className="space-y-1">
-                  <p className="text-2xl md:text-3xl font-black tracking-tighter">
+                  <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 relative z-10">
+                    <div className="relative w-7 h-7 md:w-10 md:h-10 rounded-full overflow-hidden shadow-sm">
+                      <Image
+                        src={getCountryFlagUrl(deal.iso, 'w40')}
+                        alt={deal.country}
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-base md:text-lg leading-none mb-1 md:mb-0">{deal.country}</h3>
+                      <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-wider">{deal.days} {dictionary.featured.days}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center space-y-2 relative z-10 py-6">
+                    <p className="text-5xl md:text-3xl font-black tracking-tighter text-center">
+                      {(() => {
+                        const productMatch = products.find(p => p.id === deal.productId || (p.region === deal.country && p.price === deal.price));
+                        return productMatch?.data || deal.data;
+                      })()}
+                    </p>
+                    <motion.p
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                      className="text-xl md:text-sm font-black text-electric text-center"
+                    >
+                      nur {formatPrice(deal.price)}
+                    </motion.p>
                     {(() => {
                       const productMatch = products.find(p => p.id === deal.productId || (p.region === deal.country && p.price === deal.price));
-                      return productMatch?.data || deal.data;
+                      if (productMatch?.unlimitedDetails) {
+                        return (
+                          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center mt-2">
+                            {productMatch.unlimitedDetails.highSpeed} {dictionary.featured.highSpeed} • {productMatch.unlimitedDetails.throttle} {productMatch.unlimitedDetails.throttle}
+                          </div>
+                        );
+                      }
+                      return null;
                     })()}
-                  </p>
-                  <p className="text-sm font-bold text-electric">
-                    nur {formatPrice(deal.price)}
-                  </p>
-                  {(() => {
-                    const productMatch = products.find(p => p.id === deal.productId || (p.region === deal.country && p.price === deal.price));
-                    if (productMatch?.unlimitedDetails) {
-                      return (
-                        <div className="text-[9px] text-gray-400 font-bold uppercase tracking-wider leading-tight">
-                          {productMatch.unlimitedDetails.highSpeed} {dictionary.featured.highSpeed}, {dictionary.featured.throttle} {productMatch.unlimitedDetails.throttle}
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()}
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-[10px] font-black uppercase tracking-widest">{dictionary.featured.secure}</span>
-                  <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center">
-                    <ChevronRight className="w-3 h-3" />
                   </div>
-                </div>
+                </SpotlightCard>
               </motion.button>
             ))}
           </div>
@@ -453,15 +553,15 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
       </section>
 
       {/* Main Grid Section */}
-      <section id="destinations" className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-20 pb-20 md:pb-32">
+      <section id="destinations" className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-20 pb-20 md:pb-32" >
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-16 gap-6 md:gap-8 text-center md:text-left">
           <div className="space-y-2">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-black tracking-tighter">{dictionary.destinations.title}</h2>
             <p className="text-black/30 font-bold tracking-tight text-sm">{dictionary.destinations.subtitle}</p>
           </div>
 
-          <div className="inline-flex gap-1 p-1 bg-black/5 rounded-2xl self-center md:self-auto border border-black/5">
-            {regions.slice(0, 4).map((region) => (
+          <div className="inline-flex gap-1 p-1 bg-black/5 rounded-2xl self-center md:self-auto border border-black/5 overflow-x-auto no-scrollbar max-w-full">
+            {regions.slice(0, 5).map((region) => (
               <button
                 key={region}
                 onClick={() => {
@@ -527,7 +627,7 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                     <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-[2rem]" />
                   </div>
                   <div className="space-y-0.5 md:space-y-1">
-                    <h3 className="font-black text-sm md:text-base text-black tracking-tight">{country.country}</h3>
+                    <h3 className="font-black text-base md:text-lg text-black tracking-tight">{country.country}</h3>
                     <p className="text-[10px] font-bold text-black/20 uppercase tracking-[0.2em] group-hover:text-electric transition-colors">
                       {dictionary.destinations.from} {formatPrice(country.minPrice || 0)}
                     </p>
@@ -569,32 +669,79 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
             </div>
           )
         }
-      </section >
+      </section>
 
-      {/* How it Works - Mobile First Dark Section */}
-      < section id="how-it-works" className="py-16 md:py-24 bg-black text-white rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden mx-4 mb-12 md:mb-20" >
-        <div className="max-w-6xl mx-auto px-6 md:px-10 relative z-10">
+      <section id="how-it-works" className="py-16 md:py-24 bg-black text-white rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden mx-4 mb-12 md:mb-20">
+        <div className="max-w-6xl mx-auto px-6 md:px-10 relative z-10" ref={containerRef}>
           <div className="text-center mb-12 md:mb-24">
             <h2 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter mb-4 italic leading-none">{dictionary.steps.title}</h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 md:gap-16">
-            {[
-              { icon: <Search className="w-8 h-8 stroke-1" />, title: dictionary.steps.step1, desc: dictionary.steps.desc1 },
-              { icon: <Smartphone className="w-8 h-8 stroke-1" />, title: dictionary.steps.step2, desc: dictionary.steps.desc2 },
-              { icon: <Check className="w-8 h-8 stroke-1" />, title: dictionary.steps.step3, desc: dictionary.steps.desc3 },
-            ].map((step, i) => (
-              <div key={i} className="flex flex-col items-center text-center group">
-                <div className="w-20 h-20 rounded-3xl bg-white/10 flex items-center justify-center mb-8 border border-white/5 transition-transform group-hover:rotate-6">
-                  {step.icon}
-                </div>
-                <h3 className="text-xl font-black tracking-widest mb-3">{step.title}</h3>
-                <p className="text-white/30 text-xs font-bold uppercase tracking-widest">{step.desc}</p>
-              </div>
-            ))}
+          <div className="grid md:grid-cols-3 gap-8 md:gap-16 relative">
+            {!isMobile && (
+              <>
+                <AnimatedBeam
+                  containerRef={containerRef}
+                  fromRef={step1Ref}
+                  toRef={step2Ref}
+                  duration={3}
+                  curvature={-50}
+                  pathColor="#ffffff"
+                  gradientStartColor="#000000"
+                  gradientStopColor="#ffffff"
+                  pathOpacity={0.1}
+                />
+                <AnimatedBeam
+                  containerRef={containerRef}
+                  fromRef={step2Ref}
+                  toRef={step3Ref}
+                  duration={3}
+                  curvature={50}
+                  delay={1.5}
+                  pathColor="#ffffff"
+                  gradientStartColor="#000000"
+                  gradientStopColor="#ffffff"
+                  pathOpacity={0.1}
+                />
+              </>
+            )}
+
+            <motion.div
+              variants={{
+                show: { transition: { staggerChildren: 0.2 } }
+              }}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid md:grid-cols-3 gap-8 md:gap-16 relative w-full justify-items-center md:col-span-3"
+            >
+              {[
+                { icon: <Search className="w-8 h-8 stroke-1" />, title: dictionary.steps.step1, desc: dictionary.steps.desc1, ref: step1Ref },
+                { icon: <Smartphone className="w-8 h-8 stroke-1" />, title: dictionary.steps.step2, desc: dictionary.steps.desc2, ref: step2Ref },
+                { icon: <Check className="w-8 h-8 stroke-1" />, title: dictionary.steps.step3, desc: dictionary.steps.desc3, ref: step3Ref },
+              ].map((step, i) => (
+                <motion.div
+                  key={i}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    show: { opacity: 1, y: 0 }
+                  }}
+                  className="flex flex-col items-center text-center group z-20 w-full max-w-xs mx-auto"
+                >
+                  <div
+                    ref={step.ref}
+                    className="w-20 h-20 rounded-3xl bg-white/10 flex items-center justify-center mb-8 border border-white/5 transition-transform group-hover:rotate-6 relative z-10"
+                  >
+                    {step.icon}
+                  </div>
+                  <h3 className="text-xl font-black tracking-widest mb-3">{step.title}</h3>
+                  <p className="text-white/30 text-xs font-bold uppercase tracking-widest">{step.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         </div>
-      </section >
+      </section>
 
       {/* eSIM Compatibility Check (Moved Down) */}
       <CompatibilityCheck />
@@ -625,8 +772,10 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
         </div>
       </section>
 
+
+
       {/* Footer - Extreme Minimalist */}
-      < footer className="bg-white pt-20 pb-10 md:pt-32 md:pb-16" >
+      <footer className="bg-white pt-20 pb-10 md:pt-32 md:pb-16">
         <div className="max-w-6xl mx-auto px-6 md:px-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 mb-16 md:mb-32">
             <div className="space-y-8">
@@ -643,12 +792,11 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
               <div className="space-y-6">
                 <h4 className="text-[10px] font-black tracking-[0.4em] uppercase text-black">Exploration</h4>
                 <nav className="flex flex-col gap-4 text-xs font-black text-black/40">
-                  <Link href={`/${lang}/check`} className="hover:text-electric transition-colors uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-electric animate-pulse"></span>
-                    {dictionary.check.title.replace('.', '')}
-                  </Link>
                   <a href="#destinations" className="hover:text-black transition-colors uppercase tracking-widest">{dictionary.nav.destinations}</a>
                   <a href={`mailto:hello@simfly.me`} className="hover:text-black transition-colors uppercase tracking-widest">hello@simfly.me</a>
+                  <Link href={`/${lang}/check`} className="hover:text-electric transition-colors uppercase tracking-widest">
+                    {dictionary.nav.checkData}
+                  </Link>
                 </nav>
               </div>
               <div className="space-y-6">
@@ -671,17 +819,13 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
               <span>©2026 Simfly</span>
               <span>EST. Berlin</span>
             </div>
-            <div className="flex gap-4 grayscale opacity-20 items-center">
-              <div className="w-10 h-6 bg-black rounded flex items-center justify-center text-[6px] font-black text-white italic">VISA</div>
-              <div className="w-10 h-6 bg-black rounded flex items-center justify-center text-[6px] font-black text-white">MC</div>
-              <div className="w-10 h-6 bg-black rounded flex items-center justify-center text-[6px] font-black text-white px-0.5 uppercase">Apple Pay</div>
-              <div className="w-10 h-6 bg-black rounded flex items-center justify-center text-[6px] font-black text-white px-0.5 uppercase">Google Pay</div>
-              <div className="w-10 h-6 bg-black rounded flex items-center justify-center text-[6px] font-black text-white px-0.5 uppercase">Klarna</div>
+            <div className="flex gap-10">
+              {/* Payment logos removed for cleaner aesthetic */}
             </div>
           </div>
         </div>
-      </footer >
+      </footer>
       <CartSidebar />
-    </div >
+    </div>
   );
 }
