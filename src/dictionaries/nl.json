@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - Premium Reis eSIMs | Wereldwijd Verbonden",
+        "description": "Krijg snel internet in 190+ landen met onze digitale eSIMs. Geen roamingkosten, directe activering.",
+        "keywords": [
+            "eSIM",
+            "reizen",
+            "internationaal data",
+            "roaming",
+            "reis eSIM",
+            "data abonnement",
+            "digitale nomade"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "Alle",
+            "africa": "Afrika",
+            "americas": "Amerika",
+            "asia": "Azië",
+            "europe": "Europa",
+            "oceania": "Oceanië"
+        },
+        "common": {
+            "packages": "pakketten",
+            "unlimited": "Onbeperkt",
+            "noCountriesFound": "Geen landen gevonden",
+            "showMore": "Meer weergeven"
+        },
+        "cart": {
+            "title": "WINKELWAGEN",
+            "empty": "Je winkelwagen is leeg",
+            "emptySubtitle": "Klaar voor je volgende avontuur?",
+            "discover": "NU ONTDEKKEN",
+            "total": "Totaalbedrag",
+            "checkout": "AFREKENEN",
+            "loading": "LADEN...",
+            "secureCheckout": "Veilige Betaling",
+            "remove": "Verwijderen",
+            "checkoutError": "Afrekenen kon niet worden gestart. Probeer het later opnieuw.",
+            "then": "daarna"
+        },
+        "compatibility": {
+            "title": "Compatibiliteitscontrole",
+            "subtitle": "Klaar om te vliegen?",
+            "searchPlaceholder": "Zoek telefoonmodel...",
+            "popularModels": "Populaire Modellen",
+            "compatible": "Compatibel",
+            "notFound": "Model niet gevonden."
+        },
+        "defaultFaqs": [
+            {
+                "question": "Hoe werkt activering?",
+                "answer": "Na aankoop ontvang je een QR-code per e-mail. Scan deze gewoon in je telefooninstellingen onder 'Mobiel netwerk'. De eSIM wordt direct geactiveerd."
+            },
+            {
+                "question": "Wanneer begint de geldigheidsperiode?",
+                "answer": "De geldigheidsperiode begint alleen wanneer de eSIM voor het eerst verbinding maakt met een ondersteund netwerk in het bestemmingsland."
+            },
+            {
+                "question": "Kan ik mijn WhatsApp behouden?",
+                "answer": "Ja! Je fysieke SIM blijft actief of kan worden uitgeschakeld. Je WhatsApp-nummer blijft ongewijzigd."
+            },
+            {
+                "question": "Is mijn telefoon compatibel?",
+                "answer": "De meeste smartphones vanaf 2019 (iPhone 11+, Google Pixel 3+, Samsung S20+) ondersteunen eSIM. Gebruik onze checker hierboven voor details."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Bestemmingen",
+        "howItWorks": "Hoe het werkt",
+        "reviews": "Beoordelingen",
+        "checkData": "Gegevens controleren",
+        "cart": "Winkelwagen"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Waar reis je heen?",
+        "trustedBy": "Vertrouwd door 10.000+ reizigers"
+    },
+    "featured": {
+        "deal": "Aanbieding",
+        "days": "Dagen",
+        "secure": "Nu veiligstellen",
+        "highSpeed": "Hoge snelheid",
+        "throttle": "daarna"
+    },
+    "destinations": {
+        "title": "ONTDEK.",
+        "subtitle": "Kies je bestemming uit meer dan 190 landen.",
+        "more": "Toon meer",
+        "choosePlan": "Plan kiezen",
+        "from": "Vanaf"
+    },
+    "steps": {
+        "title": "KLAAR. SET. GO.",
+        "step1": "KIES PLAN",
+        "desc1": "Zoek en selecteer.",
+        "step2": "SCANNEN",
+        "desc2": "QR-code direct actief.",
+        "step3": "BEGIN",
+        "desc3": "Surf grenzeloos."
+    },
+    "faq": {
+        "title": "VRAGEN.",
+        "subtitle": "Alles wat je moet weten"
+    },
+    "footer": {
+        "exploration": "Exploratie",
+        "help": "Helpcentrum",
+        "legal": "Juridisch",
+        "impressum": "Impressum",
+        "agb": "Voorwaarden",
+        "privacy": "Privacy"
+    },
+    "check": {
+        "title": "DATA CHECK.",
+        "subtitle": "Controleer je resterende datavolume",
+        "label": "Je ICCID",
+        "placeholder": "bijv. 89852...",
+        "hint": "Je vindt de ICCID in je bevestigingsmail.",
+        "button": "Nu controleren",
+        "active": "Actief",
+        "expired": "Verlopen",
+        "queued": "Wachtend",
+        "remaining": "Resterend",
+        "expiry": "Vervaldatum"
+    }
+}

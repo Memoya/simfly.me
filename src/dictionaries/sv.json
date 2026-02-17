@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - Premium Rese-eSIM | Ansluten Världen Över",
+        "description": "Få höghastighetsinternet i 190+ länder med våra digitala eSIM. Inga roamingavgifter, omedelbar aktivering.",
+        "keywords": [
+            "eSIM",
+            "resa",
+            "internationell data",
+            "roaming",
+            "rese-eSIM",
+            "dataabonnemang",
+            "digital nomad"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "Alla",
+            "africa": "Afrika",
+            "americas": "Amerika",
+            "asia": "Asien",
+            "europe": "Europa",
+            "oceania": "Oceanien"
+        },
+        "common": {
+            "packages": "paket",
+            "unlimited": "Obegränsat",
+            "noCountriesFound": "Inga länder hittades",
+            "showMore": "Visa mer"
+        },
+        "cart": {
+            "title": "VARUKORG",
+            "empty": "Din varukorg är tom",
+            "emptySubtitle": "Redo för ditt nästa äventyr?",
+            "discover": "UTFORSKA NU",
+            "total": "Totalbelopp",
+            "checkout": "TILL KASSAN",
+            "loading": "LADDAR...",
+            "secureCheckout": "Säker betalning",
+            "remove": "Ta bort",
+            "checkoutError": "Betalningen kunde inte startas. Försök igen senare.",
+            "then": "därefter"
+        },
+        "compatibility": {
+            "title": "Kompatibilitetskontroll",
+            "subtitle": "Redo att flyga?",
+            "searchPlaceholder": "Sök efter telefonmodell...",
+            "popularModels": "Populära modeller",
+            "compatible": "Kompatibel",
+            "notFound": "Modell hittades inte."
+        },
+        "defaultFaqs": [
+            {
+                "question": "Hur fungerar aktiveringen?",
+                "answer": "Efter köpet får du en QR-kod via e-post. Skanna den helt enkelt i dina telefoninställningar under 'Mobilnätvärk'. eSIM aktiveras omedelbart."
+            },
+            {
+                "question": "När börjar giltighetstiden?",
+                "answer": "Giltighetstiden börjar först när eSIM ansluts till ett nätverk som stöds i destinationslandet för första gången."
+            },
+            {
+                "question": "Kan jag behålla min WhatsApp?",
+                "answer": "Ja! Ditt fysiska SIM förblir aktivt eller kan inaktiveras. Ditt WhatsApp-nummer förblir oförändrat."
+            },
+            {
+                "question": "Är min telefon kompatibel?",
+                "answer": "De flesta smartphones från 2019 och framåt (iPhone 11+, Google Pixel 3+, Samsung S20+) stöder eSIM. Använd vår kontroll ovan för detaljer."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Destinationer",
+        "howItWorks": "Hur det fungerar",
+        "reviews": "Recensioner",
+        "checkData": "Kontrollera data",
+        "cart": "Varukorg"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Vart reser du?",
+        "trustedBy": "Litat på av 10 000+ resenärer"
+    },
+    "featured": {
+        "deal": "Erbjudande",
+        "days": "Dagar",
+        "secure": "Säkra nu",
+        "highSpeed": "Hög hastighet",
+        "throttle": "efter"
+    },
+    "destinations": {
+        "title": "UPPTÄCK.",
+        "subtitle": "Välj din destination bland över 190 länder.",
+        "more": "Visa mer",
+        "choosePlan": "Välj plan",
+        "from": "Från"
+    },
+    "steps": {
+        "title": "REDO. KLART. KÖR.",
+        "step1": "VÄLJ PLAN",
+        "desc1": "Sök och välj.",
+        "step2": "SKANNA",
+        "desc2": "QR-kod omedelbart aktiv.",
+        "step3": "STARTA",
+        "desc3": "Surfa gränslöst."
+    },
+    "faq": {
+        "title": "FRÅGOR.",
+        "subtitle": "Allt du behöver veta"
+    },
+    "footer": {
+        "exploration": "Utforskning",
+        "help": "Hjälpcenter",
+        "legal": "Juridisk",
+        "impressum": "Impressum",
+        "agb": "Villkor",
+        "privacy": "Integritet"
+    },
+    "check": {
+        "title": "DATAKONTROLL.",
+        "subtitle": "Kontrollera din återstående datavolym",
+        "label": "Ditt ICCID",
+        "placeholder": "t.ex. 89852...",
+        "hint": "Du hittar ICCID i ditt bekräftelsemail.",
+        "button": "Kontrollera nu",
+        "active": "Aktiv",
+        "expired": "Utgången",
+        "queued": "Väntar",
+        "remaining": "Återstående",
+        "expiry": "Utgång"
+    }
+}

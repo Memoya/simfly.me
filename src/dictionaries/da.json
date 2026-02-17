@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - Premium Rejse-eSIM | Forbundet Verden Over",
+        "description": "Få højhastighedsinternet i 190+ lande med vores digitale eSIM. Ingen roamingomkostninger, øjeblikkelig aktivering.",
+        "keywords": [
+            "eSIM",
+            "rejse",
+            "international data",
+            "roaming",
+            "rejse-eSIM",
+            "dataabonnement",
+            "digital nomade"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "Alle",
+            "africa": "Afrika",
+            "americas": "Amerika",
+            "asia": "Asien",
+            "europe": "Europa",
+            "oceania": "Oceanien"
+        },
+        "common": {
+            "packages": "pakker",
+            "unlimited": "Ubegrænset",
+            "noCountriesFound": "Ingen lande fundet",
+            "showMore": "Vis mere"
+        },
+        "cart": {
+            "title": "KURV",
+            "empty": "Din kurv er tom",
+            "emptySubtitle": "Klar til dit næste eventyr?",
+            "discover": "OPDAG NU",
+            "total": "Samlet beløb",
+            "checkout": "TJEK UD",
+            "loading": "INDLÆSER...",
+            "secureCheckout": "Sikker betaling",
+            "remove": "Fjern",
+            "checkoutError": "Betaling kunne ikke startes. Prøv venligst igen senere.",
+            "then": "derefter"
+        },
+        "compatibility": {
+            "title": "Kompatibilitetstjek",
+            "subtitle": "Klar til at flyve?",
+            "searchPlaceholder": "Søg efter telefonmodel...",
+            "popularModels": "Populære modeller",
+            "compatible": "Kompatibel",
+            "notFound": "Model ikke fundet."
+        },
+        "defaultFaqs": [
+            {
+                "question": "Hvordan fungerer aktivering?",
+                "answer": "Efter købet modtager du en QR-kode via e-mail. Skan den blot i dine telefonindstillinger under 'Mobilnetværk'. eSIM aktiveres øjeblikkeligt."
+            },
+            {
+                "question": "Hvornår begynder gyldighedsperioden?",
+                "answer": "Gyldighedsperioden starter først, når eSIM første gang opretter forbindelse til et understøttet netværk i destinationslandet."
+            },
+            {
+                "question": "Kan jeg beholde min WhatsApp?",
+                "answer": "Ja! Dit fysiske SIM forbliver aktivt eller kan deaktiveres. Dit WhatsApp-nummer forbliver uændret."
+            },
+            {
+                "question": "Er min telefon kompatibel?",
+                "answer": "De fleste smartphones fra 2019 og frem (iPhone 11+, Google Pixel 3+, Samsung S20+) understøtter eSIM. Brug vores tjek ovenfor for detaljer."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Destinationer",
+        "howItWorks": "Sådan fungerer det",
+        "reviews": "Anmeldelser",
+        "checkData": "Tjek data",
+        "cart": "Kurv"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Hvor rejser du?",
+        "trustedBy": "Betroet af 10.000+ rejsende"
+    },
+    "featured": {
+        "deal": "Tilbud",
+        "days": "Dage",
+        "secure": "Sikre nu",
+        "highSpeed": "Høj hastighed",
+        "throttle": "efter"
+    },
+    "destinations": {
+        "title": "OPLEV.",
+        "subtitle": "Vælg din destination blandt over 190 lande.",
+        "more": "Vis mere",
+        "choosePlan": "Vælg plan",
+        "from": "Fra"
+    },
+    "steps": {
+        "title": "KLAR. PARAT. START.",
+        "step1": "VÆLG PLAN",
+        "desc1": "Søg og vælg.",
+        "step2": "SCAN",
+        "desc2": "QR-kode øjeblikkeligt aktiv.",
+        "step3": "START",
+        "desc3": "Surf grenseløst."
+    },
+    "faq": {
+        "title": "SPØRGSMÅL.",
+        "subtitle": "Alt hvad du skal vide"
+    },
+    "footer": {
+        "exploration": "Udforskning",
+        "help": "Hjælpcenter",
+        "legal": "Juridisk",
+        "impressum": "Impressum",
+        "agb": "Vilkår",
+        "privacy": "Privatliv"
+    },
+    "check": {
+        "title": "DATA TJEK.",
+        "subtitle": "Tjek dit resterende dataforbrug",
+        "label": "Din ICCID",
+        "placeholder": "f.eks. 89852...",
+        "hint": "Du finder ICCID i din bekræftelsesmail.",
+        "button": "Tjek nu",
+        "active": "Aktiv",
+        "expired": "Udløbet",
+        "queued": "Venter",
+        "remaining": "Tilbage",
+        "expiry": "Udløb"
+    }
+}

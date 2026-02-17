@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - 高级旅行eSIM | 全球连接",
+        "description": "通过我们的数字eSIM在190多个国家获得高速互联网。无漫游费，即时激活。",
+        "keywords": [
+            "eSIM",
+            "旅行",
+            "国际数据",
+            "漫游",
+            "旅行eSIM",
+            "数据套餐",
+            "数字游民"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "全部",
+            "africa": "非洲",
+            "americas": "美洲",
+            "asia": "亚洲",
+            "europe": "欧洲",
+            "oceania": "大洋洲"
+        },
+        "common": {
+            "packages": "套餐",
+            "unlimited": "无限流量",
+            "noCountriesFound": "未找到国家",
+            "showMore": "显示更多"
+        },
+        "cart": {
+            "title": "购物车",
+            "empty": "您的购物车是空的",
+            "emptySubtitle": "准备好下一次冒险了吗？",
+            "discover": "立即探索",
+            "total": "总金额",
+            "checkout": "结账",
+            "loading": "加载中...",
+            "secureCheckout": "安全结账",
+            "remove": "移除",
+            "checkoutError": "无法开始结账。请稍后再试。",
+            "then": "然后"
+        },
+        "compatibility": {
+            "title": "兼容性检查",
+            "subtitle": "准备好起飞了吗？",
+            "searchPlaceholder": "搜索手机型号...",
+            "popularModels": "热门型号",
+            "compatible": "兼容",
+            "notFound": "未找到型号。"
+        },
+        "defaultFaqs": [
+            {
+                "question": "激活如何工作？",
+                "answer": "购买后，您将通过电子邮件收到二维码。只需在手机设置中的\"蜂窝网络\"下扫描即可。eSIM会立即激活。"
+            },
+            {
+                "question": "有效期何时开始？",
+                "answer": "有效期仅在eSIM首次连接到目的地国家/地区的受支持网络时开始。"
+            },
+            {
+                "question": "我可以保留我的WhatsApp吗？",
+                "answer": "是的！您的物理SIM卡仍然活跃或可以被禁用。您的WhatsApp号码保持不变。"
+            },
+            {
+                "question": "我的手机兼容吗？",
+                "answer": "2019年以后的大多数智能手机（iPhone 11+、Google Pixel 3+、Samsung S20+）都支持eSIM。使用上面的检查器了解详情。"
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "目的地",
+        "howItWorks": "如何使用",
+        "reviews": "评论",
+        "checkData": "检查数据",
+        "cart": "购物车"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "您要去哪里旅行？",
+        "trustedBy": "受到10,000多名旅行者的信赖"
+    },
+    "featured": {
+        "deal": "优惠",
+        "days": "天",
+        "secure": "立即确保",
+        "highSpeed": "高速",
+        "throttle": "之后"
+    },
+    "destinations": {
+        "title": "探索。",
+        "subtitle": "从190多个国家中选择您的目的地。",
+        "more": "显示更多",
+        "choosePlan": "选择计划",
+        "from": "起"
+    },
+    "steps": {
+        "title": "准备。开始。出发。",
+        "step1": "选择计划",
+        "desc1": "搜索和选择。",
+        "step2": "扫描",
+        "desc2": "二维码立即激活。",
+        "step3": "开始",
+        "desc3": "无限浏览。"
+    },
+    "faq": {
+        "title": "问题。",
+        "subtitle": "您需要知道的一切"
+    },
+    "footer": {
+        "exploration": "探索",
+        "help": "帮助中心",
+        "legal": "法律",
+        "impressum": "版本说明",
+        "agb": "条款",
+        "privacy": "隐私"
+    },
+    "check": {
+        "title": "数据检查。",
+        "subtitle": "检查您的剩余数据量",
+        "label": "您的ICCID",
+        "placeholder": "例如：89852...",
+        "hint": "您可以在确认电子邮件中找到ICCID。",
+        "button": "立即检查",
+        "active": "活跃",
+        "expired": "已过期",
+        "queued": "等待中",
+        "remaining": "剩余",
+        "expiry": "到期"
+    }
+}

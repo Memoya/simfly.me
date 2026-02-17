@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - Premium Travel eSIMs | Connected Worldwide",
+        "description": "Get high-speed internet in 190+ countries with our digital eSIMs. No roaming fees, instant activation. Travel smart with Simfly.me.",
+        "keywords": [
+            "eSIM",
+            "travel",
+            "international data",
+            "roaming",
+            "travel eSIM",
+            "data plan",
+            "digital nomad"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "All",
+            "africa": "Africa",
+            "americas": "Americas",
+            "asia": "Asia",
+            "europe": "Europe",
+            "oceania": "Oceania"
+        },
+        "common": {
+            "packages": "packages",
+            "unlimited": "Unlimited",
+            "noCountriesFound": "No countries found",
+            "showMore": "Show more"
+        },
+        "cart": {
+            "title": "CART",
+            "empty": "Your cart is empty",
+            "emptySubtitle": "Ready for your next adventure?",
+            "discover": "EXPLORE NOW",
+            "total": "Total Amount",
+            "checkout": "CHECKOUT",
+            "loading": "LOADING...",
+            "secureCheckout": "Secure Checkout",
+            "remove": "Remove",
+            "checkoutError": "Checkout could not be started. Please try again later.",
+            "then": "then"
+        },
+        "compatibility": {
+            "title": "Compatibility Check",
+            "subtitle": "Ready to fly?",
+            "searchPlaceholder": "Search phone model...",
+            "popularModels": "Popular Models",
+            "compatible": "Compatible",
+            "notFound": "Model not found."
+        },
+        "defaultFaqs": [
+            {
+                "question": "How does activation work?",
+                "answer": "After purchase, you'll receive a QR code via email. Simply scan it in your phone settings under 'Cellular'. The eSIM activates instantly."
+            },
+            {
+                "question": "When does the validity period start?",
+                "answer": "The validity period starts only when the eSIM first connects to a supported network in the destination country."
+            },
+            {
+                "question": "Can I keep my WhatsApp?",
+                "answer": "Yes! Your physical SIM remains active or can be disabled. Your WhatsApp number stays unchanged."
+            },
+            {
+                "question": "Is my phone compatible?",
+                "answer": "Most smartphones from 2019 onwards (iPhone 11+, Google Pixel 3+, Samsung S20+) support eSIM. Use our checker above for details."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Destinations",
+        "howItWorks": "How it works",
+        "reviews": "Reviews",
+        "checkData": "Check Data",
+        "cart": "Cart"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Where are you traveling?",
+        "trustedBy": "Trusted by 10,000+ travelers"
+    },
+    "featured": {
+        "deal": "Deal",
+        "days": "Days",
+        "secure": "Get it now",
+        "highSpeed": "HighSpeed",
+        "throttle": "then"
+    },
+    "destinations": {
+        "title": "EXPLORE.",
+        "subtitle": "Choose your destination from over 190 countries.",
+        "more": "Show more",
+        "choosePlan": "Select Plan",
+        "from": "From"
+    },
+    "steps": {
+        "title": "READY. SET. GO.",
+        "step1": "CHOOSE PLAN",
+        "desc1": "Search & select.",
+        "step2": "SCAN",
+        "desc2": "QR Code active instantly.",
+        "step3": "START",
+        "desc3": "Surf without limits."
+    },
+    "faq": {
+        "title": "QUESTIONS.",
+        "subtitle": "Everything you need to know"
+    },
+    "footer": {
+        "exploration": "Exploration",
+        "help": "Help Center",
+        "legal": "Legal",
+        "impressum": "Imprint",
+        "agb": "Terms",
+        "privacy": "Privacy"
+    },
+    "check": {
+        "title": "DATA CHECK.",
+        "subtitle": "Check your remaining data balance",
+        "label": "Your ICCID",
+        "placeholder": "e.g. 89852...",
+        "hint": "You can find the ICCID in your confirmation email.",
+        "button": "Check now",
+        "active": "Active",
+        "expired": "Expired",
+        "queued": "Queued",
+        "remaining": "Remaining",
+        "expiry": "Expires"
+    }
+}

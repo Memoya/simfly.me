@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - Prémium Utazási eSIM | Kapcsolódva Világszerte",
+        "description": "Szerezzen gyors internetet több mint 190 országban digitális eSIM-jeinkkel. Nincs roaming díj, azonnali aktiválás.",
+        "keywords": [
+            "eSIM",
+            "utazás",
+            "nemzetközi adat",
+            "roaming",
+            "utazási eSIM",
+            "adatcsomag",
+            "digitális nomád"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "Összes",
+            "africa": "Afrika",
+            "americas": "Amerika",
+            "asia": "Ázsia",
+            "europe": "Európa",
+            "oceania": "Óceánia"
+        },
+        "common": {
+            "packages": "csomagok",
+            "unlimited": "Korlátlan",
+            "noCountriesFound": "Nem található ország",
+            "showMore": "Több megjelenítése"
+        },
+        "cart": {
+            "title": "KOSÁR",
+            "empty": "A kosarad üres",
+            "emptySubtitle": "Készen állsz a következő kalandra?",
+            "discover": "FELFEDEZÉS MOST",
+            "total": "Összesen",
+            "checkout": "FIZETÉS",
+            "loading": "BETÖLTÉS...",
+            "secureCheckout": "Biztonságos fizetés",
+            "remove": "Eltávolítás",
+            "checkoutError": "A fizetés indítása nem sikerült. Kérjük, próbálja meg később.",
+            "then": "utána"
+        },
+        "compatibility": {
+            "title": "Kompatibilitás ellenőrzése",
+            "subtitle": "Készen állsz a repülésre?",
+            "searchPlaceholder": "Telefonmodell keresése...",
+            "popularModels": "Népszerű modellek",
+            "compatible": "Kompatibilis",
+            "notFound": "A modell nem található."
+        },
+        "defaultFaqs": [
+            {
+                "question": "Hogyan működik az aktiválás?",
+                "answer": "Vásárlás után egy QR-kódot kap e-mailben. Egyszerűen olvassa be a telefon beállításaiban a „Mobilhálózat” menüpont alatt. Az eSIM azonnal aktiválódik."
+            },
+            {
+                "question": "Mikor kezdődik az érvényességi idő?",
+                "answer": "Az érvényességi idő csak akkor kezdődik el, amikor az eSIM először csatlakozik egy támogatott hálózathoz a célországban."
+            },
+            {
+                "question": "Megtarthatom a WhatsAppomat?",
+                "answer": "Igen! A fizikai SIM-kártyája aktív marad, vagy deaktiválható. A WhatsApp száma változatlan marad."
+            },
+            {
+                "question": "Kompatibilis a telefonom?",
+                "answer": "A legtöbb 2019 utáni okostelefon (iPhone 11+, Google Pixel 3+, Samsung S20+) támogatja az eSIM-et. A részletekért használja a fenti ellenőrzőt."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Célállomások",
+        "howItWorks": "Hogyan működik",
+        "reviews": "Értékelések",
+        "checkData": "Adatok ellenőrzése",
+        "cart": "Kosár"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Hová utazik?",
+        "trustedBy": "Megbízik 10 000+ utazó"
+    },
+    "featured": {
+        "deal": "Ajánlat",
+        "days": "Nap",
+        "secure": "Biztosítsa most",
+        "highSpeed": "Nagy sebesség",
+        "throttle": "után"
+    },
+    "destinations": {
+        "title": "FEDEZZE FEL.",
+        "subtitle": "Válassza ki célját több mint 190 országból.",
+        "more": "Több megjelenítése",
+        "choosePlan": "Válasszon tervet",
+        "from": "Től"
+    },
+    "steps": {
+        "title": "KÉSZEN. RAJT. INDULÁS.",
+        "step1": "VÁLASSZON TERVET",
+        "desc1": "Keresés és kiválasztás.",
+        "step2": "SZKENNELÉS",
+        "desc2": "QR-kód azonnal aktív.",
+        "step3": "INDÍTÁS",
+        "desc3": "Korl átozás nélkül böngészés."
+    },
+    "faq": {
+        "title": "KÉRDÉSEK.",
+        "subtitle": "Minden, amit tudnia kell"
+    },
+    "footer": {
+        "exploration": "Felfedezés",
+        "help": "Súgóközpont",
+        "legal": "Jogi",
+        "impressum": "Impresszum",
+        "agb": "Feltételek",
+        "privacy": "Adatvédelem"
+    },
+    "check": {
+        "title": "ADAT ELLENŐRZÉS.",
+        "subtitle": "Ellenőrizze fennmaradó adatmennyiségét",
+        "label": "Az ICCID-je",
+        "placeholder": "pl. 89852...",
+        "hint": "Az ICCID-t a megerősítő e-mailben találja.",
+        "button": "Ellenőrzés most",
+        "active": "Aktív",
+        "expired": "Lejárt",
+        "queued": "Várakozó",
+        "remaining": "Fennmaradó",
+        "expiry": "Lejárat"
+    }
+}

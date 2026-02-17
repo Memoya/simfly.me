@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - eSIMs Premium pour Voyager | Connecté Partout",
+        "description": "Obtenez internet haut débit dans plus de 190 pays avec nos eSIMs numériques. Sans frais d'itinérance, activation instantanée.",
+        "keywords": [
+            "eSIM",
+            "voyage",
+            "internet à l'étranger",
+            "itinérance",
+            "eSIM de voyage",
+            "forfait data",
+            "nomade numérique"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "Tous",
+            "africa": "Afrique",
+            "americas": "Amériques",
+            "asia": "Asie",
+            "europe": "Europe",
+            "oceania": "Océanie"
+        },
+        "common": {
+            "packages": "forfaits",
+            "unlimited": "Illimité",
+            "noCountriesFound": "Aucun pays trouvé",
+            "showMore": "Afficher plus"
+        },
+        "cart": {
+            "title": "PANIER",
+            "empty": "Votre panier est vide",
+            "emptySubtitle": "Prêt pour votre prochaine aventure ?",
+            "discover": "EXPLORER MAINTENANT",
+            "total": "Montant Total",
+            "checkout": "PAYER",
+            "loading": "CHARGEMENT...",
+            "secureCheckout": "Paiement Sécurisé",
+            "remove": "Supprimer",
+            "checkoutError": "Le paiement n'a pas pu être lancé. Veuillez réessayer plus tard.",
+            "then": "puis"
+        },
+        "compatibility": {
+            "title": "Vérification de Compatibilité",
+            "subtitle": "Prêt à décoller ?",
+            "searchPlaceholder": "Rechercher un modèle de téléphone...",
+            "popularModels": "Modèles Populaires",
+            "compatible": "Compatible",
+            "notFound": "Modèle non trouvé."
+        },
+        "defaultFaqs": [
+            {
+                "question": "Comment fonctionne l'activation ?",
+                "answer": "Après l'achat, vous recevrez un code QR par e-mail. Scannez-le simplement dans les paramètres de votre téléphone sous 'Données cellulaires'. L'eSIM s'active instantanément."
+            },
+            {
+                "question": "Quand commence la période de validité ?",
+                "answer": "La période de validité commence uniquement lorsque l'eSIM se connecte pour la première fois à un réseau pris en charge dans le pays de destination."
+            },
+            {
+                "question": "Puis-je garder mon WhatsApp ?",
+                "answer": "Oui ! Votre SIM physique reste active ou peut être désactivée. Votre numéro WhatsApp reste inchangé."
+            },
+            {
+                "question": "Mon téléphone est-il compatible ?",
+                "answer": "La plupart des smartphones depuis 2019 (iPhone 11+, Google Pixel 3+, Samsung S20+) supportent l'eSIM. Utilisez notre vérificateur ci-dessus pour plus de détails."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Destinations",
+        "howItWorks": "Comment ça marche",
+        "reviews": "Avis",
+        "checkData": "Vérifier les données",
+        "cart": "Panier"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Où voyagez-vous?",
+        "trustedBy": "Approuvé par plus de 10 000 voyageurs"
+    },
+    "featured": {
+        "deal": "Offre",
+        "days": "Jours",
+        "secure": "Sécuriser maintenant",
+        "highSpeed": "Haute vitesse",
+        "throttle": "après"
+    },
+    "destinations": {
+        "title": "DÉCOUVREZ.",
+        "subtitle": "Choisissez votre destination parmi plus de 190 pays.",
+        "more": "Afficher plus",
+        "choosePlan": "Choisir le plan",
+        "from": "À partir de"
+    },
+    "steps": {
+        "title": "PRÊT. PARTEZ. ALLEZ.",
+        "step1": "CHOISIR LE PLAN",
+        "desc1": "Rechercher et sélectionner.",
+        "step2": "SCANNER",
+        "desc2": "Code QR instantanément actif.",
+        "step3": "COMMENCER",
+        "desc3": "Naviguez sans limites."
+    },
+    "faq": {
+        "title": "QUESTIONS.",
+        "subtitle": "Tout ce que vous devez savoir"
+    },
+    "footer": {
+        "exploration": "Exploration",
+        "help": "Centre d'aide",
+        "legal": "Légal",
+        "impressum": "Mentions légales",
+        "agb": "CGU",
+        "privacy": "Confidentialité"
+    },
+    "check": {
+        "title": "VÉRIFICATION DES DONNÉES.",
+        "subtitle": "Vérifiez votre volume de données restant",
+        "label": "Votre ICCID",
+        "placeholder": "ex. 89852...",
+        "hint": "Vous trouverez l'ICCID dans votre e-mail de confirmation.",
+        "button": "Vérifier maintenant",
+        "active": "Actif",
+        "expired": "Expiré",
+        "queued": "En attente",
+        "remaining": "Restant",
+        "expiry": "Expiration"
+    }
+}

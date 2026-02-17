@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - Premium Cestovní eSIM | Připojeno Celosvětově",
+        "description": "Získejte rychlý internet ve více než 190 zemích s našimi digitálními eSIM. Bez poplatků za roaming, okamžitá aktivace.",
+        "keywords": [
+            "eSIM",
+            "cestování",
+            "mezinárodní data",
+            "roaming",
+            "cestovní eSIM",
+            "datový balíček",
+            "digitální nomád"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "Všechny",
+            "africa": "Afrika",
+            "americas": "Amerika",
+            "asia": "Asie",
+            "europe": "Evropa",
+            "oceania": "Oceánie"
+        },
+        "common": {
+            "packages": "balíčky",
+            "unlimited": "Neomezené",
+            "noCountriesFound": "Nebyly nalezeny žádné země",
+            "showMore": "Zobrazit více"
+        },
+        "cart": {
+            "title": "KOŠÍK",
+            "empty": "Váš košík je prázdný",
+            "emptySubtitle": "Jste připraveni na své další dobrodružství?",
+            "discover": "OBJEVIT NYNÍ",
+            "total": "Celková částka",
+            "checkout": "K POKLADNĚ",
+            "loading": "NAČÍTÁNÍ...",
+            "secureCheckout": "Zabezpečená platba",
+            "remove": "Odebrat",
+            "checkoutError": "Platbu se nepodařilo zahájit. Zkuste to prosím později znovu.",
+            "then": "poté"
+        },
+        "compatibility": {
+            "title": "Kontrola kompatibility",
+            "subtitle": "Připraveni k odletu?",
+            "searchPlaceholder": "Hledat model telefonu...",
+            "popularModels": "Populární modely",
+            "compatible": "Kompatibilní",
+            "notFound": "Model nenalezen."
+        },
+        "defaultFaqs": [
+            {
+                "question": "Jak funguje aktivace?",
+                "answer": "Po zakoupení obdržíte QR kód e-mailem. Stačí jej naskenovat v nastavení telefonu v sekci „Mobilní síť“. eSIM se aktivuje okamžitě."
+            },
+            {
+                "question": "Kdy začíná doba platnosti?",
+                "answer": "Doba platnosti začíná až v okamžiku, kdy se eSIM poprvé připojí k podporované síti v cílové zemi."
+            },
+            {
+                "question": "Mohu si ponechat WhatsApp?",
+                "answer": "Ano! Vaše fyzická SIM karta zůstává aktivní nebo může být deaktivována. Vaše číslo WhatsApp zůstává nezměněno."
+            },
+            {
+                "question": "Je můj telefon kompatibilní?",
+                "answer": "Většina chytrých telefonů od roku 2019 (iPhone 11+, Google Pixel 3+, Samsung S20+) podporuje eSIM. Podrobnosti naleznete v našem kontrolním nástroji výše."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Destinace",
+        "howItWorks": "Jak to funguje",
+        "reviews": "Recenze",
+        "checkData": "Zkontrolovat data",
+        "cart": "Košík"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Kam cestujete?",
+        "trustedBy": "Důvěřuje 10 000+ cestovatelů"
+    },
+    "featured": {
+        "deal": "Nabídka",
+        "days": "Dní",
+        "secure": "Zajistit nyní",
+        "highSpeed": "Vysoká rychlost",
+        "throttle": "poté"
+    },
+    "destinations": {
+        "title": "OBJEVTE.",
+        "subtitle": "Vyberte si destinaci z více než 190 zemí.",
+        "more": "Zobrazit více",
+        "choosePlan": "Vybrat plán",
+        "from": "Od"
+    },
+    "steps": {
+        "title": "PŘIPRAVENI. POZOR. START.",
+        "step1": "VYBERTE PLÁN",
+        "desc1": "Hledejte a vybírejte.",
+        "step2": "NASKENUJTE",
+        "desc2": "QR kód okamžitě aktivní.",
+        "step3": "ZAČNĚTE",
+        "desc3": "Surfujte bez omezení."
+    },
+    "faq": {
+        "title": "OTÁZKY.",
+        "subtitle": "Vše, co potřebujete vědět"
+    },
+    "footer": {
+        "exploration": "Průzkum",
+        "help": "Centrum nápovědy",
+        "legal": "Právní",
+        "impressum": "Impressum",
+        "agb": "Podmínky",
+        "privacy": "Soukromí"
+    },
+    "check": {
+        "title": "KONTROLA DAT.",
+        "subtitle": "Zkontrolujte zbývající objem dat",
+        "label": "Vaše ICCID",
+        "placeholder": "např. 89852...",
+        "hint": "ICCID najdete v potvrzovacím e-mailu.",
+        "button": "Zkontrolovat nyní",
+        "active": "Aktivní",
+        "expired": "Vypršelo",
+        "queued": "Čekající",
+        "remaining": "Zbývající",
+        "expiry": "Vypršení"
+    }
+}

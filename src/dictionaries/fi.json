@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - Premium Matka-eSIM | Yhdistetty Maailmanlaajuisesti",
+        "description": "Hanki nopea internet yli 190 maassa digitaalisilla eSIM-kortteillamme. Ei verkkovierailumaksuja, välitön aktivointi.",
+        "keywords": [
+            "eSIM",
+            "matkailu",
+            "kansainvälinen data",
+            "roaming",
+            "matka-eSIM",
+            "datapaketti",
+            "digitaalinen nomaadi"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "Kaikki",
+            "africa": "Afrikka",
+            "americas": "Amerikka",
+            "asia": "Aasia",
+            "europe": "Eurooppa",
+            "oceania": " Oseania"
+        },
+        "common": {
+            "packages": "paketit",
+            "unlimited": "Rajoittamaton",
+            "noCountriesFound": "Maita ei löytynyt",
+            "showMore": "Näytä lisää"
+        },
+        "cart": {
+            "title": "OSTOSKORI",
+            "empty": "Ostoskorisi on tyhjä",
+            "emptySubtitle": "Valmis seuraavaan seikkailuun?",
+            "discover": "TUTKI NYT",
+            "total": "Yhteensä",
+            "checkout": "KASSALLE",
+            "loading": "Ladataan...",
+            "secureCheckout": "Turvallinen maksu",
+            "remove": "Poista",
+            "checkoutError": "Maksua ei voitu aloittaa. Yritä myöhemmin uudelleen.",
+            "then": "sen jälkeen"
+        },
+        "compatibility": {
+            "title": "Yhteensopivuustarkistus",
+            "subtitle": "Valmis lentoon?",
+            "searchPlaceholder": "Hae puhelinmallia...",
+            "popularModels": "Suositut mallit",
+            "compatible": "Yhteensopiva",
+            "notFound": "Mallia ei löytynyt."
+        },
+        "defaultFaqs": [
+            {
+                "question": "Miten aktivointi toimii?",
+                "answer": "Oston jälkeen saat QR-koodin sähköpostitse. Skannaa se puhelimesi asetuksista 'Mobiiliverkon' kohdalta. eSIM aktivoituu välittömästi."
+            },
+            {
+                "question": "Milloin voimassaoloaika alkaa?",
+                "answer": "Voimassaoloaika alkaa vasta, kun eSIM yhdistää ensimmäisen kerran tuettuun verkkoon kohdemaassa."
+            },
+            {
+                "question": "Voinko säilyttää WhatsAppini?",
+                "answer": "Kyllä! Fyysinen SIM-korttisi pysyy aktiivisena tai se voidaan poistaa käytöstä. WhatsApp-numerosi pysyy samana."
+            },
+            {
+                "question": "Onko puhelimeni yhteensopiva?",
+                "answer": "Useimmat älypuhelimet vuodesta 2019 alkaen (iPhone 11+, Google Pixel 3+, Samsung S20+) tukevat eSIM-korttia. Käytä yllä olevaa tarkistustyökaluamme."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Kohteet",
+        "howItWorks": "Miten se toimii",
+        "reviews": "Arvostelut",
+        "checkData": "Tarkista data",
+        "cart": "Ostoskori"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Minne matkustat?",
+        "trustedBy": "Luottaa 10 000+ matkustajaa"
+    },
+    "featured": {
+        "deal": "Tarjous",
+        "days": "Päivää",
+        "secure": "Turvaa nyt",
+        "highSpeed": "Nopea",
+        "throttle": "jälkeen"
+    },
+    "destinations": {
+        "title": "LÖYDÄ.",
+        "subtitle": "Valitse kohde yli 190 maasta.",
+        "more": "Näytä lisää",
+        "choosePlan": "Valitse suunnitelma",
+        "from": "Alkaen"
+    },
+    "steps": {
+        "title": "VALMIINA. PAIKALLAAN. LÄHTÖ.",
+        "step1": "VALITSE SUUNNITELMA",
+        "desc1": "Hae ja valitse.",
+        "step2": "SKANNAA",
+        "desc2": "QR-koodi heti aktiivinen.",
+        "step3": "ALOITA",
+        "desc3": "Selaa rajoituksetta."
+    },
+    "faq": {
+        "title": "KYSYMYKSET.",
+        "subtitle": "Kaikki mitä sinun tarvitsee tietää"
+    },
+    "footer": {
+        "exploration": "Tutkimus",
+        "help": "Tukikeskus",
+        "legal": "Lakiasiat",
+        "impressum": "Impressum",
+        "agb": "Ehdot",
+        "privacy": "Yksityisyys"
+    },
+    "check": {
+        "title": "DATAN TARKISTUS.",
+        "subtitle": "Tarkista jäljellä oleva datamäärä",
+        "label": "ICCID-tunnuksesi",
+        "placeholder": "esim. 89852...",
+        "hint": "Löydät ICCID:n vahvistussähköpostista.",
+        "button": "Tarkista nyt",
+        "active": "Aktiivinen",
+        "expired": "Vanhentunut",
+        "queued": "Jonossa",
+        "remaining": "Jäljellä",
+        "expiry": "Vanhentuminen"
+    }
+}

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: simfly-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:/app/data/prod.db
+      - NEXT_PUBLIC_BASE_URL=http://localhost:3000
+      # Add other env vars here or use an env_file
+      # - ESIM_GO_API_KEY=${ESIM_GO_API_KEY}
+      # - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      # - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      # - RESEND_API_KEY=${RESEND_API_KEY}
+    volumes:
+      - ./data:/app/data
+      # Mount .env.local if you prefer file-based config (optional but riskier for secrets in repo)
+      # - ./.env.local:/app/.env.local

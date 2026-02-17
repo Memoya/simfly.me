@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  stripeSessionId String   @unique
+  paymentIntentId String?  @unique
+  amount          Float
+  currency        String
+  status          String // e.g., "paid", "unpaid"
+  customerEmail   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  items        OrderItem[]
+  providerSync ProviderSync?
+}
+
+model OrderItem {
+  id          String @id @default(cuid())
+  orderId     String
+  order       Order  @relation(fields: [orderId], references: [id])
+  productName String
+  quantity    Int
+  price       Float // Unit price in major currency units (e.g. 10.50 EUR)
+
+  // eSIM details
+  iccid          String?
+  matchingId     String?
+  esimGoOrderRef String?
+
+  // Status tracking
+  activationStatus String? // e.g., "ACTIVATED", "EXPIRED"
+  dataUsage        Float? // in Bytes or MB (let's say Bytes to be precise)
+  totalData        Float? // Limit in Bytes
+}
+
+model ProviderSync {
+  id      String @id @default(cuid())
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  // External IDs linking the systems
+  stripePaymentIntentId String? @unique
+  esimGoOrderIds        String? // JSON string or comma-separated list of order refs from eSIM Go
+  resendMessageId       String?
+  emailStatus           String? // "SENT", "DELIVERED", "BOUNCED"
+
+  syncStatus   String // "PENDING", "COMPLETED", "PARTIAL_FAILURE", "FAILED"
+  lastSync     DateTime @default(now())
+  errorMessage String?
+}
+
+model AdminSettings {
+  id                     String   @id @default("global")
+  lowBalanceAlertEnabled Boolean  @default(false)
+  lowBalanceThreshold    Float    @default(50.0)
+  updatedAt              DateTime @updatedAt
+}
+
+model ProductOverride {
+  id        String   @id @default(uuid())
+  sku       String   @unique
+  price     Float? // Fixed override price
+  // Or specific margins? For now, fixed price is most flexible.
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String // e.g., "PRICE_CHANGE"
+  entity    String // e.g., "Product: USA_10GB"
+  details   String? // JSON string storing old/new values or other context
+  userId    String // Identifier for the user performing the action
+  createdAt DateTime @default(now())
+}

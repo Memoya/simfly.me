@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - eSIM Premium de Călătorie | Conectat Global",
+        "description": "Obțineți internet de mare viteză în peste 190 de țări cu eSIM-urile noastre digitale. Fără taxe de roaming, activare instantanee.",
+        "keywords": [
+            "eSIM",
+            "călătorie",
+            "date internaționale",
+            "roaming",
+            "eSIM de călătorie",
+            "plan de date",
+            "nomad digital"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "Toate",
+            "africa": "Africa",
+            "americas": "Americi",
+            "asia": "Asia",
+            "europe": "Europa",
+            "oceania": "Oceania"
+        },
+        "common": {
+            "packages": "pachete",
+            "unlimited": "Nelimitat",
+            "noCountriesFound": "Nu s-au găsit țări",
+            "showMore": "Afișează mai multe"
+        },
+        "cart": {
+            "title": "COȘ",
+            "empty": "Coșul tău este gol",
+            "emptySubtitle": "Ești gata pentru următoarea ta aventură?",
+            "discover": "DESCOPERĂ ACUM",
+            "total": "Sumă totală",
+            "checkout": "FINALIZARE",
+            "loading": "SE ÎNCARCĂ...",
+            "secureCheckout": "Plată securizată",
+            "remove": "Elimină",
+            "checkoutError": "Plata nu a putut fi inițiată. Te rugăm să încerci mai târziu.",
+            "then": "apoi"
+        },
+        "compatibility": {
+            "title": "Verificare compatibilitate",
+            "subtitle": "Ești gata de decolare?",
+            "searchPlaceholder": "Caută modelul telefonului...",
+            "popularModels": "Modele populare",
+            "compatible": "Compatibil",
+            "notFound": "Modelul nu a fost găsit."
+        },
+        "defaultFaqs": [
+            {
+                "question": "Cum funcționează activarea?",
+                "answer": "După cumpărare, vei primi un cod QR prin e-mail. Scanează-l pur și simplu în setările telefonului la secțiunea „Rețea celulară”. eSIM-ul se activează instantaneu."
+            },
+            {
+                "question": "Când începe perioada de valabilitate?",
+                "answer": "Perioada de valabilitate începe doar atunci când eSIM-ul se conectează pentru prima dată la o rețea acceptată din țara de destinație."
+            },
+            {
+                "question": "Pot să-mi păstrez profilul de WhatsApp?",
+                "answer": "Da! SIM-ul tău fizic rămâne activ sau poate fi dezactivat. Numărul tău de WhatsApp rămâne neschimbat."
+            },
+            {
+                "question": "Este telefonul meu compatibil?",
+                "answer": "Majoritatea smartphone-urilor începând cu 2019 (iPhone 11+, Google Pixel 3+, Samsung S20+) acceptă eSIM. Folosește verificatorul nostru de mai sus pentru detalii."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Destinații",
+        "howItWorks": "Cum funcționează",
+        "reviews": "Recenzii",
+        "checkData": "Verifică date",
+        "cart": "Coș"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Unde călătorești?",
+        "trustedBy": "Încredere de 10.000+ călători"
+    },
+    "featured": {
+        "deal": "Ofertă",
+        "days": "Zile",
+        "secure": "Securizați acum",
+        "highSpeed": "Viteză mare",
+        "throttle": "după"
+    },
+    "destinations": {
+        "title": "DESCOPERĂ.",
+        "subtitle": "Alegeți destinația din peste 190 de țări.",
+        "more": "Afișează mai mult",
+        "choosePlan": "Alegeți planul",
+        "from": "De la"
+    },
+    "steps": {
+        "title": "PREGĂTIT. GATA. START.",
+        "step1": "ALEGEȚI PLANUL",
+        "desc1": "Căutați și selectați.",
+        "step2": "SCANAȚI",
+        "desc2": "Cod QR activ instantaneu.",
+        "step3": "ÎNCEPEȚI",
+        "desc3": "Navigați fără limite."
+    },
+    "faq": {
+        "title": "ÎNTREBĂRI.",
+        "subtitle": "Tot ce trebuie să știți"
+    },
+    "footer": {
+        "exploration": "Explorare",
+        "help": "Centru de asistență",
+        "legal": "Legal",
+        "impressum": "Impressum",
+        "agb": "Termeni",
+        "privacy": "Confidențialitate"
+    },
+    "check": {
+        "title": "VERIFICARE DATE.",
+        "subtitle": "Verificați volumul de date rămas",
+        "label": "ICCID-ul dvs.",
+        "placeholder": "ex. 89852...",
+        "hint": "Veți găsi ICCID în e-mailul de confirmare.",
+        "button": "Verificați acum",
+        "active": "Activ",
+        "expired": "Expirat",
+        "queued": "În așteptare",
+        "remaining": "Rămas",
+        "expiry": "Expirare"
+    }
+}

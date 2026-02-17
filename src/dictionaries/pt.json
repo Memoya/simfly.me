@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - eSIMs Premium para Viagens | Conectado Globalmente",
+        "description": "Obtenha internet de alta velocidade em mais de 190 países com nossos eSIMs digitais. Sem taxas de roaming, ativação instantânea.",
+        "keywords": [
+            "eSIM",
+            "viagem",
+            "dados internacionais",
+            "roaming",
+            "eSIM de viagem",
+            "plano de dados",
+            "nômade digital"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "Todos",
+            "africa": "África",
+            "americas": "Américas",
+            "asia": "Ásia",
+            "europe": "Europa",
+            "oceania": "Oceania"
+        },
+        "common": {
+            "packages": "pacotes",
+            "unlimited": "Ilimitado",
+            "noCountriesFound": "Nenhum país encontrado",
+            "showMore": "Mostrar mais"
+        },
+        "cart": {
+            "title": "CARRINHO",
+            "empty": "Seu carrinho está vazio",
+            "emptySubtitle": "Pronto para sua próxima aventura?",
+            "discover": "EXPLORAR AGORA",
+            "total": "Total",
+            "checkout": "FINALIZAR COMPRA",
+            "loading": "CARREGANDO...",
+            "secureCheckout": "Pagamento Seguro",
+            "remove": "Remover",
+            "checkoutError": "Não foi possível iniciar o pagamento. Tente novamente mais tarde.",
+            "then": "depois"
+        },
+        "compatibility": {
+            "title": "Verificação de Compatibilidade",
+            "subtitle": "Pronto para voar?",
+            "searchPlaceholder": "Pesquisar modelo de telefone...",
+            "popularModels": "Modelos Populares",
+            "compatible": "Compatível",
+            "notFound": "Modelo não encontrado."
+        },
+        "defaultFaqs": [
+            {
+                "question": "Como funciona a ativação?",
+                "answer": "Após a compra, você receberá um código QR por e-mail. Basta digitalizá-lo nas configurações do telefone em 'Celular'. O eSIM ativa instantaneamente."
+            },
+            {
+                "question": "Quando começa o período de validade?",
+                "answer": "O período de validade começa apenas quando o eSIM se conecta pela primeira vez a uma rede suportada no país de destino."
+            },
+            {
+                "question": "Posso manter meu WhatsApp?",
+                "answer": "Sim! Seu SIM físico permanece ativo ou pode ser desativado. Seu número do WhatsApp permanece inalterado."
+            },
+            {
+                "question": "Meu telefone é compatível?",
+                "answer": "A maioria dos smartphones de 2019 em diante (iPhone 11+, Google Pixel 3+, Samsung S20+) suporta eSIM. Use nosso verificador acima para detalhes."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Destinos",
+        "howItWorks": "Como funciona",
+        "reviews": "Avaliações",
+        "checkData": "Verificar dados",
+        "cart": "Carrinho"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Para onde você viaja?",
+        "trustedBy": "Confiado por mais de 10.000 viajantes"
+    },
+    "featured": {
+        "deal": "Oferta",
+        "days": "Dias",
+        "secure": "Garantir agora",
+        "highSpeed": "Alta velocidade",
+        "throttle": "depois"
+    },
+    "destinations": {
+        "title": "DESCUBRA.",
+        "subtitle": "Escolha seu destino entre mais de 190 países.",
+        "more": "Mostrar mais",
+        "choosePlan": "Escolher plano",
+        "from": "A partir de"
+    },
+    "steps": {
+        "title": "PRONTO. PREPARAR. JÁ.",
+        "step1": "ESCOLHER PLANO",
+        "desc1": "Buscar e selecionar.",
+        "step2": "ESCANEAR",
+        "desc2": "Código QR ativo instantaneamente.",
+        "step3": "COMEÇAR",
+        "desc3": "Navegue sem limites."
+    },
+    "faq": {
+        "title": "PERGUNTAS.",
+        "subtitle": "Tudo o que você precisa saber"
+    },
+    "footer": {
+        "exploration": "Exploração",
+        "help": "Centro de ajuda",
+        "legal": "Legal",
+        "impressum": "Imprensa",
+        "agb": "Termos",
+        "privacy": "Privacidade"
+    },
+    "check": {
+        "title": "VERIFICAÇÃO DE DADOS.",
+        "subtitle": "Verifique seu volume de dados restante",
+        "label": "Seu ICCID",
+        "placeholder": "ex. 89852...",
+        "hint": "Você encontrará o ICCID em seu e-mail de confirmação.",
+        "button": "Verificar agora",
+        "active": "Ativo",
+        "expired": "Expirado",
+        "queued": "Aguardando",
+        "remaining": "Restante",
+        "expiry": "Expiração"
+    }
+}

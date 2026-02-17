@@ -1,0 +1,77 @@
+{
+  "discountCodes": [],
+  "featuredDeals": [
+    {
+      "id": "094daa39-8f06-4b41-81fd-9c49db006423",
+      "productId": "esim_ULP_30D_DE_V2",
+      "country": "Germany",
+      "iso": "DE",
+      "data": "Unlimited",
+      "days": 30,
+      "price": 74.42,
+      "region": "Europe"
+    },
+    {
+      "id": "14dd6cfd-0b55-4873-8bb2-065450aae2f6",
+      "productId": "esim_100GB_30D_DE_V2",
+      "country": "Germany",
+      "iso": "DE",
+      "data": "100GB",
+      "days": 30,
+      "price": 46.13,
+      "region": "Europe"
+    },
+    {
+      "id": "3c03014b-49dc-4208-a275-765a7d00fdab",
+      "productId": "esim_2GB_15D_GR_V2",
+      "country": "Greece",
+      "iso": "GR",
+      "data": "2GB",
+      "days": 15,
+      "price": 2.21,
+      "region": "Europe"
+    },
+    {
+      "id": "a087d71d-845e-46a3-834f-2cc2a8102934",
+      "productId": "esim_ULP_3D_DZ_V2",
+      "country": "Algeria",
+      "iso": "DZ",
+      "data": "Unlimited",
+      "days": 3,
+      "price": 66.65,
+      "region": "Africa"
+    },
+    {
+      "id": "bd57a444-ca03-460f-ae47-76aade7d3ce7",
+      "productId": "esim_2GB_15D_MA_V2",
+      "country": "Morocco",
+      "iso": "MA",
+      "data": "2GB",
+      "days": 15,
+      "price": 4.01,
+      "region": "Africa"
+    },
+    {
+      "id": "c75d2643-4714-4a7f-a0af-113641ed886d",
+      "productId": "esim_UL_1D_TH_V2",
+      "country": "Thailand",
+      "iso": "TH",
+      "data": "Unlimited Lite",
+      "days": 1,
+      "price": 2.64,
+      "region": "Asia"
+    }
+  ],
+  "countryMargins": {},
+  "globalMarginPercent": 200,
+  "globalMarginFixed": 0,
+  "passwordHash": "admin123",
+  "catalogueLastUpdated": "2026-02-16T19:13:13.807Z",
+  "catalogueLastChangeCount": 0,
+  "banner": {
+    "active": true,
+    "text": "50% 50% 50% 50%",
+    "link": ""
+  },
+  "faq": []
+}

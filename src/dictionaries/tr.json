@@ -1,0 +1,131 @@
+{
+    "metadata": {
+        "title": "Simfly.me - Premium Seyahat eSIM'leri | Dünya Çapında Bağlı",
+        "description": "190'dan fazla ülkede dijital eSIM'lerimizle yüksek hızlı internet. Dolaşım ücreti yok, anında aktivasyon.",
+        "keywords": [
+            "eSIM",
+            "seyahat",
+            "uluslararası veri",
+            "roaming",
+            "seyahat eSIM",
+            "veri planı",
+            "dijital göçebe"
+        ]
+    },
+    "ui": {
+        "continents": {
+            "all": "Tümü",
+            "africa": "Afrika",
+            "americas": "Amerikalar",
+            "asia": "Asya",
+            "europe": "Avrupa",
+            "oceania": "Okyanusya"
+        },
+        "common": {
+            "packages": "paketler",
+            "unlimited": "Sınırsız",
+            "noCountriesFound": "Ülke bulunamadı",
+            "showMore": "Daha fazla göster"
+        },
+        "cart": {
+            "title": "SEPET",
+            "empty": "Sepetiniz boş",
+            "emptySubtitle": "Bir sonraki maceran için hazır mısın?",
+            "discover": "ŞİMDİ KEŞFET",
+            "total": "Toplam Tutar",
+            "checkout": "ÖDEME YAP",
+            "loading": "YÜKLENİYOR...",
+            "secureCheckout": "Güvenli Ödeme",
+            "remove": "Kaldır",
+            "checkoutError": "Ödeme başlatılamadı. Lütfen daha sonra tekrar deneyin.",
+            "then": "sonra"
+        },
+        "compatibility": {
+            "title": "Uyumluluk Kontrolü",
+            "subtitle": "Uçmaya hazır mısın?",
+            "searchPlaceholder": "Telefon modeli ara...",
+            "popularModels": "Popüler Modeller",
+            "compatible": "Uyumlu",
+            "notFound": "Model bulunamadı."
+        },
+        "defaultFaqs": [
+            {
+                "question": "Aktivasyon nasıl çalışır?",
+                "answer": "Satın aldıktan sonra e-posta ile bir QR kod alacaksınız. Telefon ayarlarınızdan 'Hücresel' bölümünde tarayın. eSIM anında aktifleşir."
+            },
+            {
+                "question": "Geçerlilik süresi ne zaman başlar?",
+                "answer": "Geçerlilik süresi, eSIM hedef ülkede desteklenen bir ağa ilk kez bağlandığında başlar."
+            },
+            {
+                "question": "WhatsApp'ımı koruyabilir miyim?",
+                "answer": "Evet! Fiziksel SIM'iniz aktif kalır veya devre dışı bırakılabilir. WhatsApp numaranız değişmeden kalır."
+            },
+            {
+                "question": "Telefonum uyumlu mu?",
+                "answer": "2019'dan itibaren çoğu akıllı telefon (iPhone 11+, Google Pixel 3+, Samsung S20+) eSIM'i destekler. ayrıntılar için yukarıdaki kontrol aracımızı kullanın."
+            }
+        ]
+    },
+    "nav": {
+        "destinations": "Destinasyonlar",
+        "howItWorks": "Nasıl çalışır",
+        "reviews": "Yorumlar",
+        "checkData": "Verileri kontrol et",
+        "cart": "Sepet"
+    },
+    "hero": {
+        "title": "Global",
+        "subtitle": "Connected.",
+        "searchPlaceholder": "Nereye seyahat ediyorsun?",
+        "trustedBy": "10.000+ gezgin tarafından güvenilir"
+    },
+    "featured": {
+        "deal": "Fırsat",
+        "days": "Gün",
+        "secure": "Şimdi güvenli",
+        "highSpeed": "Yüksek Hız",
+        "throttle": "sonra"
+    },
+    "destinations": {
+        "title": "KEŞFEDİN.",
+        "subtitle": "190'dan fazla ülke arasından destinasyonunuzu seçin.",
+        "more": "Daha fazla göster",
+        "choosePlan": "Plan seç",
+        "from": "İtibaren"
+    },
+    "steps": {
+        "title": "HAZIR. SET. BAŞLA.",
+        "step1": "PLAN SEÇ",
+        "desc1": "Ara ve seç.",
+        "step2": "TARA",
+        "desc2": "QR kodu anında aktif.",
+        "step3": "BAŞLA",
+        "desc3": "Sınırsız gezin."
+    },
+    "faq": {
+        "title": "SORULAR.",
+        "subtitle": "Bilmeniz gereken her şey"
+    },
+    "footer": {
+        "exploration": "Keşif",
+        "help": "Yardım Merkezi",
+        "legal": "Yasal",
+        "impressum": "Künye",
+        "agb": "Şartlar",
+        "privacy": "Gizlilik"
+    },
+    "check": {
+        "title": "VERİ KONTROLÜ.",
+        "subtitle": "Kalan veri hacminizi kontrol edin",
+        "label": "ICCID'niz",
+        "placeholder": "örn. 89852...",
+        "hint": "ICCID'yi onay e-postanızda bulacaksınız.",
+        "button": "Şimdi kontrol et",
+        "active": "Aktif",
+        "expired": "Süresi dolmuş",
+        "queued": "Beklemede",
+        "remaining": "Kalan",
+        "expiry": "Son kullanma"
+    }
+}
