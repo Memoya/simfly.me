@@ -43,21 +43,36 @@ export default function AGB() {
                     {/* Content Section */}
                     <div className="space-y-16">
                         <section className="space-y-8">
-                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">1. Geltungsbereich</h2>
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">1. Geltungsbereich & Vertragspartner</h2>
                             <div className="text-black/60 font-bold leading-relaxed space-y-4">
-                                <p>Die nachfolgenden Geschäftsbedingungen gelten für alle Verträge, die Sie mit uns als Anbieter über die Internetseite SIMFLY.ME schließen.</p>
+                                <p>Die nachfolgenden Geschäftsbedingungen gelten für alle Verträge, die Sie mit uns (Mehmet Bas, August-Bebel-Str. 1, 63477 Maintal) als Anbieter über die Internetseite SIMFLY.ME schließen.</p>
                             </div>
                         </section>
 
                         <section className="space-y-8">
-                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">2. Leistungsbeschreibung</h2>
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">2. Vertragsschluss</h2>
                             <div className="text-black/60 font-bold leading-relaxed space-y-4">
-                                <p>Simfly bietet digitale eSIM-Profile für mobile Datenverbindungen weltweit an. Da es sich um digitale Inhalte handelt, erfolgt die Lieferung unmittelbar nach Zahlungseingang per E-Mail oder App-QR-Code.</p>
+                                <p>Mit Einstellung der Produkte in den Online-Shop geben wir ein verbindliches Angebot zum Vertragsschluss über diese Artikel ab. Der Vertrag kommt zustande, indem Sie durch Anklicken des Bestellbuttons das Angebot über die im Warenkorb enthaltenen Waren annehmen. Unmittelbar nach dem Absenden der Bestellung erhalten Sie noch einmal eine Bestätigung per E-Mail.</p>
                             </div>
                         </section>
 
                         <section className="space-y-8">
-                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">3. Widerrufsrecht für digitale Inhalte</h2>
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">3. Preise & Zahlung</h2>
+                            <div className="text-black/60 font-bold leading-relaxed space-y-4">
+                                <p>Die auf den Produktseiten genannten Preise enthalten die gesetzliche Mehrwertsteuer und sonstige Preisbestandteile (sofern anfallend). Aufgrund der Kleinunternehmerregelung gem. § 19 UStG weisen wir keine Umsatzsteuer aus.</p>
+                                <p>Die Zahlung erfolgt wahlweise per Kreditkarte, Apple Pay, Google Pay oder Stripe Link. Die Zahlung ist unmittelbar mit Vertragsschluss fällig.</p>
+                            </div>
+                        </section>
+
+                        <section className="space-y-8">
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">4. Lieferung & Leistung</h2>
+                            <div className="text-black/60 font-bold leading-relaxed space-y-4">
+                                <p>Simfly bietet digitale eSIM-Profile an. Die Lieferung erfolgt ausschließlich digital per E-Mail oder Anzeige im Browser (QR-Code). Es fallen keine Versandkosten an.</p>
+                            </div>
+                        </section>
+
+                        <section className="space-y-8">
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">5. Widerrufsrecht für digitale Inhalte</h2>
                             <div className="p-10 bg-black/5 rounded-[3rem] space-y-4 border border-black/5 shadow-soft">
                                 <p className="font-black uppercase tracking-widest text-xs text-black">Besonderer Hinweis zum Erlöschen des Widerrufsrechts</p>
                                 <p className="text-black/80 text-sm leading-relaxed font-black">
@@ -70,6 +85,21 @@ export default function AGB() {
                                 <p className="text-black/80 text-sm leading-relaxed mt-4">
                                     Da die Bereitstellung des QR-Codes unmittelbar nach Kauf erfolgt, stimmen Sie beim Kauf ausdrücklich dem sofortigen Beginn der Vertragserfüllung und dem damit verbundenen Erlöschen des Widerrufsrechts zu.
                                 </p>
+                            </div>
+                        </section>
+
+                        <section className="space-y-8">
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">6. Gewährleistung & Haftung</h2>
+                            <div className="text-black/60 font-bold leading-relaxed space-y-4">
+                                <p>Es gilt das gesetzliche Mängelhaftungsrecht. Für Ansprüche aufgrund von Schäden, die durch uns, unsere gesetzlichen Vertreter oder Erfüllungsgehilfen verursacht wurden, haften wir stets unbeschränkt bei Verletzung des Lebens, des Körpers oder der Gesundheit.</p>
+                            </div>
+                        </section>
+
+                        <section className="space-y-8">
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">7. Streitbeilegung</h2>
+                            <div className="text-black/60 font-bold leading-relaxed space-y-4">
+                                <p>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr" className="underline">https://ec.europa.eu/consumers/odr</a>.</p>
+                                <p>Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
                             </div>
                         </section>
                     </div>
