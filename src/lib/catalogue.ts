@@ -39,50 +39,67 @@ export async function updateCatalogue(): Promise<{ success: boolean; count: numb
     }
 
     try {
-        console.log('[CATALOGUE] Fetching from eSIM-Go v2.2 API...');
+        console.log('[CATALOGUE] Fetching from eSIM-Go v2.4 API (Full Pagination)...');
         const startTime = Date.now();
-        const response = await fetch(`https://api.esim-go.com/v2.2/catalogue?perPage=5000`, {
-            headers: {
-                'X-API-Key': apiKey,
-                'Accept': 'application/json'
+        let allBundles: any[] = [];
+        let page = 0;
+        let totalPages = 1;
+        const perPage = 1000; // Smaller chunks are safer
+
+        do {
+            console.log(`[CATALOGUE] Fetching page ${page + 1}...`);
+            const response = await fetch(`https://api.esim-go.com/v2.4/catalogue?perPage=${perPage}&page=${page}`, {
+                headers: {
+                    'X-API-Key': apiKey,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                // If one page fails, we abort to avoid partial state confusion
+                throw new Error(`API Error on page ${page + 1}: ${response.status} ${errorText}`);
             }
-        });
 
-        console.log(`[CATALOGUE] API Response status: ${response.status} (${Date.now() - startTime}ms)`);
+            const data = await response.json();
+            const bundles = data.bundles || [];
+            allBundles = [...allBundles, ...bundles];
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`[CATALOGUE] API Error:`, errorText);
-            return { success: false, count: 0, changes: 0, error: `API Error ${response.status}` };
-        }
+            // Update pagination info locally
+            if (data.totalPages) {
+                totalPages = data.totalPages;
+            } else if (data.pages) {
+                totalPages = data.pages;
+            } else {
+                // Fallback if API doesn't send totalPages in v2.4 (some versions differ)
+                // If we got full page, assume there might be more
+                totalPages = bundles.length < perPage ? page + 1 : page + 2;
+            }
 
-        const data = await response.json();
-        const allBundles: any[] = data.bundles || [];
-        console.log(`[CATALOGUE] Received ${allBundles.length} bundles from API`);
+            console.log(`[CATALOGUE] Page ${page + 1} done. Got ${bundles.length} items. Total so far: ${allBundles.length}`);
+            page++;
+
+        } while (page < totalPages);
+
+
+        console.log(`[CATALOGUE] Total bundles fetched: ${allBundles.length} in ${Date.now() - startTime}ms`);
 
         if (allBundles.length === 0) {
             return { success: false, count: 0, changes: 0, error: 'Empty catalogue received' };
         }
 
-        // Filter for active bundles
-        // Import everything that looks valid (has name and price)
+        // Filter: Import everything valid
         const activeBundles = allBundles.filter((b: any) =>
             b.name && b.price > 0
         );
         console.log(`[CATALOGUE] Found ${activeBundles.length} active bundles (All valid)`);
 
         // Update DB
-        // We will upsert each one. This might be slow for 1000 items but robust.
-        // Prisma createMany doesn't support upsert usually.
-        // We can use a transaction or just parallel promises.
-
-        // Track changes is hard with upsert unless we fetch first.
-        // For now, we assume "changes" = activeBundles.length for simplicity or just 0.
-
         let successCount = 0;
-
-        // Batch processing to avoid connection pool exhaustion
         const BATCH_SIZE = 50;
+
+        // We wipe nothing, we just upsert. Old products remain (maybe verify if we should delete old ones? User asked for stability, upsert is safest).
+
         for (let i = 0; i < activeBundles.length; i += BATCH_SIZE) {
             const batch = activeBundles.slice(i, i + BATCH_SIZE);
             await Promise.all(batch.map(async (b: any) => {
@@ -94,11 +111,7 @@ export async function updateCatalogue(): Promise<{ success: boolean; count: numb
                             price: b.price,
                             currency: b.currency || 'USD',
                             dataAmount: b.dataAmount, // MB
-                            duration: typeof b.duration === 'string' ? parseInt(b.duration) : b.duration, // extract int?
-                            // duration field in DB is Int. API duration is often number (24) or string ("7 Days").
-                            // We need to parse it carefully or change DB schema to String.
-                            // Schema has Int.
-
+                            duration: typeof b.duration === 'string' ? parseInt(b.duration) : b.duration,
                             countries: b.countries || [],
                             groups: b.groups || [],
                             billingType: b.billingType,
@@ -148,7 +161,8 @@ export async function updateCatalogue(): Promise<{ success: boolean; count: numb
                     details: JSON.stringify({
                         bundlesCount: successCount,
                         timestamp: new Date().toISOString(),
-                        groupsFound: groupStats // New: Save group breakdown
+                        groupsFound: groupStats,
+                        apiVersion: 'v2.4' // Log version
                     })
                 }
             });
