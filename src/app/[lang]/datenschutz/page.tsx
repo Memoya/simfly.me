@@ -61,7 +61,17 @@ export default function Datenschutz() {
                         </section>
 
                         <section className="space-y-8">
-                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">3. Hosting & Zahlungen</h2>
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">3. Hosting</h2>
+                            <div className="space-y-4 text-black/60 font-medium leading-relaxed">
+                                <p className="text-lg font-black text-black">Vercel</p>
+                                <p>Wir hosten unsere Website bei Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA.</p>
+                                <p>Der Anbieter ist ein amerikanisches Unternehmen. Es wurde ein Vertrag über Auftragsverarbeitung (AVV) bzw. Standardvertragsklauseln (SCC) geschlossen, um die Einhaltung des europäischen Datenschutzniveaus zu gewährleisten.</p>
+                                <p>Beim Besuch unserer Website erfasst Vercel verschiedene Logfiles inklusive Ihrer IP-Adressen.</p>
+                            </div>
+                        </section>
+
+                        <section className="space-y-8">
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">4. Zahlungsabwicklung</h2>
                             <div className="space-y-8">
                                 <div className="p-10 bg-black/[0.03] rounded-[3rem] space-y-4">
                                     <p className="font-black uppercase tracking-widest text-xs">Stripe Payments</p>
@@ -69,12 +79,22 @@ export default function Datenschutz() {
                                         Wir bieten die Möglichkeit an, den Zahlungsvorgang über den Zahlungsdienstleister Stripe (Stripe Payments Europe Ltd, 1 Grand Canal Street Lower, Grand Canal Dock, Dublin, Irland) abzuwickeln. Dies entspricht unserem berechtigten Interesse, eine effiziente und sichere Zahlungsmethode anzubieten (Art. 6 Abs. 1 lit. b DSGVO).
                                     </p>
                                 </div>
-                                <div className="p-10 bg-black/[0.03] rounded-[3rem] space-y-4">
-                                    <p className="font-black uppercase tracking-widest text-xs">Analysis Tools</p>
-                                    <p className="text-black/60 text-sm leading-relaxed font-bold">
-                                        Diese Website nutzt aus Sicherheitsgründen und zum Schutz der Übertragung vertraulicher Inhalte eine SSL- bzw. TLS-Verschlüsselung.
-                                    </p>
-                                </div>
+                            </div>
+                        </section>
+
+                        <section className="space-y-8">
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">5. Server-Log-Dateien</h2>
+                            <div className="space-y-4 text-black/60 font-medium leading-relaxed">
+                                <p>Der Provider der Seiten erhebt und speichert automatisch Informationen in so genannten Server-Log-Dateien, die Ihr Browser automatisch an uns übermittelt. Dies sind:</p>
+                                <ul className="list-disc pl-5 space-y-2">
+                                    <li>Browsertyp und Browserversion</li>
+                                    <li>Verwendetes Betriebssystem</li>
+                                    <li>Referrer URL</li>
+                                    <li>Hostname des zugreifenden Rechners</li>
+                                    <li>Uhrzeit der Serveranfrage</li>
+                                    <li>IP-Adresse</li>
+                                </ul>
+                                <p>Eine Zusammenführung dieser Daten mit anderen Datenquellen wird nicht vorgenommen. Grundlage für die Datenverarbeitung ist Art. 6 Abs. 1 lit. f DSGVO, der die Verarbeitung von Daten zur Erfüllung eines Vertrags oder vorvertraglicher Maßnahmen gestattet.</p>
                             </div>
                         </section>
                     </div>

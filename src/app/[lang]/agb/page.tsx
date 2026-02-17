@@ -57,11 +57,18 @@ export default function AGB() {
                         </section>
 
                         <section className="space-y-8">
-                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">3. Widerrufsrecht</h2>
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">3. Widerrufsrecht für digitale Inhalte</h2>
                             <div className="p-10 bg-black/5 rounded-[3rem] space-y-4 border border-black/5 shadow-soft">
-                                <p className="font-black uppercase tracking-widest text-xs text-black">Besonderer Hinweis</p>
+                                <p className="font-black uppercase tracking-widest text-xs text-black">Besonderer Hinweis zum Erlöschen des Widerrufsrechts</p>
                                 <p className="text-black/80 text-sm leading-relaxed font-black">
-                                    Ihr Widerrufsrecht erlischt vorzeitig, wenn wir mit der Ausführung des Vertrages (Bereitstellung des QR-Codes) begonnen haben, nachdem Sie ausdrücklich zugestimmt haben und gleichzeitig Ihre Kenntnis davon bestätigt haben, dass Sie Ihr Widerrufsrecht mit Beginn der Vertragsausführung verlieren.
+                                    Ihr Widerrufsrecht erlischt bei einem Vertrag über die Lieferung von nicht auf einem körperlichen Datenträger befindlichen digitalen Inhalten (hier: eSIM QR-Code) auch dann, wenn wir mit der Ausführung des Vertrags begonnen haben, nachdem Sie
+                                </p>
+                                <ol className="list-decimal pl-5 text-sm font-bold text-black/60 space-y-2">
+                                    <li>ausdrücklich zugestimmt haben, dass wir mit der Ausführung des Vertrags vor Ablauf der Widerrufsfrist beginnen, und</li>
+                                    <li>Ihre Kenntnis davon bestätigt haben, dass Sie durch Ihre Zustimmung mit Beginn der Ausführung des Vertrags Ihr Widerrufsrecht verlieren.</li>
+                                </ol>
+                                <p className="text-black/80 text-sm leading-relaxed mt-4">
+                                    Da die Bereitstellung des QR-Codes unmittelbar nach Kauf erfolgt, stimmen Sie beim Kauf ausdrücklich dem sofortigen Beginn der Vertragserfüllung und dem damit verbundenen Erlöschen des Widerrufsrechts zu.
                                 </p>
                             </div>
                         </section>

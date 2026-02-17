@@ -648,18 +648,22 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                     {dictionary.check.title.replace('.', '')}
                   </Link>
                   <a href="#destinations" className="hover:text-black transition-colors uppercase tracking-widest">{dictionary.nav.destinations}</a>
-                  <Link href="/help" className="hover:text-black transition-colors uppercase tracking-widest">{dictionary.footer.help}</Link>
+                  <a href={`mailto:hello@simfly.me`} className="hover:text-black transition-colors uppercase tracking-widest">hello@simfly.me</a>
                 </nav>
               </div>
               <div className="space-y-6">
                 <h4 className="text-[10px] font-black tracking-[0.4em] uppercase text-black">Compliance</h4>
                 <nav className="flex flex-col gap-4 text-xs font-black text-black/40">
-                  <Link href="/impressum" className="hover:text-black transition-colors uppercase tracking-widest">{dictionary.footer.impressum}</Link>
-                  <Link href="/agb" className="hover:text-black transition-colors uppercase tracking-widest">{dictionary.footer.agb}</Link>
-                  <Link href="/datenschutz" className="hover:text-black transition-colors uppercase tracking-widest">{dictionary.footer.privacy}</Link>
+                  <Link href={`/${lang}/impressum`} className="hover:text-black transition-colors uppercase tracking-widest">{dictionary.footer.impressum}</Link>
+                  <Link href={`/${lang}/agb`} className="hover:text-black transition-colors uppercase tracking-widest">{dictionary.footer.agb}</Link>
+                  <Link href={`/${lang}/datenschutz`} className="hover:text-black transition-colors uppercase tracking-widest">{dictionary.footer.privacy}</Link>
                 </nav>
               </div>
             </div>
+          </div>
+
+          <div className="mb-10 text-[10px] font-bold text-black/30 max-w-2xl">
+            *Gemäß § 19 UStG wird keine Umsatzsteuer erhoben.
           </div>
 
           <div className="pt-12 border-t border-black/5 flex flex-col md:flex-row justify-between items-center gap-10">

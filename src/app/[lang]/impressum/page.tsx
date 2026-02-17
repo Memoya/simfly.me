@@ -46,9 +46,9 @@ export default function Impressum() {
                             <section className="space-y-6">
                                 <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">Betreiber</h2>
                                 <div className="space-y-1 font-bold text-lg leading-tight">
-                                    <p>[Dein Vorname] [Dein Nachname]</p>
-                                    <p>[Deine Straße HouseNR]</p>
-                                    <p>[PLZ] [Deine Stadt]</p>
+                                    <p>Mehmet Bas</p>
+                                    <p>August-Bebel-Str. 1</p>
+                                    <p>63477 Maintal</p>
                                     <p>Deutschland</p>
                                 </div>
                             </section>
@@ -60,13 +60,13 @@ export default function Impressum() {
                                         <div className="w-10 h-10 rounded-2xl bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
                                             <Mail className="w-4 h-4" />
                                         </div>
-                                        <p className="font-bold">hello@simfly.me</p>
+                                        <a href="mailto:hello@simfly.me" className="font-bold hover:underline">hello@simfly.me</a>
                                     </div>
-                                    <div className="flex items-center gap-4 group cursor-pointer">
-                                        <div className="w-10 h-10 rounded-2xl bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
+                                    <div className="flex items-center gap-4 group">
+                                        <div className="w-10 h-10 rounded-2xl bg-black/5 flex items-center justify-center">
                                             <MapPin className="w-4 h-4" />
                                         </div>
-                                        <p className="font-bold">[Telefonnummer / Optional]</p>
+                                        <p className="font-bold text-black/40">Firmensitz: Maintal</p>
                                     </div>
                                 </div>
                             </section>
@@ -74,10 +74,14 @@ export default function Impressum() {
 
                         <div className="space-y-12">
                             <section className="space-y-6">
-                                <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">Rechtlich</h2>
-                                <div className="space-y-4 font-bold text-sm text-black/40">
-                                    <p>Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz: [DE XXXXXXXXX]</p>
-                                    <p>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV: [Dein Name]</p>
+                                <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">Rechtlich & Steuern</h2>
+                                <div className="space-y-4 font-bold text-sm text-black">
+                                    <p className="p-4 bg-black/5 rounded-2xl border border-black/5">
+                                        Als Kleinunternehmer im Sinne von § 19 Abs. 1 UStG wird keine Umsatzsteuer berechnet.
+                                    </p>
+                                    <div className="text-black/40 space-y-2">
+                                        <p>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV: Mehmet Bas</p>
+                                    </div>
                                 </div>
                             </section>
 

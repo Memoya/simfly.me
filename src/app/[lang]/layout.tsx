@@ -12,7 +12,7 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const params = await props.params;
   const lang = params.lang as Locale;
-  const dict = await getDictionary(lang);
+  // const dict = await getDictionary(lang); // dict usage replaced by hardcoded generic seo for now or mix
 
   const baseUrl = 'https://simfly.me';
 
@@ -25,14 +25,18 @@ export async function generateMetadata(props: {
     languages[locale] = `${baseUrl}/${locale}`;
   });
 
+  const title = "Simfly.me | Premium Reise-eSIMs – Grenzenlos verbunden";
+  const description = "Günstige Reise-eSIMs für Thailand, USA, Türkei & 190+ Länder. Sofortige Aktivierung via QR-Code. Kein SIM-Karten-Wechsel nötig.";
+  const keywords = ["eSIM", "Reise-SIM", "Ausland Internet", "simfly", "günstige eSIM Thailand", "eSIM USA"];
+
   return {
-    title: dict.metadata.title,
-    description: dict.metadata.description,
-    keywords: dict.metadata.keywords,
+    title: title,
+    description: description,
+    keywords: keywords,
     authors: [{ name: "Simfly.me Team" }],
     openGraph: {
-      title: dict.metadata.title,
-      description: dict.metadata.description,
+      title: title,
+      description: description,
       type: "website",
       locale: LANG_TO_OG_LOCALE[lang],
       siteName: "Simfly.me",
@@ -40,8 +44,8 @@ export async function generateMetadata(props: {
     },
     twitter: {
       card: "summary_large_image",
-      title: dict.metadata.title,
-      description: dict.metadata.description,
+      title: title,
+      description: description,
     },
     robots: {
       index: true,
@@ -51,7 +55,7 @@ export async function generateMetadata(props: {
       google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || '',
     },
     alternates: {
-      canonical: `${baseUrl}/${lang}`,
+      canonical: `${baseUrl}/de`, // User requested fixed canonical to /de
       languages,
     },
   };
