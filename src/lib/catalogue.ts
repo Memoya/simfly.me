@@ -65,10 +65,11 @@ export async function updateCatalogue(): Promise<{ success: boolean; count: numb
         }
 
         // Filter for active bundles
+        // Import everything that looks valid (has name and price)
         const activeBundles = allBundles.filter((b: any) =>
-            b.groups && b.groups.includes('Standard Fixed')
+            b.name && b.price > 0
         );
-        console.log(`[CATALOGUE] Found ${activeBundles.length} active Standard Fixed bundles`);
+        console.log(`[CATALOGUE] Found ${activeBundles.length} active bundles (All valid)`);
 
         // Update DB
         // We will upsert each one. This might be slow for 1000 items but robust.
@@ -128,6 +129,15 @@ export async function updateCatalogue(): Promise<{ success: boolean; count: numb
 
         console.log(`[CATALOGUE] Successfully synced ${successCount} products to DB`);
 
+        // Calculate group statistics for the Audit Log
+        const groupStats: Record<string, number> = {};
+        activeBundles.forEach((b: any) => {
+            const groups = b.groups || ['No Group'];
+            groups.forEach((g: string) => {
+                groupStats[g] = (groupStats[g] || 0) + 1;
+            });
+        });
+
         // Audit log
         try {
             await prisma.auditLog.create({
@@ -137,7 +147,8 @@ export async function updateCatalogue(): Promise<{ success: boolean; count: numb
                     userId: 'admin',
                     details: JSON.stringify({
                         bundlesCount: successCount,
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
+                        groupsFound: groupStats // New: Save group breakdown
                     })
                 }
             });

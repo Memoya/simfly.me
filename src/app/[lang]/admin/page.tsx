@@ -40,7 +40,7 @@ export default function AdminPage() {
     const [resendingEmail, setResendingEmail] = useState(false);
 
     // Pagination & Sort
-    const [pagination, setPagination] = useState({ page: 0, totalPages: 1 });
+    const [pagination, setPagination] = useState({ page: 0, totalPages: 1, totalItems: 0 });
     const [search, setSearch] = useState('');
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
 
@@ -161,7 +161,11 @@ export default function AdminPage() {
                 setRawProducts(data);
             } else {
                 setRawProducts(data.products || []);
-                setPagination({ page: data.page, totalPages: data.totalPages || 10 });
+                setPagination({
+                    page: data.page,
+                    totalPages: data.totalPages || 10,
+                    totalItems: data.total || 0
+                });
             }
         }
     };
@@ -908,7 +912,12 @@ export default function AdminPage() {
                 {activeTab === 'calculator' && (
                     <div>
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-navy">Gewinn-Kalkulator</h2>
+                            <div className="flex items-center gap-4">
+                                <h2 className="text-2xl font-bold text-navy">Gewinn-Kalkulator</h2>
+                                <span className="text-sm font-bold bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                                    {pagination.totalItems} Produkte
+                                </span>
+                            </div>
                             <div className="flex gap-2">
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
