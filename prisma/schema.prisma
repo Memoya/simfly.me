@@ -62,10 +62,24 @@ model ProviderSync {
 }
 
 model AdminSettings {
-  id                     String   @id @default("global")
-  lowBalanceAlertEnabled Boolean  @default(false)
-  lowBalanceThreshold    Float    @default(50.0)
-  updatedAt              DateTime @updatedAt
+  id                     String  @id @default("global")
+  lowBalanceAlertEnabled Boolean @default(false)
+  lowBalanceThreshold    Float   @default(50.0)
+
+  // Margins
+  globalMarginPercent Float @default(0)
+  globalMarginFixed   Float @default(0)
+  countryMargins      Json? // Stores region -> { percent, fixed } map
+
+  // Marketing & Sales
+  discountCodes Json? // List of discount codes
+  featuredDeals Json? // List of featured deals
+  banner        Json? // Banner config { active, text, link }
+
+  // Content
+  faq Json? // List of FAQs
+
+  updatedAt DateTime @updatedAt
 }
 
 model ProductOverride {
@@ -84,4 +98,26 @@ model AuditLog {
   details   String? // JSON string storing old/new values or other context
   userId    String // Identifier for the user performing the action
   createdAt DateTime @default(now())
+}
+
+model Product {
+  id          String  @id // Use bundle name as ID
+  name        String
+  description String?
+
+  price    Float // Cost price
+  currency String @default("USD")
+
+  dataAmount Int? // MB or raw value
+  duration   Int? // Duration in hours/days
+
+  countries Json? // List of countries
+  groups    Json? // List of groups
+
+  // Metadata
+  billingType String?
+  profileName String?
+  imageUrl    String?
+
+  updatedAt DateTime @updatedAt
 }

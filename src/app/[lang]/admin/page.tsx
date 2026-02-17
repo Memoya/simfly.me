@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Lock, Save, DollarSign, Percent, Tag, Globe, ShoppingCart, RefreshCw, Trash2, Plus, Calculator, Search, ArrowUpDown, ArrowUp, ArrowDown, FileText, ChevronRight, X, Mail } from 'lucide-react';
+import { Lock, Save, DollarSign, Percent, Tag, Globe, ShoppingCart, RefreshCw, Trash2, Plus, Calculator, Search, ArrowUpDown, ArrowUp, ArrowDown, FileText, ChevronRight, X, Mail, Users, ShieldAlert, Download } from 'lucide-react';
 import { AdminSettings, DiscountCode, FAQItem, FeaturedDeal } from '@/types';
 import { applyMargin } from '@/lib/settings-shared';
 import PackageModal from '@/components/PackageModal';
 import AlertSettings from '@/components/admin/AlertSettings';
 import PriceEditor from '@/components/admin/PriceEditor';
 
-type Tab = 'overview' | 'general' | 'countries' | 'discounts' | 'orders' | 'calculator' | 'content';
+type Tab = 'overview' | 'general' | 'countries' | 'discounts' | 'orders' | 'calculator' | 'content' | 'customers' | 'audit';
 
 export default function AdminPage() {
     const [password, setPassword] = useState('');
@@ -22,6 +22,8 @@ export default function AdminPage() {
         faq: []
     });
     const [orders, setOrders] = useState<any[]>([]);
+    const [customers, setCustomers] = useState<any[]>([]);
+    const [auditLogs, setAuditLogs] = useState<any[]>([]);
     const [rawProducts, setRawProducts] = useState<any[]>([]);
     const [products, setProducts] = useState<any[]>([]); // All products for dropdown
     const [loading, setLoading] = useState(false);
@@ -108,6 +110,20 @@ export default function AdminPage() {
         }
     };
 
+    const fetchCustomers = async () => {
+        const res = await fetch('/api/admin/customers', {
+            headers: { 'Authorization': `Bearer ${password}` }
+        });
+        if (res.ok) setCustomers(await res.json());
+    };
+
+    const fetchAuditLogs = async () => {
+        const res = await fetch('/api/admin/audit', {
+            headers: { 'Authorization': `Bearer ${password}` }
+        });
+        if (res.ok) setAuditLogs(await res.json());
+    };
+
     const fetchStats = async () => {
         const res = await fetch('/api/admin/stats', {
             headers: { 'Authorization': `Bearer ${password}` }
@@ -170,6 +186,8 @@ export default function AdminPage() {
                 fetchBalance();
             }
             if (activeTab === 'orders') fetchOrders();
+            if (activeTab === 'customers') fetchCustomers();
+            if (activeTab === 'audit') fetchAuditLogs();
             if (activeTab === 'content') fetchProductsForDeals();
             if (activeTab === 'calculator') {
                 const timer = setTimeout(() => {
@@ -366,7 +384,9 @@ export default function AdminPage() {
                             { id: 'countries', icon: Globe, label: 'Länder-Preise' },
                             { id: 'discounts', icon: Tag, label: 'Gutscheine' },
                             { id: 'content', icon: FileText, label: 'CMS / Inhalte' },
+                            { id: 'customers', icon: Users, label: 'Kunden (CRM)' },
                             { id: 'orders', icon: ShoppingCart, label: 'Bestellungen' },
+                            { id: 'audit', icon: ShieldAlert, label: 'Audit Log' },
                             { id: 'calculator', icon: Calculator, label: 'Gewinn-Rechner' },
                         ].map((item) => (
                             <button
@@ -1164,6 +1184,90 @@ export default function AdminPage() {
                                 </button>
                             ))}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'customers' && (
+                <div>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-navy">Kunden (CRM)</h2>
+                        <button
+                            onClick={() => {
+                                const csv = 'Email,Total Spend,Orders,Last Order\n' + customers.map(c => `${c.email},${c.totalSpend},${c.orders},${c.lastOrderDate}`).join('\n');
+                                const blob = new Blob([csv], { type: 'text/csv' });
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'customers.csv';
+                                a.click();
+                            }}
+                            className="bg-electric text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-600"
+                        >
+                            <Download className="w-4 h-4" /> Export CSV
+                        </button>
+                    </div>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
+                                <tr>
+                                    <th className="p-4">Email</th>
+                                    <th className="p-4">Anzahl Bestellungen</th>
+                                    <th className="p-4">Gesamtwert (LTV)</th>
+                                    <th className="p-4">Letzte Bestellung</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {customers.map((c, i) => (
+                                    <tr key={i} className="hover:bg-gray-50">
+                                        <td className="p-4 font-bold text-navy">{c.email}</td>
+                                        <td className="p-4">{c.orders}x</td>
+                                        <td className="p-4 font-bold text-green-600">
+                                            {new Intl.NumberFormat('de-DE', { style: 'currency', currency: c.currency || 'EUR' }).format(c.totalSpend)}
+                                        </td>
+                                        <td className="p-4 text-gray-500">{new Date(c.lastOrderDate).toLocaleDateString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {customers.length === 0 && <p className="p-8 text-center text-gray-400">Keine Kunden gefunden.</p>}
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'audit' && (
+                <div>
+                    <h2 className="text-2xl font-bold mb-6 text-navy">Audit Log</h2>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
+                                <tr>
+                                    <th className="p-4">Zeitpunkt</th>
+                                    <th className="p-4">User</th>
+                                    <th className="p-4">Aktion</th>
+                                    <th className="p-4">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {auditLogs.map((log) => (
+                                    <tr key={log.id} className="hover:bg-gray-50">
+                                        <td className="p-4 text-gray-500 text-sm">
+                                            {new Date(log.createdAt).toLocaleString()}
+                                        </td>
+                                        <td className="p-4 font-medium">{log.userId}</td>
+                                        <td className="p-4">
+                                            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold">
+                                                {log.action}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-sm text-gray-600 truncate max-w-xs" title={log.details}>
+                                            {log.details}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {auditLogs.length === 0 && <p className="p-8 text-center text-gray-400">Keine Logs vorhanden.</p>}
                     </div>
                 </div>
             )}
