@@ -84,6 +84,10 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
                                     <td style="padding: 6px 0; color: #666; font-size: 13px;">Datenvolumen</td>
                                     <td style="padding: 6px 0; font-weight: 800; text-align: right; color: #000; font-size: 13px;">${data.dataAmount}</td>
                                 </tr>
+                                <tr>
+                                    <td style="padding: 6px 0; color: #666; font-size: 13px;">Laufzeit</td>
+                                    <td style="padding: 6px 0; font-weight: 800; text-align: right; color: #000; font-size: 13px;">${data.duration}</td>
+                                </tr>
                                 ${data.iccid ? `
                                 <tr>
                                     <td style="padding: 6px 0; color: #666; font-size: 13px;">Individuelle ICCID</td>

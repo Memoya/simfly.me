@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
+
 import { verifyAuth, unauthorizedResponse } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -10,33 +10,48 @@ export async function GET(request: Request) {
         if (!verifyAuth(request)) {
             return unauthorizedResponse();
         }
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? 'sk_test_mock', {
-            apiVersion: '2023-10-16' as any,
+
+        // Dynamic import to avoid build issues
+        const { prisma } = await import('@/lib/prisma');
+
+        const orders = await prisma.order.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+            include: { items: true }
         });
 
-        try {
-            const sessions = await stripe.checkout.sessions.list({
-                limit: 20,
-                expand: ['data.line_items', 'data.payment_intent'],
-            });
+        // Collect all product names to fetch durations
+        const productNames = [...new Set(orders.flatMap(o => o.items.map(i => i.productName)))];
+        const products = await prisma.product.findMany({
+            where: { name: { in: productNames } },
+            select: { name: true, duration: true }
+        });
+        const durationMap = products.reduce((acc, p) => ({ ...acc, [p.name]: p.duration }), {} as Record<string, number | null>);
 
-            const orders = sessions.data.map(session => ({
-                id: session.id,
-                amount: (session.amount_total || 0) / 100,
-                currency: session.currency,
-                status: session.payment_status,
-                customer_email: session.customer_details?.email || 'N/A',
-                date: new Date(session.created * 1000).toISOString(),
-                items: session.line_items?.data.map(item => item.description).join(', ') || 'Unknown items'
-            }));
+        const formattedOrders = orders.map(order => {
+            const itemDescriptions = order.items.map(item => item.productName).join(', ');
+            const durations = order.items.map(item => {
+                const d = durationMap[item.productName];
+                return d ? `${d} Tage` : 'N/A';
+            }).join(', ');
 
-            return NextResponse.json(orders);
-        } catch (error) {
-            console.error('Failed to fetch orders:', error);
-            return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
-        }
-    } catch (outerError) {
-        console.error('Critical error in orders route:', outerError);
-        return NextResponse.json({ error: 'Critical Error' }, { status: 500 });
+            return {
+                id: order.stripeSessionId, // Use Stripe ID for compatibility with detail view
+                localId: order.id,
+                amount: order.amount,
+                currency: order.currency,
+                status: order.status,
+                customer_email: order.customerEmail || 'N/A',
+                date: order.createdAt.toISOString(),
+                items: itemDescriptions || 'Unknown items',
+                duration: durations // New field for frontend
+            };
+        });
+
+        return NextResponse.json(formattedOrders);
+
+    } catch (error) {
+        console.error('Failed to fetch orders:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

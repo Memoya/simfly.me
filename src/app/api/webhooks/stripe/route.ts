@@ -90,7 +90,7 @@ export async function POST(request: Request) {
                         customerEmail: customerEmail,
                         items: {
                             create: items.map((item: any) => ({
-                                productName: item.name || 'eSIM Bundle',
+                                productName: item.sku || item.name || 'eSIM Bundle', // Use SKU (esim_...) as the primary key/name in DB
                                 quantity: item.quantity || 1,
                                 price: item.price || 0
                             }))
@@ -114,8 +114,10 @@ export async function POST(request: Request) {
 
                 for (const item of newOrder.items) {
                     try {
-                        console.log(`[STRIPE-WEBHOOK] Fulfilling: ${item.productName}`);
-                        const result = await createOrder(item.productName);
+                        // Use the SKU for fulfillment
+                        const bundleId = item.productName; // This is now the SKU (esim_...)
+                        console.log(`[STRIPE-WEBHOOK] Fulfilling SKU: ${bundleId}`);
+                        const result = await createOrder(bundleId);
 
                         if (result.success && result.iccid) {
                             console.log(`[STRIPE-WEBHOOK] eSIM SUCCESS: ${result.iccid}`);
@@ -133,13 +135,46 @@ export async function POST(request: Request) {
                             esimResults.push(result);
 
                             console.log(`[STRIPE-WEBHOOK] Sending email to ${customerEmail}`);
+                            const productDetails = await prisma.product.findUnique({
+                                where: { id: bundleId }
+                            });
+
+                            // Fallback display name logic (reconstruct region + data from SKU or use DB)
+                            // e.g. "Turkey 1GB"
+                            let displayName = item.productName; // Default
+                            if (productDetails) {
+                                // Try to make it friendly: "Turkey 1GB"
+                                const regionName = productDetails.countries && (productDetails.countries as any[])[0]?.name
+                                    ? (productDetails.countries as any[])[0].name
+                                    : productDetails.name;
+
+                                // Or use description if formatted
+                                displayName = `${regionName} ${productDetails.dataAmount ? (productDetails.dataAmount < 1000 ? productDetails.dataAmount + 'MB' : productDetails.dataAmount / 1000 + 'GB') : ''}`;
+                            }
+
+                            // Override display name if metadata had original name (passed as 'name' prop in Payment Intent)
+                            // But here item is from DB OrderItem. We lost the metadata 'name' unless we re-read from session metadata?
+                            // Let's check session metadata again.
+                            const originalMetaItem = items.find((i: any) => (i.sku === bundleId) || (i.name === bundleId));
+                            if (originalMetaItem && originalMetaItem.name && originalMetaItem.name !== bundleId) {
+                                displayName = originalMetaItem.name;
+                            }
+
+                            const durationString = productDetails?.duration
+                                ? `${productDetails.duration} Tage`
+                                : '30 Tage';
+
+                            const dataAmountString = productDetails?.dataAmount
+                                ? (productDetails.dataAmount >= 1000 ? `${productDetails.dataAmount / 1000} GB` : `${productDetails.dataAmount} MB`)
+                                : 'Standard Data';
+
                             const emailResult = await sendOrderConfirmation({
                                 customerEmail: customerEmail || 'customer@example.com',
                                 orderId: sessionId,
-                                productName: item.productName,
+                                productName: displayName, // Friendly Name for email
                                 qrCodeUrl: result.qrCodeUrl || '',
-                                dataAmount: 'Standard Data',
-                                duration: '30 Days',
+                                dataAmount: dataAmountString,
+                                duration: durationString,
                                 iccid: result.iccid,
                                 matchingId: result.matchingId,
                                 smdpAddress: result.smdpAddress

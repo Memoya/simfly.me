@@ -27,6 +27,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
                 }
             });
 
+            // 1.5 Fetch Product Costs (for margin calc)
+            const productNames = order?.items.map((i: any) => i.productName) || [];
+            const products = await prisma.product.findMany({
+                where: { name: { in: productNames } },
+                select: { name: true, price: true }
+            });
+            const productCosts = products.reduce((acc: any, p: any) => ({ ...acc, [p.name]: p.price }), {});
+
             // 2. Fetch Stripe Session (Live)
             let stripeSession = null;
             try {
@@ -76,7 +84,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
                 local: order,
                 stripe: stripeSession,
                 esim: esimStatus,
-                email: emailStatus
+                email: emailStatus,
+                productCosts
             });
 
         } catch (error) {

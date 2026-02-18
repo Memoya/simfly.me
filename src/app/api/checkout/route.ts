@@ -100,8 +100,9 @@ export async function POST(request: Request) {
             metadata: {
                 discount_code: discountCode || null,
                 payment_intent_data: JSON.stringify({
-                    items: items.map((item: { productName: string, metadata: Record<string, unknown>, quantity: number }) => ({
+                    items: items.map((item: { id?: string, productName: string, metadata: Record<string, unknown>, quantity: number }) => ({
                         name: item.productName,
+                        sku: item.id, // Pass technical ID (esim_...)
                         region: item.metadata?.region,
                         quantity: item.quantity
                     }))

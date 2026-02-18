@@ -866,6 +866,7 @@ export default function AdminPage() {
                                             <th className="py-3 px-4 text-gray-500 font-bold text-sm">Kunde</th>
                                             <th className="py-3 px-4 text-gray-500 font-bold text-sm">Betrag</th>
                                             <th className="py-3 px-4 text-gray-500 font-bold text-sm">Pakete</th>
+                                            <th className="py-3 px-4 text-gray-500 font-bold text-sm">Laufzeit</th>
                                             <th className="py-3 px-4 text-gray-500 font-bold text-sm">Status</th>
                                             <th className="py-3 px-4 text-gray-500 font-bold text-sm"></th>
                                         </tr>
@@ -881,6 +882,7 @@ export default function AdminPage() {
                                                     {new Intl.NumberFormat('de-DE', { style: 'currency', currency: order.currency }).format(order.amount)}
                                                 </td>
                                                 <td className="py-3 px-4 text-sm text-gray-500 max-w-xs truncate">{order.items}</td>
+                                                <td className="py-3 px-4 text-sm text-gray-500">{order.duration || '-'}</td>
                                                 <td className="py-3 px-4">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-bold ${order.status === 'paid' ? 'bg-green-100 text-green-700' :
                                                         order.status === 'open' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'
@@ -1081,7 +1083,33 @@ export default function AdminPage() {
                                         <p className="text-lg font-bold">
                                             {orderDetail.stripe?.payment_status === 'paid' ? 'Bezahlt' : 'Offen'}
                                         </p>
-                                        <p className="text-xs text-gray-500 break-all">{orderDetail.stripe?.payment_intent?.id || 'No Intent'}</p>
+
+                                        <div className="mt-3 pt-2 border-t border-gray-200/50 space-y-1">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-600">Summe:</span>
+                                                <span className="font-bold">{new Intl.NumberFormat('de-DE', { style: 'currency', currency: orderDetail.local.currency }).format(orderDetail.local.amount)}</span>
+                                            </div>
+
+                                            {/* Calculations */}
+                                            {(() => {
+                                                const totalCost = orderDetail.local.items.reduce((sum: number, item: any) => sum + ((orderDetail.productCosts?.[item.productName] || 0) * item.quantity), 0);
+                                                const profit = orderDetail.local.amount - totalCost;
+                                                return (
+                                                    <>
+                                                        <div className="flex justify-between text-xs text-gray-500">
+                                                            <span>EK (eSIM):</span>
+                                                            <span>{new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(totalCost)}</span>
+                                                        </div>
+                                                        <div className={`flex justify-between text-sm font-bold ${profit > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                                            <span>Gewinn:</span>
+                                                            <span>{new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(profit)}</span>
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+
+                                        <p className="text-[10px] text-gray-400 mt-2 break-all font-mono">{orderDetail.stripe?.payment_intent?.id || 'No Intent'}</p>
                                     </div>
 
                                     {/* eSIM card */}
@@ -1116,7 +1144,12 @@ export default function AdminPage() {
                                         <p className="font-bold text-lg">
                                             {orderDetail.email?.last_event || orderDetail.local?.providerSync?.emailStatus || 'Pending'}
                                         </p>
-                                        <p className="text-xs text-gray-500 break-all">ID: {orderDetail.email?.id || orderDetail.local?.providerSync?.resendMessageId || 'N/A'}</p>
+                                        {orderDetail.email?.created_at && (
+                                            <p className="text-xs font-bold text-navy mt-1">
+                                                {new Date(orderDetail.email.created_at).toLocaleDateString()} {new Date(orderDetail.email.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                            </p>
+                                        )}
+                                        <p className="text-[10px] text-gray-500 mt-1 break-all font-mono">ID: {orderDetail.email?.id || orderDetail.local?.providerSync?.resendMessageId || 'N/A'}</p>
                                     </div>
                                 </div>
 
