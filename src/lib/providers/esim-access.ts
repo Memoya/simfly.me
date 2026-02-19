@@ -13,27 +13,23 @@ export class EsimAccessProvider implements EsimProvider {
     set config(_val: any) { }
 
     private generateSignature(timestamp: string, requestId: string, body: string): string {
+        // Redtea specs: Timestamp + RequestID + AccessCode + Body
         const signData = `${timestamp}${requestId}${this.accessCode}${body}`;
         return crypto
             .createHmac('sha256', this.secretKey)
             .update(signData)
             .digest('hex')
-            .toUpperCase(); // Many APIs require uppercase hex
+            .toLowerCase(); // Redtea specs usually use lowercase hex
     }
 
     private getHeaders(body: any = null): Record<string, string> {
         const timestamp = Date.now().toString();
-        const requestId = crypto.randomUUID().replace(/-/g, '');
+        // Use full UUID with dashes as standard
+        const requestId = crypto.randomUUID();
 
-        let bodyStr = "";
-        // FIXED: Added check to prevent crash on null body
-        if (body && typeof body === 'object' && Object.keys(body).length > 0) {
-            bodyStr = JSON.stringify(body);
-        }
-
+        // Sign the EXACT string that will be sent in the fetch body
+        const bodyStr = body ? JSON.stringify(body) : "";
         const signature = this.generateSignature(timestamp, requestId, bodyStr);
-
-        console.log(`[eSIMAccess] Request: ${requestId} | BodyLen: ${bodyStr.length} | Sign: ${signature.substring(0, 8)}...`);
 
         return {
             'Content-Type': 'application/json',
@@ -56,17 +52,18 @@ export class EsimAccessProvider implements EsimProvider {
 
     async getBalance(): Promise<number> {
         try {
+            const body = {}; // Most Redtea endpoints expect {} even if no params
             const response = await fetch(`${this.baseUrl}/open/balance/query`, {
                 method: 'POST',
-                headers: this.getHeaders(null),
-                // No body sent for balance
+                headers: this.getHeaders(body),
+                body: JSON.stringify(body)
             });
 
             const data = await response.json();
             if (data.code === '0000' && data.data) {
                 return parseFloat(data.data.balance || '0');
             }
-            console.error('[eSIMAccess] Balance Error:', data.code, data.message || data.errorMsg);
+            console.error('[eSIMAccess] Balance Response Info:', data.code, data.message || data.errorMsg);
             return -1;
         } catch (error) {
             console.error('[eSIMAccess] Balance check failed:', error);
@@ -75,7 +72,7 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async fetchCatalog(): Promise<NormalizedProduct[]> {
-        // Try multiple endpoints if one fails
+        // Redtea sometimes behaves differently depending on whether paging is sent
         const endpoints = [
             { url: `${this.baseUrl}/open/package/list`, body: { paging: { page: 1, limit: 1000 } } },
             { url: `${this.baseUrl}/open/package/all`, body: {} }
@@ -83,59 +80,53 @@ export class EsimAccessProvider implements EsimProvider {
 
         for (const endpoint of endpoints) {
             try {
-                console.log(`[eSIMAccess] Trying catalog endpoint: ${endpoint.url}`);
                 const response = await fetch(endpoint.url, {
                     method: 'POST',
                     headers: this.getHeaders(endpoint.body),
-                    body: Object.keys(endpoint.body).length > 0 ? JSON.stringify(endpoint.body) : undefined
+                    body: JSON.stringify(endpoint.body)
                 });
 
-                if (!response.ok) {
-                    console.error(`[eSIMAccess] HTTP Error ${response.status} from ${endpoint.url}`);
-                    continue;
-                }
+                if (!response.ok) continue;
 
                 const data = await response.json();
-                console.log(`[eSIMAccess] API Response Code: ${data.code} from ${endpoint.url}`);
 
-                if (data.code === '0000' && data.data?.packageList && data.data.packageList.length > 0) {
-                    console.log(`[eSIMAccess] Found ${data.data.packageList.length} packages at ${endpoint.url}`);
-                    return this.mapPackages(data.data.packageList);
-                } else if (data.code === '0000' && (!data.data?.packageList || data.data.packageList.length === 0)) {
-                    console.warn(`[eSIMAccess] Endpoint ${endpoint.url} returned success but empty list. Balance is likely $0 or no plans assigned.`);
-                } else if (data.code !== '0000') {
-                    const errorMsg = data.message || data.errorMsg || 'Unknown Error';
-                    console.warn(`[eSIMAccess] Endpoint ${endpoint.url} returned code ${data.code}: ${errorMsg}`);
-                    // If it's a specific "no permission" or "balance" error, we might want to know
-                    if (data.code === '1002' || data.code === '1005') {
-                        throw new Error(`eSIM Access: ${errorMsg} (Code ${data.code})`);
-                    }
+                // Flexible mapping for different Redtea response structures
+                const list = data.data?.packageList || data.packageList || data.data?.list;
+
+                if (data.code === '0000' && Array.isArray(list) && list.length > 0) {
+                    console.log(`[eSIMAccess] Found ${list.length} packages at ${endpoint.url}`);
+                    return this.mapPackages(list);
+                } else {
+                    console.warn(`[eSIMAccess] ${endpoint.url} returned no data. Code: ${data.code}`);
                 }
-            } catch (err: any) {
-                console.error(`[eSIMAccess] Failed to fetch from ${endpoint.url}:`, err);
-                if (err.message.includes('eSIM Access:')) throw err;
+            } catch (err) {
+                console.error(`[eSIMAccess] Endpoint ${endpoint.url} error:`, err);
             }
         }
 
-        console.error('[eSIMAccess] All catalog endpoints returned 0 results or errors.');
         return [];
     }
 
     private mapPackages(packageList: any[]): NormalizedProduct[] {
         return packageList.map((pkg: any) => {
-            const volumeBytes = parseInt(pkg.volume || '0');
-            const dataAmountMB = pkg.volume === '-1' ? -1 : Math.floor(volumeBytes / 1048576);
+            // Support both string and number prices
+            const price = typeof pkg.price === 'string' ? parseFloat(pkg.price) : (pkg.price || 0);
+
+            // Volume can be bytes or megabytes depending on the provider sub-configuration
+            const vol = parseInt(pkg.volume || '0');
+            let dataAmountMB = pkg.volume === '-1' ? -1 : vol;
+            if (dataAmountMB > 100000) dataAmountMB = Math.floor(dataAmountMB / 1048576);
 
             return {
-                id: pkg.packageCode || pkg.slug,
-                name: pkg.packageName || pkg.name,
-                price: parseFloat(pkg.price || '0'),
+                id: pkg.packageCode || pkg.slug || pkg.id,
+                name: pkg.packageName || pkg.name || pkg.packageCode,
+                price: price,
                 currency: pkg.currency || 'USD',
-                countryCode: pkg.locationCode || 'global',
+                countryCode: pkg.locationCode || pkg.countryCode || 'global',
                 dataAmountMB,
                 validityDays: parseInt(pkg.duration || '0'),
                 isUnlimited: pkg.volume === '-1',
-                networkType: 'LTE/5G',
+                networkType: pkg.networkType || '4G/5G',
                 originalData: pkg
             };
         });
