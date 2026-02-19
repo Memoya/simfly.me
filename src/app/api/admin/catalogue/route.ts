@@ -22,13 +22,8 @@ export async function GET(request: Request) {
         const order = searchParams.get('order') || 'asc'; // 'asc', 'desc'
 
         const settings = await getSettings();
-        const apiKey = process.env.ESIM_GO_API_KEY;
-
+        // Legacy API key check removed to support eSIMAccess consolidation
         let allBundles: Bundle[] = [];
-
-        if (!apiKey) {
-            return NextResponse.json({ error: 'ESIM_GO_API_KEY missing' }, { status: 500 });
-        }
 
         try {
             // Use local cache

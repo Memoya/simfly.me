@@ -36,7 +36,7 @@ export const getCatalogue = unstable_cache(
             return [];
         }
     },
-    ['global-catalogue'],
+    ['global-catalogue-v3'],
     {
         revalidate: 3600,
         tags: ['catalogue']
