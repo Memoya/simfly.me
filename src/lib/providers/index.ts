@@ -1,12 +1,8 @@
 
 import { EsimProvider } from './types';
-import { EsimGoProvider } from './esim-go';
-import { AiraloProvider } from './airalo';
 import { EsimAccessProvider } from './esim-access';
 
 const registry: Record<string, EsimProvider> = {
-    'esim-go': new EsimGoProvider(),
-    'airalo': new AiraloProvider(),
     'esim-access': new EsimAccessProvider(),
 };
 
