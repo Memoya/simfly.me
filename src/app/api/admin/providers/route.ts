@@ -12,9 +12,7 @@ export async function GET(request: Request) {
 
     try {
         const defaultProviders = [
-            { name: 'eSIM Go', slug: 'esim-go', priority: 100 },
-            { name: 'Airalo', slug: 'airalo', priority: 90 },
-            { name: 'eSIMAccess', slug: 'esim-access', priority: 80 },
+            { name: 'eSIMAccess', slug: 'esim-access', priority: 100 },
         ];
 
         // Ensure default providers exist without overwriting manual state (like isActive)
