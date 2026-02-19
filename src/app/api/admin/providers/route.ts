@@ -17,24 +17,42 @@ export async function GET(request: Request) {
             { name: 'eSIMAccess', slug: 'esim-access', priority: 80 },
         ];
 
-        // Ensure default providers exist
+        // Ensure default providers exist without overwriting manual state (like isActive)
         for (const p of defaultProviders) {
-            await prisma.provider.upsert({
-                where: { slug: p.slug },
-                update: {},
-                create: {
-                    name: p.name,
-                    slug: p.slug,
-                    priority: p.priority,
-                    isActive: true,
-                    reliabilityScore: 1.0,
-                    config: p.slug === 'esim-access' ? {
-                        accessCode: 'ddf262332cdd43b6b1a85ae56dc78261',
-                        secretKey: '1e08f66c25f44cea93af1070a07a623c',
-                        baseUrl: 'https://api.esimaccess.com/api/v1'
-                    } : undefined
-                }
-            });
+            const exists = await prisma.provider.findUnique({ where: { slug: p.slug } });
+
+            if (exists) {
+                // If exists, only update priority/config if necessary, but DONT touch isActive
+                await prisma.provider.update({
+                    where: { slug: p.slug },
+                    data: {
+                        name: p.name,
+                        priority: p.priority,
+                        // Update config only for esim-access to ensure keys are correct
+                        config: p.slug === 'esim-access' ? {
+                            accessCode: 'ddf262332cdd43b6b1a85ae56dc78261',
+                            secretKey: '1e08f66c25f44cea93af1070a07a623c',
+                            baseUrl: 'https://api.esimaccess.com/api/v1'
+                        } : undefined
+                    }
+                });
+            } else {
+                // Initial creation
+                await prisma.provider.create({
+                    data: {
+                        name: p.name,
+                        slug: p.slug,
+                        priority: p.priority,
+                        isActive: true,
+                        reliabilityScore: 1.0,
+                        config: p.slug === 'esim-access' ? {
+                            accessCode: 'ddf262332cdd43b6b1a85ae56dc78261',
+                            secretKey: '1e08f66c25f44cea93af1070a07a623c',
+                            baseUrl: 'https://api.esimaccess.com/api/v1'
+                        } : undefined
+                    }
+                });
+            }
         }
 
         // Deactivate all others that are not in the new restricted set
