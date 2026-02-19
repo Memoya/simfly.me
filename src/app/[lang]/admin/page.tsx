@@ -1276,6 +1276,7 @@ export default function AdminPage() {
                                                 { label: 'Region', key: 'region' },
                                                 { label: 'Einkauf (Netto)', key: 'price' },
                                                 { label: 'Verkauf (Brutto)', key: 'sellPrice' },
+                                                { label: 'Speed', key: 'speed' },
                                                 { label: 'Gewinn (ca.)', key: 'profit' }
                                             ].map((h) => (
                                                 <th

@@ -126,7 +126,8 @@ export async function GET(request: Request) {
                 durationRaw: durationRaw,
                 unlimitedDetails: unlimitedDetails,
                 sellPrice: sellPrice,
-                profit: profit
+                profit: profit,
+                speed: b.speed
             };
         });
 

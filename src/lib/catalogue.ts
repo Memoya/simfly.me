@@ -19,18 +19,39 @@ export const getCatalogue = unstable_cache(
                 return [];
             }
 
-            return bestOffers.map(offer => ({
-                name: offer.providerProductId,
-                price: offer.costPrice, // !!! IMPORTANT: We pass WHOLESALE here so checkout can apply margins correctly
-                sellPrice: offer.sellPrice, // Reference only
-                description: `${offer.dataAmountMB >= 1024 ? (offer.dataAmountMB / 1024) + 'GB' : offer.dataAmountMB + 'MB'} - ${offer.validityDays} Days`,
-                duration: offer.validityDays,
-                dataAmount: offer.dataAmountMB,
-                countries: [{ iso: offer.countryCode, name: offer.countryCode }],
-                groups: [],
-                providerId: offer.providerId,
-                providerProductId: offer.providerProductId
-            }) as any);
+            // Fetch ProviderProduct details for extra info (like networkType)
+            const providerProducts = await prisma.providerProduct.findMany({
+                where: {
+                    OR: bestOffers.map(o => ({
+                        providerId: o.providerId,
+                        providerProductId: o.providerProductId
+                    }))
+                }
+            });
+
+            // Map for quick lookup
+            const ppMap = new Map(providerProducts.map(pp => [`${pp.providerId}-${pp.providerProductId}`, pp]));
+
+            return bestOffers.map(offer => {
+                const pp = ppMap.get(`${offer.providerId}-${offer.providerProductId}`);
+                const dataStr = offer.dataAmountMB >= 1024 ? (offer.dataAmountMB / 1024) + 'GB' : offer.dataAmountMB + 'MB';
+
+                return {
+                    id: offer.id,
+                    // Format: eSIMAccess - Region - Data
+                    name: `eSIMAccess - ${offer.countryCode} - ${dataStr}`,
+                    price: offer.costPrice,
+                    sellPrice: offer.sellPrice,
+                    description: `${dataStr} - ${offer.validityDays} Days`,
+                    duration: offer.validityDays,
+                    dataAmount: offer.dataAmountMB,
+                    countries: [{ iso: offer.countryCode, name: offer.countryCode }],
+                    groups: [],
+                    providerId: offer.providerId,
+                    providerProductId: offer.providerProductId,
+                    speed: pp?.networkType || '4G/5G'
+                } as any;
+            });
         } catch (error) {
             console.error('Failed to get catalogue:', error);
             return [];
