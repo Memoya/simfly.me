@@ -6,8 +6,13 @@ import { prisma } from '@/lib/prisma';
  * eSIMAccess Webhook Handler
  * Documentation: https://docs.esimaccess.com/#6ff716a7-5b8a-47e2-bcd2-250da94ac325
  */
+// eSIM Access validation needs a 200 OK response on all methods (including HEAD or GET)
 export async function GET() {
-    return NextResponse.json({ status: 'active', message: 'eSIMAccess Webhook Endpoint' });
+    return NextResponse.json({ status: 'active', message: 'eSIMAccess Webhook Endpoint' }, { status: 200 });
+}
+
+export async function HEAD() {
+    return new Response(null, { status: 200 });
 }
 
 export async function POST(request: Request) {
