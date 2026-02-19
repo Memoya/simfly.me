@@ -15,18 +15,8 @@ export const getCatalogue = unstable_cache(
             const bestOffers = await prisma.bestOffer.findMany();
 
             if (bestOffers.length === 0) {
-                const products = await prisma.product.findMany();
-                return products.map(p => ({
-                    name: p.name,
-                    price: p.price, // For legacy, cost = sell (margins handled in UI or separate)
-                    costPrice: p.price,
-                    description: p.description || '',
-                    duration: p.duration || 0,
-                    dataAmount: p.dataAmount || 0,
-                    dataLimitInBytes: (p.dataAmount || 0) * 1024 * 1024,
-                    countries: (p.countries as any) || [],
-                    groups: (p.groups as any) || [],
-                }) as Bundle);
+                console.warn('[CATALOGUE] BestOffer table is empty. No products to display.');
+                return [];
             }
 
             return bestOffers.map(offer => ({

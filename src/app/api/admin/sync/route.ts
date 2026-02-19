@@ -152,92 +152,81 @@ async function updateBestOffersEnterprise() {
     const minMarginFixed = settings?.minMarginFixed ?? 1.0;
     const minMarginPercent = settings?.minMarginPercent ?? 5.0;
 
-    /**
-     * 🔥 HIGH PERFORMANCE SQL STRATEGY (PRICING ENGINE v2.1)
-     * 1. TRUNCATE BestOffer to ensure stale products from disabled providers are removed
-     * 2. Score products across all ACTIVE providers
-     * 3. Select winners (Cheapest/Most reliable)
-     * 4. Apply standard & country-specific margins
-     * 5. ENFORCE PRICE GUARD
-     */
+    // Clear the table first using Prisma for reliability (ensures deactivated providers are removed)
+    await prisma.bestOffer.deleteMany({});
 
     // Convert country overrides to a JSON string for the SQL query
     const countryMargins = JSON.stringify(settings?.countryMargins || {});
 
-    await prisma.$transaction([
-        prisma.$executeRaw`TRUNCATE TABLE "BestOffer"`,
-        prisma.$executeRaw`
-            WITH ScoredProducts AS (
-                SELECT 
-                    p.id, p."providerId", p."providerProductId", p."countryCode",
-                    p."dataAmountMB", p."validityDays", p.price as "costPrice",
-                    pr."reliabilityScore", pr.priority,
-                    (p.price * 1.0 + pr."reliabilityScore" * -5.0 + pr.priority * -2.0) as calculated_score
-                FROM "ProviderProduct" p
-                JOIN "Provider" pr ON p."providerId" = pr.id
-                WHERE pr."isActive" = true
-            ),
-            Winners AS (
-                SELECT DISTINCT ON ("countryCode", "dataAmountMB", "validityDays")
-                    *
-                FROM ScoredProducts
-                ORDER BY "countryCode", "dataAmountMB", "validityDays", calculated_score ASC
-            ),
-            MarginRules AS (
-                SELECT 
-                    *,
-                    -- Check for country-specific margin in the JSON object
-                    -- Note: This is an enterprise-grade simplification. 
-                    -- For very high scale, we'd join against a dedicated Margin table.
-                    (${countryMargins}::jsonb -> "countryCode") as override
-                FROM Winners
-            ),
-            CalculatedPrices AS (
-                SELECT 
-                    *,
-                    CASE 
-                        WHEN override IS NOT NULL THEN
-                            ("costPrice" * (1 + (override->>'percent')::float / 100.0) + (override->>'fixed')::float)
-                        ELSE
-                            ("costPrice" * (1 + ${globalMarginPercent} / 100.0) + ${globalMarginFixed})
-                    END as standard_sell_price
-                FROM MarginRules
-            ),
-            DiscountedPrices AS (
-                SELECT 
-                    *,
-                    CASE 
-                        WHEN ${autoDiscountEnabled} = true AND standard_sell_price >= ${autoDiscountThreshold}
-                        THEN (standard_sell_price * (1 - ${autoDiscountPercent} / 100.0))
-                        ELSE standard_sell_price
-                    END as discounted_sell_price
-                FROM CalculatedPrices
-            ),
-            PriceGuard AS (
-                SELECT 
-                    *,
-                    GREATEST(
-                        discounted_sell_price,
-                        "costPrice" + ${minMarginFixed},
-                        "costPrice" * (1 + ${minMarginPercent} / 100.0)
-                    ) as final_guarded_price
-                FROM DiscountedPrices
-            )
-            INSERT INTO "BestOffer" (
-                id, "countryCode", "dataAmountMB", "validityDays", 
-                "providerId", "providerProductId", "costPrice", 
-                "sellPrice", margin, currency, "updatedAt"
-            )
+    await prisma.$executeRaw`
+        WITH ScoredProducts AS (
             SELECT 
-                gen_random_uuid()::text,
-                "countryCode", "dataAmountMB", "validityDays",
-                "providerId", "providerProductId", "costPrice",
-                final_guarded_price,
-                (final_guarded_price - "costPrice") as margin,
-                'USD', NOW()
-            FROM PriceGuard;
-        `
-    ]);
+                p.id, p."providerId", p."providerProductId", p."countryCode",
+                p."dataAmountMB", p."validityDays", p.price as "costPrice",
+                pr."reliabilityScore", pr.priority,
+                (p.price * 1.0 + pr."reliabilityScore" * -5.0 + pr.priority * -2.0) as calculated_score
+            FROM "ProviderProduct" p
+            JOIN "Provider" pr ON p."providerId" = pr.id
+            WHERE pr."isActive" = true
+        ),
+        Winners AS (
+            SELECT DISTINCT ON ("countryCode", "dataAmountMB", "validityDays")
+                *
+            FROM ScoredProducts
+            ORDER BY "countryCode", "dataAmountMB", "validityDays", calculated_score ASC
+        ),
+        MarginRules AS (
+            SELECT 
+                *,
+                -- Check for country-specific margin in the JSON object
+                (${countryMargins}::jsonb -> "countryCode") as override
+            FROM Winners
+        ),
+        CalculatedPrices AS (
+            SELECT 
+                *,
+                CASE 
+                    WHEN override IS NOT NULL THEN
+                        ("costPrice" * (1 + (override->>'percent')::float / 100.0) + (override->>'fixed')::float)
+                    ELSE
+                        ("costPrice" * (1 + ${globalMarginPercent} / 100.0) + ${globalMarginFixed})
+                END as standard_sell_price
+            FROM MarginRules
+        ),
+        DiscountedPrices AS (
+            SELECT 
+                *,
+                CASE 
+                    WHEN ${autoDiscountEnabled} = true AND standard_sell_price >= ${autoDiscountThreshold}
+                    THEN (standard_sell_price * (1 - ${autoDiscountPercent} / 100.0))
+                    ELSE standard_sell_price
+                END as discounted_sell_price
+            FROM CalculatedPrices
+        ),
+        PriceGuard AS (
+            SELECT 
+                *,
+                GREATEST(
+                    discounted_sell_price,
+                    "costPrice" + ${minMarginFixed},
+                    "costPrice" * (1 + ${minMarginPercent} / 100.0)
+                ) as final_guarded_price
+            FROM DiscountedPrices
+        )
+        INSERT INTO "BestOffer" (
+            id, "countryCode", "dataAmountMB", "validityDays", 
+            "providerId", "providerProductId", "costPrice", 
+            "sellPrice", margin, currency, "updatedAt"
+        )
+        SELECT 
+            gen_random_uuid()::text,
+            "countryCode", "dataAmountMB", "validityDays",
+            "providerId", "providerProductId", "costPrice",
+            final_guarded_price,
+            (final_guarded_price - "costPrice") as margin,
+            'USD', NOW()
+        FROM PriceGuard;
+    `;
 
     console.log('[PRICING-ENGINE] Success: Catalog Materialized with Price Guard Protection.');
 }
