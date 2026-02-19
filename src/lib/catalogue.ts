@@ -23,6 +23,7 @@ export const getCatalogue = unstable_cache(
                     description: p.description || '',
                     duration: p.duration || 0,
                     dataAmount: p.dataAmount || 0,
+                    dataLimitInBytes: (p.dataAmount || 0) * 1024 * 1024,
                     countries: (p.countries as any) || [],
                     groups: (p.groups as any) || [],
                 }) as Bundle);

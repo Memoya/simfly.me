@@ -729,7 +729,7 @@ export default function AdminPage() {
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-4">
-                                                {stats.topProducts.slice(0, 4).map((p, i) => (
+                                                {stats.topProducts.slice(0, 4).map((p: any, i: number) => (
                                                     <div key={i} className="bg-white border-2 border-gray-50 p-4 rounded-3xl shadow-sm hover:translate-y-[-2px] transition-transform">
                                                         <div className="flex justify-between items-start mb-2">
                                                             <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-xs">#{i + 1}</div>
