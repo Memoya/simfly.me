@@ -660,14 +660,24 @@ export default function ProviderManagement({ token }: ProviderManagementProps) {
                                         <h4 className="text-[10px] uppercase font-black text-gray-400 tracking-widest flex items-center gap-2">
                                             <ShieldAlert className="w-3 h-3" /> API Zugangsdaten
                                         </h4>
-                                        <div className="bg-slate-900 p-6 rounded-3xl space-y-4 shadow-xl">
+                                        <div className="bg-slate-900 p-6 rounded-3xl space-y-4 shadow-xl relative">
+                                            {editingProvider.slug === 'esim-access' && (
+                                                <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-[2px] z-20 flex items-center justify-center p-6 rounded-3xl border-2 border-blue-500/50">
+                                                    <div className="text-center">
+                                                        <ShieldAlert className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-white">System Managed</p>
+                                                        <p className="text-[9px] text-blue-300 mt-1 font-bold">Credentials are hardcoded for security.</p>
+                                                    </div>
+                                                </div>
+                                            )}
                                             <div>
                                                 <label className="text-[9px] uppercase font-black text-slate-500 tracking-widest mb-2 block">API Key / Token</label>
                                                 <input
                                                     type="password"
                                                     placeholder="sk_live_..."
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-blue-500 transition-colors text-xs"
-                                                    value={(editingProvider.config as any)?.apiKey || ''}
+                                                    disabled={editingProvider.slug === 'esim-access'}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-blue-500 transition-colors text-xs disabled:opacity-50"
+                                                    value={editingProvider.slug === 'esim-access' ? '••••••••••••••••' : (editingProvider.config as any)?.apiKey || ''}
                                                     onChange={e => setEditingProvider({
                                                         ...editingProvider,
                                                         config: { ...(editingProvider.config as any || {}), apiKey: e.target.value }
@@ -680,8 +690,9 @@ export default function ProviderManagement({ token }: ProviderManagementProps) {
                                                 <input
                                                     type="text"
                                                     placeholder="https://api..."
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-blue-500 transition-colors text-xs"
-                                                    value={(editingProvider.config as any)?.baseUrl || ''}
+                                                    disabled={editingProvider.slug === 'esim-access'}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-blue-500 transition-colors text-xs disabled:opacity-50"
+                                                    value={editingProvider.slug === 'esim-access' ? 'https://api.esimaccess.com/api/v1' : (editingProvider.config as any)?.baseUrl || ''}
                                                     onChange={e => setEditingProvider({
                                                         ...editingProvider,
                                                         config: { ...(editingProvider.config as any || {}), baseUrl: e.target.value }
@@ -694,8 +705,9 @@ export default function ProviderManagement({ token }: ProviderManagementProps) {
                                                 <textarea
                                                     rows={3}
                                                     placeholder='{"region": "eu"}'
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-mono outline-none focus:border-blue-500 transition-colors text-[10px]"
-                                                    value={JSON.stringify((editingProvider.config as any)?.extra || {}, null, 2)}
+                                                    disabled={editingProvider.slug === 'esim-access'}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-mono outline-none focus:border-blue-500 transition-colors text-[10px] disabled:opacity-50"
+                                                    value={editingProvider.slug === 'esim-access' ? '{}' : JSON.stringify((editingProvider.config as any)?.extra || {}, null, 2)}
                                                     onChange={e => {
                                                         try {
                                                             const extra = JSON.parse(e.target.value);
