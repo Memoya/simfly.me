@@ -1,24 +1,38 @@
-
-import { EsimProvider, NormalizedProduct, OrderResult } from './types';
+import { NormalizedProduct, OrderResult, EsimProvider } from './types';
+import * as crypto from 'crypto';
 
 export class EsimAccessProvider implements EsimProvider {
     name = 'eSIMAccess';
     slug = 'esim-access';
-    public accessCode = 'ddf262332cdd43b6b1a85ae56dc78261';
-    public secretKey = '1e08f66c25f44cea93af1070a07a623c';
+    private accessCode = 'ddf262332cdd43b6b1a85ae56dc78261';
+    private secretKey = '1e08f66c25f44cea93af1070a07a623c';
     public baseUrl = 'https://api.esimaccess.com/api/v1';
 
-    // Alias for the status check injector
-    set apiKey(val: string) {
-        this.accessCode = val;
+    // Disable manual overrides for this provider as requested
+    set apiKey(_val: string) { }
+    set config(_val: any) { }
+
+    private generateSignature(timestamp: string, requestId: string, body: string): string {
+        const signData = `${timestamp}${requestId}${this.accessCode}${body}`;
+        return crypto
+            .createHmac('sha256', this.secretKey)
+            .update(signData)
+            .digest('hex');
     }
 
-    set config(val: any) {
-        if (!val) return;
-        if (val.accessCode) this.accessCode = val.accessCode;
-        if (val.apiKey) this.accessCode = val.apiKey; // Handle both naming conventions
-        if (val.secretKey) this.secretKey = val.secretKey;
-        if (val.baseUrl) this.baseUrl = val.baseUrl;
+    private getHeaders(body: any = {}): Record<string, string> {
+        const timestamp = Date.now().toString();
+        const requestId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+        const bodyStr = JSON.stringify(body);
+        const signature = this.generateSignature(timestamp, requestId, bodyStr);
+
+        return {
+            'Content-Type': 'application/json',
+            'RT-AccessCode': this.accessCode,
+            'RT-Signature': signature,
+            'RT-Timestamp': timestamp,
+            'RT-RequestID': requestId
+        };
     }
 
     async checkHealth(): Promise<boolean> {
@@ -33,18 +47,12 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async getBalance(): Promise<number> {
-        if (!this.accessCode) {
-            console.warn('[eSIMAccess] Cannot check balance: AccessCode missing');
-            return -1;
-        }
         try {
+            const body = {};
             const response = await fetch(`${this.baseUrl}/open/balance/query`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RT-AccessCode': this.accessCode
-                },
-                body: JSON.stringify({})
+                headers: this.getHeaders(body),
+                body: JSON.stringify(body)
             });
 
             if (!response.ok) {
@@ -65,20 +73,13 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async fetchCatalog(): Promise<NormalizedProduct[]> {
-        if (!this.accessCode) {
-            console.warn('[eSIMAccess] Cannot fetch catalog: AccessCode missing');
-            return [];
-        }
-
         try {
+            const body = {};
             console.log(`[eSIMAccess] Fetching catalog from ${this.baseUrl} with AccessCode ${this.accessCode.substring(0, 4)}...`);
             const response = await fetch(`${this.baseUrl}/open/package/list`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RT-AccessCode': this.accessCode
-                },
-                body: JSON.stringify({})
+                headers: this.getHeaders(body),
+                body: JSON.stringify(body)
             });
 
             if (!response.ok) {
@@ -126,21 +127,17 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     private async placeOrder(orderData: any): Promise<OrderResult> {
-        if (!this.accessCode) return { success: false, providerOrderReference: '', error: 'AccessCode missing' };
-
         try {
             const transactionId = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            const body = {
+                transactionId,
+                ...orderData
+            };
 
             const response = await fetch(`${this.baseUrl}/open/order/profiles`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RT-AccessCode': this.accessCode
-                },
-                body: JSON.stringify({
-                    transactionId,
-                    ...orderData
-                })
+                headers: this.getHeaders(body),
+                body: JSON.stringify(body)
             });
 
             if (!response.ok) {
@@ -185,15 +182,12 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async getEsimDetails(iccid: string): Promise<any> {
-        if (!this.accessCode) return null;
         try {
+            const body = { iccid };
             const response = await fetch(`${this.baseUrl}/open/esim/query`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RT-AccessCode': this.accessCode
-                },
-                body: JSON.stringify({ iccid })
+                headers: this.getHeaders(body),
+                body: JSON.stringify(body)
             });
 
             if (!response.ok) return null;
@@ -206,15 +200,12 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async getUsage(iccid: string): Promise<any> {
-        if (!this.accessCode) return null;
         try {
+            const body = { iccid };
             const response = await fetch(`${this.baseUrl}/open/usage/query`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RT-AccessCode': this.accessCode
-                },
-                body: JSON.stringify({ iccid })
+                headers: this.getHeaders(body),
+                body: JSON.stringify(body)
             });
 
             if (!response.ok) return null;
@@ -227,15 +218,12 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async reDownload(iccid: string): Promise<any> {
-        if (!this.accessCode) return null;
         try {
+            const body = { iccid };
             const response = await fetch(`${this.baseUrl}/open/esim/re-download`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RT-AccessCode': this.accessCode
-                },
-                body: JSON.stringify({ iccid })
+                headers: this.getHeaders(body),
+                body: JSON.stringify(body)
             });
             const data = await response.json();
             return data;
@@ -246,15 +234,12 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async getInstallLog(iccid: string): Promise<any> {
-        if (!this.accessCode) return null;
         try {
+            const body = { iccid };
             const response = await fetch(`${this.baseUrl}/open/esim/install/log`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RT-AccessCode': this.accessCode
-                },
-                body: JSON.stringify({ iccid })
+                headers: this.getHeaders(body),
+                body: JSON.stringify(body)
             });
             const data = await response.json();
             return data;
