@@ -10,7 +10,7 @@ export async function POST(request: Request) {
         const { getCatalogue } = await import('@/lib/catalogue');
 
         // Initialize Stripe inside the handler to ensure fresh config/version
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? 'sk_test_mock', {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
             apiVersion: '2023-10-16' as any,
         });
 
@@ -77,15 +77,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'No items provided' }, { status: 400 });
         }
 
-        const isMockMode = !process.env.STRIPE_SECRET_KEY ||
-            process.env.STRIPE_SECRET_KEY === 'mock_key' ||
-            process.env.STRIPE_SECRET_KEY.startsWith('pk_');
 
-        if (isMockMode) {
-            console.log('Using Mock Checkout (Secret Key missing or invalid)');
-            const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
-            return NextResponse.json({ url: `${origin}/success?session_id=mock_session_${Date.now()}` });
-        }
 
         const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
 

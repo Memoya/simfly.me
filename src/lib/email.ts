@@ -98,7 +98,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
                         </div>
 
                         <div style="margin-top: 30px; text-align: center;">
-                            <a href="https://simfly.me/check" style="display: inline-block; background: #0066FF; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 900; font-size: 15px; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(0,102,255,0.2);">DATENVOLUMEN PRÜFEN</a>
+                            <a href="https://simfly.me/check?iccid=${data.iccid || ''}" style="display: inline-block; background: #0066FF; color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 900; font-size: 15px; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(0,102,255,0.2);">DATENVOLUMEN PRÜFEN</a>
                         </div>
                     </div>
 

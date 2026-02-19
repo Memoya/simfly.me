@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, Zap, MonitorPlay, Star } from 'lucide-react';
 import Image from 'next/image';
@@ -71,6 +71,8 @@ export default function PackageModal({ country, iso, packages, isOpen, onClose, 
     const [selectedUnlimitedId, setSelectedUnlimitedId] = useState<string | null>(() => {
         return initialPackage?.data.startsWith('Unlimited') ? initialPackage.id : null;
     });
+
+
 
     // Reset to default (30 days) when modal opens
     React.useEffect(() => {
@@ -372,6 +374,8 @@ export default function PackageModal({ country, iso, packages, isOpen, onClose, 
                                 </div>
                             </div>
                         )}
+
+                        {/* Network Coverage Removed from bottom */}
 
                     </div>
 

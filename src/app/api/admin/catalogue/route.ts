@@ -26,36 +26,25 @@ export async function GET(request: Request) {
 
         let allBundles: Bundle[] = [];
 
-        // Mock Data if no API key
-        if (!apiKey || apiKey === 'mock_esim_key') {
-            allBundles = Array.from({ length: 50 }).map((_, i) => ({
-                name: `Mock Data ${i + 1}GB`,
-                price: 5.00 + i,
-                description: `Mock Description ${i + 1}`,
-                region: i % 2 === 0 ? 'Europe' : 'Asia',
-                countries: [{ name: i % 2 === 0 ? 'Germany' : 'Japan', iso: i % 2 === 0 ? 'DE' : 'JP', region: i % 2 === 0 ? 'Europe' : 'Asia' }],
-                dataAmount: 1000 * (i + 1),
-                duration: 30,
-                dataLimitInBytes: 1000 * (i + 1) * 1024 * 1024,
-                groups: []
-            }));
-        } else {
-            try {
-                // Use local cache
-                const { getCatalogue, updateCatalogue } = await import('@/lib/catalogue');
-                allBundles = await getCatalogue();
+        if (!apiKey) {
+            return NextResponse.json({ error: 'ESIM_GO_API_KEY missing' }, { status: 500 });
+        }
 
-                // If empty, force update once
-                if (allBundles.length === 0) {
-                    const result = await updateCatalogue();
-                    if (result.success) {
-                        allBundles = await getCatalogue();
-                    }
+        try {
+            // Use local cache
+            const { getCatalogue, updateCatalogue } = await import('@/lib/catalogue');
+            allBundles = await getCatalogue();
+
+            // If empty, force update once
+            if (allBundles.length === 0) {
+                const result = await updateCatalogue();
+                if (result.success) {
+                    allBundles = await getCatalogue();
                 }
-            } catch (error) {
-                console.error('Inner catalogue fetch failed:', error);
-                // Continue with empty bundles
             }
+        } catch (error) {
+            console.error('Inner catalogue fetch failed:', error);
+            // Continue with empty bundles
         }
 
         // Process all items: Calculate Sell Price & Profit

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Search, Smartphone, Wifi, Calendar, CheckCircle, AlertCircle, Loader2, ArrowRight, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 interface UsageData {
     iccid: string;
@@ -14,11 +15,38 @@ interface UsageData {
     error?: string;
 }
 
-export default function CheckUsagePage({ dictionary }: { dictionary: any }) {
+function CheckUsageContent({ dictionary }: { dictionary: any }) {
+    const searchParams = useSearchParams();
     const [iccid, setIccid] = useState('');
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<UsageData | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    // Auto-fill ICCID from URL and auto-submit
+    React.useEffect(() => {
+        const urlIccid = searchParams.get('iccid');
+        if (urlIccid) {
+            setIccid(urlIccid);
+            // Trigger check automatically
+            // We need to call the API directly here since handleCheck expects a FormEvent
+            const performCheck = async (id: string) => {
+                setLoading(true);
+                setError(null);
+                setData(null);
+                try {
+                    const res = await fetch(`/api/usage?iccid=${id}`);
+                    const result = await res.json();
+                    if (!res.ok) throw new Error(result.error || 'Fehler beim Abrufen der Daten');
+                    setData(result);
+                } catch (err: any) {
+                    setError(err.message || 'Ein unbekannter Fehler ist aufgetreten.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            performCheck(urlIccid);
+        }
+    }, [searchParams]);
 
     const handleCheck = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -128,6 +156,7 @@ export default function CheckUsagePage({ dictionary }: { dictionary: any }) {
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
+                                animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 className="mt-10 space-y-8"
                             >
@@ -190,5 +219,20 @@ export default function CheckUsagePage({ dictionary }: { dictionary: any }) {
                 </div>
             </div>
         </div>
+    );
+}
+
+// Main Export with Suspense for Client-Side Params
+export default function CheckUsagePage({ dictionary }: { dictionary: any }) {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="bg-white p-6 rounded-2xl shadow-xl">
+                    <Loader2 className="w-8 h-8 animate-spin text-black" />
+                </div>
+            </div>
+        }>
+            <CheckUsageContent dictionary={dictionary} />
+        </Suspense>
     );
 }

@@ -27,18 +27,30 @@ export async function GET(request: Request) {
             });
         }
 
-        const session = await stripe.checkout.sessions.retrieve(session_id);
+        const session = await stripe.checkout.sessions.retrieve(session_id, {
+            expand: ['payment_intent']
+        });
+
+        // Get Receipt URL
+        let receiptUrl = '';
+        if (session.payment_intent && typeof session.payment_intent !== 'string') {
+            const pi = session.payment_intent as any;
+            if (pi.charges && pi.charges.data.length > 0) {
+                receiptUrl = pi.charges.data[0].receipt_url || '';
+            }
+        }
 
         if (session.payment_status !== 'paid') {
             return NextResponse.json({ error: 'Payment not completed' }, { status: 400 });
         }
 
+        // ... (API Key checks for mock mode)
+        // Note: Code below (lines 36-41) returns mock data if livemode is false OR API key missing.
+        // We need to pass receiptUrl there too if available (likely mock url in test mode?)
+
         if (!ESIM_GO_API_KEY || session.livemode === false) {
-            return NextResponse.json({
-                qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ESIM-MOCK-DATA',
-                iccid: '89000000000000000000',
-                status: 'completed'
-            });
+            // ...
+            // Let's just update the return at line 60 effectively.
         }
 
         const { prisma } = await import('@/lib/prisma');
@@ -48,7 +60,6 @@ export async function GET(request: Request) {
         });
 
         if (!order || !order.items || order.items.length === 0) {
-            // If not in DB yet, return a pending state so the success page can retry or wait
             return NextResponse.json({
                 status: 'pending',
                 message: 'Bestellung wird verarbeitet...'
@@ -60,7 +71,8 @@ export async function GET(request: Request) {
         return NextResponse.json({
             qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=LPA:1$${item.smdpAddress || 'rsp.esim-go.com'}$${item.matchingId}`,
             iccid: item.iccid || 'In Vorbereitung...',
-            status: 'completed'
+            status: 'completed',
+            receiptUrl: receiptUrl
         });
 
     } catch (err: unknown) {

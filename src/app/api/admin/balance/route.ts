@@ -12,8 +12,8 @@ export async function GET(request: Request) {
 
         const apiKey = process.env.ESIM_GO_API_KEY;
 
-        if (!apiKey || apiKey === 'mock_esim_key') {
-            return NextResponse.json({ balance: 250.00, currency: 'USD', mock: true });
+        if (!apiKey) {
+            return NextResponse.json({ error: 'ESIM_GO_API_KEY missing' }, { status: 500 });
         }
 
         try {

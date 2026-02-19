@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { createOrder } from '@/lib/esim';
-import { sendOrderConfirmation } from '@/lib/email';
+import { sendOrderConfirmation, sendAdminAlert } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     console.log('[STRIPE-WEBHOOK] Webhook POST received');
 
     try {
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
             apiVersion: '2023-10-16' as any,
         });
 
@@ -23,16 +23,8 @@ export async function POST(request: Request) {
         let event: Stripe.Event;
 
         try {
-            if (!webhookSecret || webhookSecret === 'mock_secret') {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.log('[STRIPE-WEBHOOK] Using Mock Secret');
-                    event = JSON.parse(body);
-                } else {
-                    return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
-                }
-            } else {
-                event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-            }
+            if (!webhookSecret) throw new Error('STRIPE_WEBHOOK_SECRET is not defined');
+            event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : 'Unknown error';
             console.error(`[STRIPE-WEBHOOK] Signature verification failed: ${errorMessage}`);
@@ -164,9 +156,32 @@ export async function POST(request: Request) {
                                 ? `${productDetails.duration} Tage`
                                 : '30 Tage';
 
-                            const dataAmountString = productDetails?.dataAmount
-                                ? (productDetails.dataAmount >= 1000 ? `${productDetails.dataAmount / 1000} GB` : `${productDetails.dataAmount} MB`)
-                                : 'Standard Data';
+                            const dataAmountString = (() => {
+                                if (!productDetails) return 'Standard Data';
+
+                                if (productDetails.dataAmount === -1) {
+                                    // Unlimited Logic
+                                    let tier = 'Lite';
+                                    let speed = '1GB HighSpeed';
+
+                                    if (productDetails.name.includes('_ULP_')) {
+                                        tier = 'Plus';
+                                        speed = '2GB HighSpeed';
+                                    } else if (productDetails.name.includes('_ULE_')) {
+                                        tier = 'Essential';
+                                        speed = '1GB HighSpeed'; // ??? Logic says 1GB? Let's check catalogue.ts: Essential is 1GB too?
+                                        // Catalogue ts says: Essential -> 1GB, 1.25Mbps
+                                    }
+
+                                    return `Unlimited ${tier} (${speed})`;
+                                }
+
+                                if (productDetails.dataAmount && productDetails.dataAmount >= 1000) {
+                                    return `${productDetails.dataAmount / 1000} GB`;
+                                }
+
+                                return `${productDetails.dataAmount || 0} MB`;
+                            })();
 
                             const emailResult = await sendOrderConfirmation({
                                 customerEmail: customerEmail || 'customer@example.com',
@@ -185,9 +200,11 @@ export async function POST(request: Request) {
                                 if (emailResult.id) emailIds.push(emailResult.id);
                             } else {
                                 console.error(`[STRIPE-WEBHOOK] Email FAILED: ${emailResult.error}`);
+                                await sendAdminAlert('Email Sending Failed', `Order ${sessionId} paid but email failed for ${customerEmail}. Error: ${emailResult.error}`);
                             }
                         } else {
                             console.error(`[STRIPE-WEBHOOK] Fulfillment FAILED: ${result.error}`);
+                            await sendAdminAlert('eSIM Order Failed', `Order ${sessionId} paid but eSIM fulfillment failed for SKU ${bundleId}. Error: ${result.error}. Customer: ${customerEmail}`);
                             allSuccess = false;
                         }
                     } catch (itemErr) {
