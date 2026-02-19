@@ -60,10 +60,13 @@ export class EsimAccessProvider implements EsimProvider {
             });
 
             const data = await response.json();
-            if (data.code === '0000' && data.data) {
-                return parseFloat(data.data.balance || '0');
+            const inner = data.obj || data.data;
+            if ((data.success || data.code === '0000' || data.errorCode === '0') && inner) {
+                const rawBalance = parseFloat(inner.balance || '0');
+                // Factor 10,000 applies to balance as well
+                return rawBalance / 10000;
             }
-            console.error('[eSIMAccess] Balance Response Info:', data.code, data.message || data.errorMsg);
+            console.error('[eSIMAccess] Balance Response Info:', data.code || data.errorCode, data.message || data.errorMsg);
             return -1;
         } catch (error) {
             console.error('[eSIMAccess] Balance check failed:', error);
@@ -72,19 +75,11 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async fetchCatalog(): Promise<NormalizedProduct[]> {
-        // Redtea often requires a 'type' (1=First Install) and 'locationCode' to return results
+        // Redtea often requires an empty body or specific paging for the package list
         const endpoints = [
             {
                 url: `${this.baseUrl}/open/package/list`,
-                body: {
-                    type: "1",
-                    locationCode: "",
-                    paging: { page: 1, limit: 500 }
-                }
-            },
-            {
-                url: `${this.baseUrl}/open/package/all`,
-                body: { type: "1" }
+                body: {}
             }
         ];
 
@@ -101,13 +96,14 @@ export class EsimAccessProvider implements EsimProvider {
                 const data = await response.json();
 
                 // Extra defensive mapping: check every possible field name for the package list
-                const list = data.data?.packageList || data.packageList || data.data?.list || data.data?.packages || data.packages;
+                // User guide specifies data.obj.packageList
+                const list = data.obj?.packageList || data.data?.packageList || data.packageList || data.data?.list || data.data?.packages || data.packages;
 
-                if (data.code === '0000' && Array.isArray(list) && list.length > 0) {
+                if ((data.success || data.code === '0000') && Array.isArray(list) && list.length > 0) {
                     console.log(`[eSIMAccess] Found ${list.length} packages at ${endpoint.url}`);
                     return this.mapPackages(list);
                 } else {
-                    console.warn(`[eSIMAccess] ${endpoint.url} returned 0 results. Code: ${data.code}, Msg: ${data.message || data.errorMsg}`);
+                    console.warn(`[eSIMAccess] ${endpoint.url} returned 0 results. Success: ${data.success}, Code: ${data.code}, Msg: ${data.message || data.errorMsg}`);
                 }
             } catch (err) {
                 console.error(`[eSIMAccess] Endpoint ${endpoint.url} error:`, err);
@@ -120,23 +116,25 @@ export class EsimAccessProvider implements EsimProvider {
     private mapPackages(packageList: any[]): NormalizedProduct[] {
         return packageList.map((pkg: any) => {
             // Support both string and number prices
-            const price = typeof pkg.price === 'string' ? parseFloat(pkg.price) : (pkg.price || 0);
+            // User guide says price is factor 10,000 (10000 = 1.00 USD)
+            const rawPrice = typeof pkg.price === 'string' ? parseFloat(pkg.price) : (pkg.price || 0);
+            const price = rawPrice / 10000;
 
             // Volume can be bytes or megabytes depending on the provider sub-configuration
             const vol = parseInt(pkg.volume || '0');
-            let dataAmountMB = pkg.volume === '-1' ? -1 : vol;
+            let dataAmountMB = pkg.volume === '-1' || pkg.volume === -1 ? -1 : vol;
             if (dataAmountMB > 100000) dataAmountMB = Math.floor(dataAmountMB / 1048576);
 
             return {
-                id: pkg.packageCode || pkg.slug || pkg.id,
-                name: pkg.packageName || pkg.name || pkg.packageCode,
+                id: pkg.slug || pkg.packageCode || pkg.id,
+                name: pkg.name || pkg.packageName || pkg.packageCode,
                 price: price,
-                currency: pkg.currency || 'USD',
-                countryCode: pkg.locationCode || pkg.countryCode || 'global',
+                currency: pkg.currencyCode || pkg.currency || 'USD',
+                countryCode: pkg.locationCode || pkg.location || 'global',
                 dataAmountMB,
                 validityDays: parseInt(pkg.duration || '0'),
-                isUnlimited: pkg.volume === '-1',
-                networkType: pkg.networkType || '4G/5G',
+                isUnlimited: pkg.volume === '-1' || pkg.volume === -1,
+                networkType: pkg.speed || pkg.networkType || '4G/5G',
                 originalData: pkg
             };
         });
@@ -169,9 +167,10 @@ export class EsimAccessProvider implements EsimProvider {
             }
 
             const data = await response.json();
+            const inner = data.obj || data.data;
 
-            if (data.code === '0000' && data.data) {
-                const orderInfo = data.data;
+            if ((data.success || data.code === '0000' || data.errorCode === '0') && inner) {
+                const orderInfo = inner;
                 const esim = orderInfo.esimList?.[0] || orderInfo.orderList?.[0];
 
                 if (esim && esim.iccid) {
@@ -216,7 +215,7 @@ export class EsimAccessProvider implements EsimProvider {
 
             if (!response.ok) return null;
             const data = await response.json();
-            return data.code === '0000' ? data.data : null;
+            return (data.success || data.code === '0000' || data.errorCode === '0') ? (data.obj || data.data) : null;
         } catch (error) {
             console.error('[eSIMAccess] Query eSIM details failed:', error);
             return null;
@@ -234,7 +233,7 @@ export class EsimAccessProvider implements EsimProvider {
 
             if (!response.ok) return null;
             const data = await response.json();
-            return data.code === '0000' ? data.data : null;
+            return (data.success || data.code === '0000' || data.errorCode === '0') ? (data.obj || data.data) : null;
         } catch (error) {
             console.error('[eSIMAccess] Query usage failed:', error);
             return null;
