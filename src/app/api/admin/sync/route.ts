@@ -102,6 +102,14 @@ async function syncProviderOptimized(provider: EsimProvider) {
 
     if (!dbProvider.isActive) return { provider: provider.name, skipped: true };
 
+    // 🔥 ENTERPRISE CONFIG INJECTION
+    // We must inject the database-stored configuration (API keys, etc.) into the provider engine
+    const config = dbProvider.config as any;
+    if (config) {
+        if ((provider as any).config !== undefined) (provider as any).config = config;
+        if (config.apiKey && (provider as any).apiKey !== undefined) (provider as any).apiKey = config.apiKey;
+    }
+
     const products = await provider.fetchCatalog();
 
     const BATCH_SIZE = 100;

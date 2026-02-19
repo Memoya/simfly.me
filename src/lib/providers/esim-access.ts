@@ -9,23 +9,34 @@ export class EsimAccessProvider implements EsimProvider {
     public baseUrl = 'https://api.esimaccess.com/api/v1';
 
     // Alias for the status check injector
-    set apiKey(val: string) { this.accessCode = val; }
-    set config(val: Record<string, string>) {
+    set apiKey(val: string) {
+        this.accessCode = val;
+    }
+
+    set config(val: any) {
+        if (!val) return;
         if (val.accessCode) this.accessCode = val.accessCode;
+        if (val.apiKey) this.accessCode = val.apiKey; // Handle both naming conventions
         if (val.secretKey) this.secretKey = val.secretKey;
         if (val.baseUrl) this.baseUrl = val.baseUrl;
     }
 
     async checkHealth(): Promise<boolean> {
         try {
+            console.log(`[eSIMAccess] Checking health (Balance) using ${this.baseUrl}...`);
             const balance = await this.getBalance();
             return balance >= 0;
-        } catch {
+        } catch (error) {
+            console.error('[eSIMAccess] Health check exception:', error);
             return false;
         }
     }
 
     async getBalance(): Promise<number> {
+        if (!this.accessCode) {
+            console.warn('[eSIMAccess] Cannot check balance: AccessCode missing');
+            return -1;
+        }
         try {
             const response = await fetch(`${this.baseUrl}/open/balance/query`, {
                 method: 'POST',
@@ -36,12 +47,16 @@ export class EsimAccessProvider implements EsimProvider {
                 body: JSON.stringify({})
             });
 
-            if (!response.ok) return -1;
+            if (!response.ok) {
+                console.error(`[eSIMAccess] Balance API error: ${response.status} ${response.statusText}`);
+                return -1;
+            }
 
             const data = await response.json();
             if (data.code === '0000' && data.data) {
                 return parseFloat(data.data.balance || '0');
             }
+            console.warn('[eSIMAccess] Balance query returned non-zero code:', data.code, data.message);
             return -1;
         } catch (error) {
             console.error('[eSIMAccess] Balance check failed:', error);
@@ -50,9 +65,13 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async fetchCatalog(): Promise<NormalizedProduct[]> {
-        if (!this.accessCode) return [];
+        if (!this.accessCode) {
+            console.warn('[eSIMAccess] Cannot fetch catalog: AccessCode missing');
+            return [];
+        }
 
         try {
+            console.log(`[eSIMAccess] Fetching catalog from ${this.baseUrl} with AccessCode ${this.accessCode.substring(0, 4)}...`);
             const response = await fetch(`${this.baseUrl}/open/package/list`, {
                 method: 'POST',
                 headers: {
@@ -62,12 +81,18 @@ export class EsimAccessProvider implements EsimProvider {
                 body: JSON.stringify({})
             });
 
-            if (!response.ok) return [];
+            if (!response.ok) {
+                console.error(`[eSIMAccess] Catalog API error: ${response.status}`);
+                return [];
+            }
 
             const data = await response.json();
             if (data.code !== '0000' || !data.data || !Array.isArray(data.data.packageList)) {
+                console.warn('[eSIMAccess] Catalog query failed or empty:', data.code, data.message);
                 return [];
             }
+
+            console.log(`[eSIMAccess] Successfully fetched ${data.data.packageList.length} packages`);
 
             return data.data.packageList.map((pkg: any) => {
                 const volumeBytes = parseInt(pkg.volume || '0');
