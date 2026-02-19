@@ -25,10 +25,16 @@ export class EsimAccessProvider implements EsimProvider {
         // Redtea/eSIMAccess expects a unique string, 32-char UUID is standard
         const requestId = crypto.randomUUID().replace(/-/g, '');
 
-        // CRITICAL: If the body is empty/null, the signature part should be an empty string, 
-        // and NO body should be sent in the fetch request.
-        const bodyStr = (body && Object.keys(body).length > 0) ? JSON.stringify(body) : "";
+        // CRITICAL: Redtea Signature logic
+        // If there is no body, bodyStr MUST be an empty string for the hash.
+        let bodyStr = "";
+        if (body && Object.keys(body).length > 0) {
+            bodyStr = JSON.stringify(body);
+        }
+
         const signature = this.generateSignature(timestamp, requestId, bodyStr);
+
+        console.log(`[eSIMAccess] Header Debug - TS: ${timestamp}, RID: ${requestId}, BodyLen: ${bodyStr.length}`);
 
         return {
             'Content-Type': 'application/json',
@@ -41,7 +47,6 @@ export class EsimAccessProvider implements EsimProvider {
 
     async checkHealth(): Promise<boolean> {
         try {
-            console.log(`[eSIMAccess] Checking health (Balance) using ${this.baseUrl}...`);
             const balance = await this.getBalance();
             return balance >= 0;
         } catch (error) {
@@ -52,23 +57,17 @@ export class EsimAccessProvider implements EsimProvider {
 
     async getBalance(): Promise<number> {
         try {
-            // Use null for empty body to ensure getHeaders uses "" for signature
             const response = await fetch(`${this.baseUrl}/open/balance/query`, {
                 method: 'POST',
                 headers: this.getHeaders(null),
-                // DO NOT send body: JSON.stringify({}) if it's supposed to be empty
+                // No body sent for balance
             });
-
-            if (!response.ok) {
-                console.error(`[eSIMAccess] Balance API error: ${response.status} ${response.statusText}`);
-                return -1;
-            }
 
             const data = await response.json();
             if (data.code === '0000' && data.data) {
                 return parseFloat(data.data.balance || '0');
             }
-            console.warn('[eSIMAccess] Balance query returned non-zero code:', data.code, data.message);
+            console.error('[eSIMAccess] Balance Error:', data.code, data.message || data.errorMsg);
             return -1;
         } catch (error) {
             console.error('[eSIMAccess] Balance check failed:', error);
@@ -77,91 +76,62 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async fetchCatalog(): Promise<NormalizedProduct[]> {
-        try {
-            // eSIM Access often requires a paging object to return anything
-            const body = {
-                paging: {
-                    page: 1,
-                    limit: 1000
+        // Try multiple endpoints if one fails
+        const endpoints = [
+            { url: `${this.baseUrl}/open/package/list`, body: { paging: { page: 1, limit: 1000 } } },
+            { url: `${this.baseUrl}/open/package/all`, body: {} }
+        ];
+
+        for (const endpoint of endpoints) {
+            try {
+                console.log(`[eSIMAccess] Trying catalog endpoint: ${endpoint.url}`);
+                const response = await fetch(endpoint.url, {
+                    method: 'POST',
+                    headers: this.getHeaders(endpoint.body),
+                    body: Object.keys(endpoint.body).length > 0 ? JSON.stringify(endpoint.body) : undefined
+                });
+
+                if (!response.ok) {
+                    console.error(`[eSIMAccess] HTTP Error ${response.status} from ${endpoint.url}`);
+                    continue;
                 }
-            };
 
-            console.log(`[eSIMAccess] Fetching catalog from ${this.baseUrl} with AccessCode ${this.accessCode.substring(0, 4)}...`);
-            const response = await fetch(`${this.baseUrl}/open/package/list`, {
-                method: 'POST',
-                headers: this.getHeaders(body),
-                body: JSON.stringify(body)
-            });
+                const data = await response.json();
+                console.log(`[eSIMAccess] API Response Code: ${data.code} from ${endpoint.url}`);
 
-            if (!response.ok) {
-                console.error(`[eSIMAccess] Catalog API error: ${response.status}`);
-                return [];
-            }
-
-            const data = await response.json();
-            if (data.code !== '0000' || !data.data || !Array.isArray(data.data.packageList)) {
-                console.warn('[eSIMAccess] Catalog query failed or empty:', data.code, data.message);
-                // If list is empty, try calling /open/package/all as fallback
-                if (data.code === '0000' && data.data && data.data.packageList?.length === 0) {
-                    console.log('[eSIMAccess] Catalog empty, trying fallback /open/package/all...');
-                    return this.fetchCatalogFallback();
+                if (data.code === '0000' && data.data?.packageList && data.data.packageList.length > 0) {
+                    console.log(`[eSIMAccess] Found ${data.data.packageList.length} packages at ${endpoint.url}`);
+                    return this.mapPackages(data.data.packageList);
+                } else if (data.code !== '0000') {
+                    console.warn(`[eSIMAccess] Endpoint ${endpoint.url} returned code ${data.code}: ${data.message || data.errorMsg}`);
                 }
-                return [];
+            } catch (err) {
+                console.error(`[eSIMAccess] Failed to fetch from ${endpoint.url}:`, err);
             }
-
-            console.log(`[eSIMAccess] Successfully fetched ${data.data.packageList.length} packages`);
-
-            return data.data.packageList.map((pkg: any) => {
-                const volumeBytes = parseInt(pkg.volume || '0');
-                const dataAmountMB = pkg.volume === '-1' ? -1 : Math.floor(volumeBytes / 1048576);
-
-                return {
-                    id: pkg.packageCode || pkg.slug,
-                    name: pkg.packageName || pkg.name,
-                    price: parseFloat(pkg.price || '0'),
-                    currency: pkg.currency || 'USD',
-                    countryCode: pkg.locationCode || 'global',
-                    dataAmountMB,
-                    validityDays: parseInt(pkg.duration || '0'),
-                    isUnlimited: pkg.volume === '-1',
-                    networkType: 'LTE/5G',
-                    originalData: pkg
-                };
-            });
-        } catch (error) {
-            console.error('[eSIMAccess] Catalog fetch failed:', error);
-            return [];
         }
+
+        console.error('[eSIMAccess] All catalog endpoints returned 0 results or errors.');
+        return [];
     }
 
-    private async fetchCatalogFallback(): Promise<NormalizedProduct[]> {
-        try {
-            const body = {}; // Try empty body for 'all'
-            const response = await fetch(`${this.baseUrl}/open/package/all`, {
-                method: 'POST',
-                headers: this.getHeaders(body),
-                body: JSON.stringify(body)
-            });
-            if (!response.ok) return [];
-            const data = await response.json();
-            if (data.code === '0000' && data.data && Array.isArray(data.data.packageList)) {
-                return data.data.packageList.map((pkg: any) => ({
-                    id: pkg.packageCode,
-                    name: pkg.packageName,
-                    price: parseFloat(pkg.price),
-                    currency: pkg.currency,
-                    countryCode: pkg.locationCode,
-                    dataAmountMB: pkg.volume === '-1' ? -1 : Math.floor(parseInt(pkg.volume) / 1048576),
-                    validityDays: parseInt(pkg.duration),
-                    isUnlimited: pkg.volume === '-1',
-                    networkType: 'LTE/5G',
-                    originalData: pkg
-                }));
-            }
-            return [];
-        } catch {
-            return [];
-        }
+    private mapPackages(packageList: any[]): NormalizedProduct[] {
+        return packageList.map((pkg: any) => {
+            const volumeBytes = parseInt(pkg.volume || '0');
+            const dataAmountMB = pkg.volume === '-1' ? -1 : Math.floor(volumeBytes / 1048576);
+
+            return {
+                id: pkg.packageCode || pkg.slug,
+                name: pkg.packageName || pkg.name,
+                price: parseFloat(pkg.price || '0'),
+                currency: pkg.currency || 'USD',
+                countryCode: pkg.locationCode || 'global',
+                dataAmountMB,
+                validityDays: parseInt(pkg.duration || '0'),
+                isUnlimited: pkg.volume === '-1',
+                networkType: 'LTE/5G',
+                originalData: pkg
+            };
+        });
     }
 
     async order(productId: string): Promise<OrderResult> {
