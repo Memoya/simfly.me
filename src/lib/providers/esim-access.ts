@@ -4,8 +4,8 @@ import * as crypto from 'crypto';
 export class EsimAccessProvider implements EsimProvider {
     name = 'eSIMAccess';
     slug = 'esim-access';
-    private accessCode = 'ddf262332cdd43b6b1a85ae56dc78261';
-    private secretKey = '1e08f66c25f44cea93af1070a07a623c';
+    private accessCode = process.env.ESIM_ACCESS_CODE || 'ddf262332cdd43b6b1a85ae56dc78261';
+    private secretKey = process.env.ESIM_ACCESS_SECRET || '1e08f66c25f44cea93af1070a07a623c';
     public baseUrl = 'https://api.esimaccess.com/api/v1';
 
     // Disable manual overrides for this provider as requested
@@ -17,24 +17,23 @@ export class EsimAccessProvider implements EsimProvider {
         return crypto
             .createHmac('sha256', this.secretKey)
             .update(signData)
-            .digest('hex');
+            .digest('hex')
+            .toUpperCase(); // Many APIs require uppercase hex
     }
 
     private getHeaders(body: any = null): Record<string, string> {
         const timestamp = Date.now().toString();
-        // Redtea/eSIMAccess expects a unique string, 32-char UUID is standard
         const requestId = crypto.randomUUID().replace(/-/g, '');
 
-        // CRITICAL: Redtea Signature logic
-        // If there is no body, bodyStr MUST be an empty string for the hash.
         let bodyStr = "";
-        if (body && Object.keys(body).length > 0) {
+        // FIXED: Added check to prevent crash on null body
+        if (body && typeof body === 'object' && Object.keys(body).length > 0) {
             bodyStr = JSON.stringify(body);
         }
 
         const signature = this.generateSignature(timestamp, requestId, bodyStr);
 
-        console.log(`[eSIMAccess] Header Debug - TS: ${timestamp}, RID: ${requestId}, BodyLen: ${bodyStr.length}`);
+        console.log(`[eSIMAccess] Request: ${requestId} | BodyLen: ${bodyStr.length} | Sign: ${signature.substring(0, 8)}...`);
 
         return {
             'Content-Type': 'application/json',
