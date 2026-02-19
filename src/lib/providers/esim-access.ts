@@ -24,8 +24,8 @@ export class EsimAccessProvider implements EsimProvider {
 
     private getHeaders(body: any = null): Record<string, string> {
         const timestamp = Date.now().toString();
-        // Use full UUID with dashes as standard
-        const requestId = crypto.randomUUID();
+        // Some Redtea versions prefer 32-char hex (no dashes)
+        const requestId = crypto.randomUUID().replace(/-/g, '');
 
         // Sign the EXACT string that will be sent in the fetch body
         const bodyStr = body ? JSON.stringify(body) : "";
@@ -72,10 +72,20 @@ export class EsimAccessProvider implements EsimProvider {
     }
 
     async fetchCatalog(): Promise<NormalizedProduct[]> {
-        // Redtea sometimes behaves differently depending on whether paging is sent
+        // Redtea often requires a 'type' (1=First Install) and 'locationCode' to return results
         const endpoints = [
-            { url: `${this.baseUrl}/open/package/list`, body: { paging: { page: 1, limit: 1000 } } },
-            { url: `${this.baseUrl}/open/package/all`, body: {} }
+            {
+                url: `${this.baseUrl}/open/package/list`,
+                body: {
+                    type: "1",
+                    locationCode: "",
+                    paging: { page: 1, limit: 500 }
+                }
+            },
+            {
+                url: `${this.baseUrl}/open/package/all`,
+                body: { type: "1" }
+            }
         ];
 
         for (const endpoint of endpoints) {
@@ -90,14 +100,14 @@ export class EsimAccessProvider implements EsimProvider {
 
                 const data = await response.json();
 
-                // Flexible mapping for different Redtea response structures
-                const list = data.data?.packageList || data.packageList || data.data?.list;
+                // Extra defensive mapping: check every possible field name for the package list
+                const list = data.data?.packageList || data.packageList || data.data?.list || data.data?.packages || data.packages;
 
                 if (data.code === '0000' && Array.isArray(list) && list.length > 0) {
                     console.log(`[eSIMAccess] Found ${list.length} packages at ${endpoint.url}`);
                     return this.mapPackages(list);
                 } else {
-                    console.warn(`[eSIMAccess] ${endpoint.url} returned no data. Code: ${data.code}`);
+                    console.warn(`[eSIMAccess] ${endpoint.url} returned 0 results. Code: ${data.code}, Msg: ${data.message || data.errorMsg}`);
                 }
             } catch (err) {
                 console.error(`[eSIMAccess] Endpoint ${endpoint.url} error:`, err);
