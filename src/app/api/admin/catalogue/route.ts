@@ -127,7 +127,8 @@ export async function GET(request: Request) {
                 unlimitedDetails: unlimitedDetails,
                 sellPrice: sellPrice,
                 profit: profit,
-                speed: b.speed
+                speed: b.speed,
+                providerName: b.providerName
             };
         });
 

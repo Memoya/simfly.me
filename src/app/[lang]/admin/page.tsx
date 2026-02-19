@@ -1219,6 +1219,15 @@ export default function AdminPage() {
                                                             {order.status}
                                                         </span>
                                                     </td>
+                                                    <td className="py-3 px-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-medium text-navy">{order.name}</span>
+                                                            <span className="text-[10px] font-bold text-electric px-1.5 py-0.5 bg-blue-50 rounded w-fit mt-1">
+                                                                {order.providerName || 'eSIMAccess'}
+                                                            </span>
+                                                            {order.speed && <span className="text-[10px] text-gray-500 mt-1">Speed: {order.speed}</span>}
+                                                        </div>
+                                                    </td>
                                                     <td className="py-3 px-4 text-right">
                                                         <button
                                                             onClick={() => setSelectedOrder(order)}
@@ -1315,7 +1324,14 @@ export default function AdminPage() {
                                                             </div>
                                                         )}
                                                     </td>
-                                                    <td className="py-3 px-4 font-medium text-navy text-xs">{p.name}</td>
+                                                    <td className="py-3 px-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-medium text-navy">{p.name}</span>
+                                                            <span className="text-[10px] font-bold text-electric px-1.5 py-0.5 bg-blue-50 rounded w-fit mt-1">
+                                                                {p.providerName || 'eSIMAccess'}
+                                                            </span>
+                                                        </div>
+                                                    </td>
                                                     <td className="py-3 px-4 text-sm text-gray-600">{p.duration || 'N/A'}</td>
                                                     <td className="py-3 px-4 text-sm text-gray-600">{p.region}</td>
                                                     <td className="py-3 px-4 text-sm text-gray-600">{Number(p.price).toFixed(2)}€</td>
@@ -1328,6 +1344,9 @@ export default function AdminPage() {
                                                         >
                                                             <Tag className="w-4 h-4" />
                                                         </button>
+                                                    </td>
+                                                    <td className="py-3 px-4 text-sm font-medium text-gray-600">
+                                                        <span className="bg-gray-100 px-2 py-1 rounded text-xs">{p.speed || '4G/5G'}</span>
                                                     </td>
                                                     <td className={`py-3 px-4 font-bold ${profit > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                                         +{Number(profit).toFixed(2)}€

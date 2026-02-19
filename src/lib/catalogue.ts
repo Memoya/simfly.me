@@ -38,8 +38,9 @@ export const getCatalogue = unstable_cache(
 
                 return {
                     id: offer.id,
-                    // Format: eSIMAccess - Region - Data
-                    name: `eSIMAccess - ${offer.countryCode} - ${dataStr}`,
+                    // Clean name: Just Region and Data
+                    name: `${offer.countryCode} - ${dataStr}`,
+                    providerName: 'eSIMAccess', // Dedicated field
                     price: offer.costPrice,
                     sellPrice: offer.sellPrice,
                     description: `${dataStr} - ${offer.validityDays} Days`,
