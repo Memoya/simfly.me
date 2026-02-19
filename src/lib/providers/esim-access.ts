@@ -101,11 +101,19 @@ export class EsimAccessProvider implements EsimProvider {
                 if (data.code === '0000' && data.data?.packageList && data.data.packageList.length > 0) {
                     console.log(`[eSIMAccess] Found ${data.data.packageList.length} packages at ${endpoint.url}`);
                     return this.mapPackages(data.data.packageList);
+                } else if (data.code === '0000' && (!data.data?.packageList || data.data.packageList.length === 0)) {
+                    console.warn(`[eSIMAccess] Endpoint ${endpoint.url} returned success but empty list. Balance is likely $0 or no plans assigned.`);
                 } else if (data.code !== '0000') {
-                    console.warn(`[eSIMAccess] Endpoint ${endpoint.url} returned code ${data.code}: ${data.message || data.errorMsg}`);
+                    const errorMsg = data.message || data.errorMsg || 'Unknown Error';
+                    console.warn(`[eSIMAccess] Endpoint ${endpoint.url} returned code ${data.code}: ${errorMsg}`);
+                    // If it's a specific "no permission" or "balance" error, we might want to know
+                    if (data.code === '1002' || data.code === '1005') {
+                        throw new Error(`eSIM Access: ${errorMsg} (Code ${data.code})`);
+                    }
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error(`[eSIMAccess] Failed to fetch from ${endpoint.url}:`, err);
+                if (err.message.includes('eSIM Access:')) throw err;
             }
         }
 
