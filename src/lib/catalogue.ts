@@ -36,11 +36,17 @@ export const getCatalogue = unstable_cache(
                 const pp = ppMap.get(`${offer.providerId}-${offer.providerProductId}`);
                 const dataStr = offer.dataAmountMB >= 1024 ? (offer.dataAmountMB / 1024) + 'GB' : offer.dataAmountMB + 'MB';
 
+                // Get original name and clean it up
+                let cleanName = pp?.name || `${offer.countryCode} - ${dataStr}`;
+                // Remove provider prefixes if they exist in the name string
+                cleanName = cleanName.replace(/^eSIMAccess\s*-\s*/i, '')
+                    .replace(/^eSIMAccess\s+/i, '')
+                    .replace(/\s*eSIMAccess\s*/i, '');
+
                 return {
                     id: offer.id,
-                    // Clean name: Just Region and Data
-                    name: `${offer.countryCode} - ${dataStr}`,
-                    providerName: 'eSIMAccess', // Dedicated field
+                    name: cleanName,
+                    providerName: 'eSIMAccess', // Dedicated field for the manufacturer badge
                     price: offer.costPrice,
                     sellPrice: offer.sellPrice,
                     description: `${dataStr} - ${offer.validityDays} Days`,
