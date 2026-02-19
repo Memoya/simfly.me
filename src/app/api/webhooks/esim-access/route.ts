@@ -7,8 +7,9 @@ import { prisma } from '@/lib/prisma';
  * Documentation: https://docs.esimaccess.com/#6ff716a7-5b8a-47e2-bcd2-250da94ac325
  */
 // eSIM Access validation needs a 200 OK response on all methods (including HEAD or GET)
+// eSIM Access validation often looks for a specific status code or standard response format
 export async function GET() {
-    return NextResponse.json({ status: 'active', message: 'eSIMAccess Webhook Endpoint' }, { status: 200 });
+    return NextResponse.json({ code: '0000', message: 'active' }, { status: 200 });
 }
 
 export async function HEAD() {
@@ -17,14 +18,21 @@ export async function HEAD() {
 
 export async function POST(request: Request) {
     try {
-        const payload = await request.json();
+        const payload = await request.json().catch(() => null);
         console.log('[eSIMAccess-Webhook] Received:', JSON.stringify(payload));
+
+        // If it's a validation ping or empty request, return 200 with their success code
+        if (!payload || Object.keys(payload).length === 0) {
+            return NextResponse.json({ code: '0000', message: 'OK' });
+        }
 
         const eventType = payload.eventType || payload.type;
         const data = payload.data || payload;
 
+        // Don't return 400 for validation requests even if data is thin
         if (!data.iccid && !data.orderNo) {
-            return NextResponse.json({ success: false, error: 'Missing identifying data' }, { status: 400 });
+            console.log('[eSIMAccess-Webhook] Received data without identifiers (possible validation):', payload);
+            return NextResponse.json({ code: '0000', message: 'Received' });
         }
 
         switch (eventType) {
