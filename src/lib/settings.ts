@@ -9,7 +9,10 @@ export async function getSettings(): Promise<AdminSettings> {
         countryMargins: {},
         featuredDeals: [],
         banner: { active: false, text: '', link: '' },
-        faq: []
+        faq: [],
+        autoDiscountEnabled: false,
+        autoDiscountPercent: 10.0,
+        autoDiscountThreshold: 50.0
     };
 
     try {
@@ -65,7 +68,10 @@ export async function saveSettings(settings: AdminSettings): Promise<void> {
                 discountCodes: (settings.discountCodes || []) as any,
                 featuredDeals: (settings.featuredDeals || []) as any,
                 banner: (settings.banner || {}) as any,
-                faq: (settings.faq || []) as any
+                faq: (settings.faq || []) as any,
+                autoDiscountEnabled: settings.autoDiscountEnabled ?? false,
+                autoDiscountPercent: settings.autoDiscountPercent ?? 10.0,
+                autoDiscountThreshold: settings.autoDiscountThreshold ?? 50.0
             },
             create: {
                 id: 'global',
@@ -77,7 +83,10 @@ export async function saveSettings(settings: AdminSettings): Promise<void> {
                 discountCodes: (settings.discountCodes || []) as any,
                 featuredDeals: (settings.featuredDeals || []) as any,
                 banner: (settings.banner || {}) as any,
-                faq: (settings.faq || []) as any
+                faq: (settings.faq || []) as any,
+                autoDiscountEnabled: settings.autoDiscountEnabled ?? false,
+                autoDiscountPercent: settings.autoDiscountPercent ?? 10.0,
+                autoDiscountThreshold: settings.autoDiscountThreshold ?? 50.0
             }
         });
     } catch (dbError) {

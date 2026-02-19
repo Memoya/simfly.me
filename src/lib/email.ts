@@ -54,7 +54,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
                             <div style="margin-bottom: 25px;">
                                 <h3 style="margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #0066FF; letter-spacing: 1px;">Methode 2: Direkt-Aktivierung (iOS)</h3>
                                 <p style="margin: 0 0 15px 0; font-size: 13px; color: #444;">Nur für iPhones: Klicke auf den Button, um das eSIM-Menü direkt zu öffnen.</p>
-                                <a href="apple-esim://install?address=${data.smdpAddress}&matchingId=${data.matchingId}" style="display: block; background: #000; color: #fff; text-decoration: none; padding: 16px 20px; border-radius: 12px; font-size: 14px; font-weight: 900; text-align: center; letter-spacing: 0.5px;">JETZT AUF iPHONE INSTALLIEREN</a>
+                                <a href="${process.env.NEXT_PUBLIC_BASE_URL}/de/install?address=${data.smdpAddress}&matchingId=${data.matchingId}" style="display: block; background: #000; color: #fff; text-decoration: none; padding: 16px 20px; border-radius: 12px; font-size: 14px; font-weight: 900; text-align: center; letter-spacing: 0.5px;">JETZT AUF iPHONE INSTALLIEREN</a>
                             </div>
 
                             <div style="border-top: 1px solid #e0eeff; padding-top: 20px;">

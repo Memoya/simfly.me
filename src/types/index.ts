@@ -80,6 +80,9 @@ export interface AdminSettings {
         link?: string;
     };
     faq?: FAQItem[];
+    autoDiscountEnabled?: boolean;
+    autoDiscountPercent?: number;
+    autoDiscountThreshold?: number;
     catalogueLastUpdated?: string;
     catalogueLastChangeCount?: number;
     // New fields for auto-alert
@@ -87,4 +90,7 @@ export interface AdminSettings {
     lowBalanceThreshold?: number;
     // New fields for price overrides
     productOverrides?: Record<string, number>;
+    // Price Guard
+    minMarginFixed?: number;
+    minMarginPercent?: number;
 }

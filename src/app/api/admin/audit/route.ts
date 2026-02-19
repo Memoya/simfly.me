@@ -1,23 +1,28 @@
+
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { verifyAuth } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+    if (!verifyAuth(request)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
-        const authHeader = request.headers.get('authorization');
-        if (authHeader !== `Bearer ${process.env.ADMIN_PASSWORD}`) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        const { searchParams } = new URL(request.url);
+        const action = searchParams.get('action');
+        const limit = parseInt(searchParams.get('limit') || '20');
 
         const logs = await prisma.auditLog.findMany({
-            orderBy: {
-                createdAt: 'desc'
-            },
-            take: 100 // Limit to last 100 logs for performance
+            where: action ? { action } : {},
+            orderBy: { createdAt: 'desc' },
+            take: limit
         });
 
         return NextResponse.json(logs);
-    } catch (error) {
-        console.error('Failed to fetch audit logs:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

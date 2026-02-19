@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
-import { createOrder } from '@/lib/esim';
+import { getProvider } from '@/lib/providers';
+import { fulfillProduct } from '@/lib/fulfillment';
 import { sendOrderConfirmation, sendAdminAlert } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
@@ -82,9 +83,11 @@ export async function POST(request: Request) {
                         customerEmail: customerEmail,
                         items: {
                             create: items.map((item: any) => ({
-                                productName: item.sku || item.name || 'eSIM Bundle', // Use SKU (esim_...) as the primary key/name in DB
+                                productName: item.sku || item.name || 'eSIM Bundle',
                                 quantity: item.quantity || 1,
-                                price: item.price || 0
+                                price: item.price || 0,
+                                costPrice: item.costPrice || 0,
+                                providerId: item.providerId || 'esim-go'
                             }))
                         }
                     },
@@ -106,47 +109,51 @@ export async function POST(request: Request) {
 
                 for (const item of newOrder.items) {
                     try {
-                        // Use the SKU for fulfillment
-                        const bundleId = item.productName; // This is now the SKU (esim_...)
-                        console.log(`[STRIPE-WEBHOOK] Fulfilling SKU: ${bundleId}`);
-                        const result = await createOrder(bundleId);
+                        const bundleId = item.productName;
+                        const providerId = (item as any).providerId || 'esim-go';
 
-                        if (result.success && result.iccid) {
-                            console.log(`[STRIPE-WEBHOOK] eSIM SUCCESS: ${result.iccid}`);
+                        console.log(`[STRIPE-WEBHOOK] Fulfilling ${bundleId} via ${providerId} (Smart Routing)`);
+
+                        // Use the new fulfillment engine with failover support
+                        const result = await fulfillProduct(bundleId, providerId);
+
+                        if (result.success && result.esim) {
+                            console.log(`[STRIPE-WEBHOOK] eSIM SUCCESS: ${result.esim.iccid} via ${result.finalProviderId}`);
 
                             await prisma.orderItem.update({
                                 where: { id: item.id },
                                 data: {
-                                    iccid: result.iccid,
-                                    matchingId: result.matchingId,
-                                    smdpAddress: result.smdpAddress,
-                                    esimGoOrderRef: result.matchingId,
+                                    iccid: result.esim.iccid,
+                                    matchingId: result.esim.matchingId,
+                                    smdpAddress: result.esim.smdpAddress,
+                                    providerId: result.finalProviderId // Update in case of failover
                                 }
                             });
 
-                            esimResults.push(result);
+                            const legacyResult = {
+                                success: true,
+                                iccid: result.esim.iccid,
+                                matchingId: result.esim.matchingId,
+                                smdpAddress: result.esim.smdpAddress,
+                                qrCodeUrl: result.esim.qrCodeUrl
+                            };
+
+                            esimResults.push(legacyResult);
 
                             console.log(`[STRIPE-WEBHOOK] Sending email to ${customerEmail}`);
                             const productDetails = await prisma.product.findUnique({
                                 where: { id: bundleId }
                             });
 
-                            // Fallback display name logic (reconstruct region + data from SKU or use DB)
-                            // e.g. "Turkey 1GB"
-                            let displayName = item.productName; // Default
+                            let displayName = item.productName;
                             if (productDetails) {
-                                // Try to make it friendly: "Turkey 1GB"
                                 const regionName = productDetails.countries && (productDetails.countries as any[])[0]?.name
                                     ? (productDetails.countries as any[])[0].name
                                     : productDetails.name;
 
-                                // Or use description if formatted
                                 displayName = `${regionName} ${productDetails.dataAmount ? (productDetails.dataAmount < 1000 ? productDetails.dataAmount + 'MB' : productDetails.dataAmount / 1000 + 'GB') : ''}`;
                             }
 
-                            // Override display name if metadata had original name (passed as 'name' prop in Payment Intent)
-                            // But here item is from DB OrderItem. We lost the metadata 'name' unless we re-read from session metadata?
-                            // Let's check session metadata again.
                             const originalMetaItem = items.find((i: any) => (i.sku === bundleId) || (i.name === bundleId));
                             if (originalMetaItem && originalMetaItem.name && originalMetaItem.name !== bundleId) {
                                 displayName = originalMetaItem.name;
@@ -160,7 +167,6 @@ export async function POST(request: Request) {
                                 if (!productDetails) return 'Standard Data';
 
                                 if (productDetails.dataAmount === -1) {
-                                    // Unlimited Logic
                                     let tier = 'Lite';
                                     let speed = '1GB HighSpeed';
 
@@ -169,8 +175,7 @@ export async function POST(request: Request) {
                                         speed = '2GB HighSpeed';
                                     } else if (productDetails.name.includes('_ULE_')) {
                                         tier = 'Essential';
-                                        speed = '1GB HighSpeed'; // ??? Logic says 1GB? Let's check catalogue.ts: Essential is 1GB too?
-                                        // Catalogue ts says: Essential -> 1GB, 1.25Mbps
+                                        speed = '1GB HighSpeed';
                                     }
 
                                     return `Unlimited ${tier} (${speed})`;
@@ -186,13 +191,13 @@ export async function POST(request: Request) {
                             const emailResult = await sendOrderConfirmation({
                                 customerEmail: customerEmail || 'customer@example.com',
                                 orderId: sessionId,
-                                productName: displayName, // Friendly Name for email
-                                qrCodeUrl: result.qrCodeUrl || '',
+                                productName: displayName,
+                                qrCodeUrl: legacyResult.qrCodeUrl || '',
                                 dataAmount: dataAmountString,
                                 duration: durationString,
-                                iccid: result.iccid,
-                                matchingId: result.matchingId,
-                                smdpAddress: result.smdpAddress
+                                iccid: legacyResult.iccid,
+                                matchingId: legacyResult.matchingId,
+                                smdpAddress: legacyResult.smdpAddress
                             });
 
                             if (emailResult.success) {

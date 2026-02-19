@@ -11,6 +11,80 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// --- Multi-Provider Aggregator Core ---
+
+model Provider {
+  id               String  @id @default(cuid())
+  name             String  @unique // e.g., "eSIM Go"
+  slug             String  @unique // e.g., "esim-go"
+  isActive         Boolean @default(true)
+  priority         Int     @default(0) // Higher = Preferred manually
+  reliabilityScore Float   @default(1.0) // 0.0 - 1.0 (auto-calc)
+  config           Json? // New: Store API keys, endpoints, etc.
+
+  // Stats for Reliability
+  totalOrders  Int       @default(0)
+  failedOrders Int       @default(0)
+  lastSync     DateTime?
+
+  products  ProviderProduct[]
+  orders    OrderItem[]
+  createdAt DateTime          @default(now())
+}
+
+model ProviderProduct {
+  id         String   @id @default(cuid())
+  providerId String
+  provider   Provider @relation(fields: [providerId], references: [id])
+
+  providerProductId String // ID at Provider (e.g. "esim_1GB_7D_US_V2")
+  name              String
+
+  // Normalized Data for Comparison
+  countryCode  String // ISO alpha-2 (e.g. "US", "DE") or "global"
+  dataAmountMB Int // -1 for Unlimited
+  validityDays Int
+  isUnlimited  Boolean @default(false)
+  networkType  String? // "4G", "5G"
+
+  // Cost
+  price    Float // Wholesale Price
+  currency String @default("USD")
+
+  lastUpdated DateTime @updatedAt
+
+  @@unique([providerId, providerProductId])
+  @@index([countryCode, dataAmountMB, validityDays])
+  @@index([price])
+}
+
+model BestOffer {
+  id String @id @default(cuid())
+
+  // Search Keys (The "Unified Product")
+  countryCode  String
+  dataAmountMB Int
+  validityDays Int
+
+  // The Winner
+  providerId        String
+  providerProductId String // The ID of the product from ProviderProduct
+
+  // Pricing Engine Result
+  costPrice Float
+  sellPrice Float
+  margin    Float
+  currency  String @default("USD")
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([countryCode, dataAmountMB, validityDays])
+  @@index([countryCode])
+  @@index([sellPrice])
+}
+
+// --- E-Commerce & Orders ---
+
 model Order {
   id              String   @id @default(cuid())
   stripeSessionId String   @unique
@@ -27,23 +101,30 @@ model Order {
 }
 
 model OrderItem {
-  id          String @id @default(cuid())
-  orderId     String
-  order       Order  @relation(fields: [orderId], references: [id])
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  // Product Snapshot
   productName String
   quantity    Int
-  price       Float // Unit price in major currency units (e.g. 10.50 EUR)
+  price       Float // Sell Price
+  costPrice   Float? // Enterprise: Unit cost at time of purchase
+
+  // Fulfillment Details
+  providerId String?
+  provider   Provider? @relation(fields: [providerId], references: [id])
 
   // eSIM details
   iccid          String?
   matchingId     String?
   smdpAddress    String?
-  esimGoOrderRef String?
+  esimGoOrderRef String? // Legacy / Specific
 
   // Status tracking
-  activationStatus String? // e.g., "ACTIVATED", "EXPIRED"
-  dataUsage        Float? // in Bytes or MB (let's say Bytes to be precise)
-  totalData        Float? // Limit in Bytes
+  activationStatus String?
+  dataUsage        Float?
+  totalData        Float?
 }
 
 model ProviderSync {
@@ -51,11 +132,10 @@ model ProviderSync {
   orderId String @unique
   order   Order  @relation(fields: [orderId], references: [id])
 
-  // External IDs linking the systems
   stripePaymentIntentId String? @unique
-  esimGoOrderIds        String? // JSON string or comma-separated list of order refs from eSIM Go
+  esimGoOrderIds        String?
   resendMessageId       String?
-  emailStatus           String? // "SENT", "DELIVERED", "BOUNCED"
+  emailStatus           String?
 
   syncStatus   String // "PENDING", "COMPLETED", "PARTIAL_FAILURE", "FAILED"
   lastSync     DateTime @default(now())
@@ -70,15 +150,24 @@ model AdminSettings {
   // Margins
   globalMarginPercent Float @default(0)
   globalMarginFixed   Float @default(0)
-  countryMargins      Json? // Stores region -> { percent, fixed } map
+  countryMargins      Json?
 
-  // Marketing & Sales
-  discountCodes Json? // List of discount codes
-  featuredDeals Json? // List of featured deals
-  banner        Json? // Banner config { active, text, link }
+  // Provider Routing Rules
+  preferredProviders Json? // Map: "US_1000_7" -> "esim-go"
 
-  // Content
-  faq Json? // List of FAQs
+  discountCodes Json?
+  featuredDeals Json?
+  banner        Json?
+  faq           Json?
+
+  // Enterprise Auto-Discounts
+  autoDiscountEnabled   Boolean @default(false)
+  autoDiscountPercent   Float   @default(10.0)
+  autoDiscountThreshold Float   @default(50.0)
+
+  // Price Guard Safety
+  minMarginFixed   Float @default(1.0) // Hard floor profit
+  minMarginPercent Float @default(5.0) // Minimum percentage buffer
 
   updatedAt DateTime @updatedAt
 }
@@ -86,21 +175,21 @@ model AdminSettings {
 model ProductOverride {
   id        String   @id @default(uuid())
   sku       String   @unique
-  price     Float? // Fixed override price
-  // Or specific margins? For now, fixed price is most flexible.
+  price     Float?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model AuditLog {
   id        String   @id @default(cuid())
-  action    String // e.g., "PRICE_CHANGE"
-  entity    String // e.g., "Product: USA_10GB"
-  details   String? // JSON string storing old/new values or other context
-  userId    String // Identifier for the user performing the action
+  action    String
+  entity    String
+  details   String?
+  userId    String
   createdAt DateTime @default(now())
 }
 
+// Legacy Model for Backward Compatibility
 model Product {
   id          String  @id // Use bundle name as ID
   name        String
@@ -121,4 +210,30 @@ model Product {
   imageUrl    String?
 
   updatedAt DateTime @updatedAt
+}
+
+// --- Analytics & Monitoring ---
+
+model EsimActivationEvent {
+  id        String   @id @default(cuid())
+  iccid     String
+  orderId   String
+  eventType String // "INSTALL_START", "INSTALL_SUCCESS", "INSTALL_RETRY"
+  platform  String // "ios", "android"
+  method    String // "DEEP_LINK", "QR_CODE", "MANUAL"
+  createdAt DateTime @default(now())
+
+  @@index([iccid])
+  @@index([orderId])
+}
+
+model EsimActivationFailure {
+  id           String   @id @default(cuid())
+  iccid        String
+  errorCode    String?
+  errorMessage String?
+  platform     String
+  createdAt    DateTime @default(now())
+
+  @@index([iccid])
 }

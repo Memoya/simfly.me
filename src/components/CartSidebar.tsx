@@ -3,7 +3,7 @@
 import { useCartStore } from '@/store/cart';
 import { X, Trash2, ShoppingBag, ChevronRight, Zap, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getCountryFlag } from '@/lib/flags';
 import { VisaLogo, MastercardLogo, ApplePayLogo, GooglePayLogo, KlarnaLogo } from './PaymentIcons';
 
@@ -14,6 +14,31 @@ export default function CartSidebar() {
     const [loading, setLoading] = useState(false);
     const params = useParams();
     const lang = params.lang as string || 'de';
+
+    const [adminSettings, setAdminSettings] = useState<{
+        autoDiscountEnabled: boolean;
+        autoDiscountPercent: number;
+        autoDiscountThreshold: number;
+    }>({
+        autoDiscountEnabled: false,
+        autoDiscountPercent: 10,
+        autoDiscountThreshold: 50
+    });
+
+    useEffect(() => {
+        if (isOpen) {
+            fetch('/api/settings')
+                .then(res => res.json())
+                .then(data => {
+                    setAdminSettings({
+                        autoDiscountEnabled: data.autoDiscountEnabled ?? false,
+                        autoDiscountPercent: data.autoDiscountPercent ?? 10,
+                        autoDiscountThreshold: data.autoDiscountThreshold ?? 50
+                    });
+                })
+                .catch(err => console.error('Failed to fetch settings:', err));
+        }
+    }, [isOpen]);
 
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -148,6 +173,27 @@ export default function CartSidebar() {
                                     </div>
                                 ))
                             )}
+
+                            {/* Top-Ups & Add-ons */}
+                            {items.length > 0 && (
+                                <div className="pt-6 border-t border-black/5">
+                                    <h4 className="text-[10px] font-black text-black/30 uppercase tracking-[0.2em] mb-4">Wird oft dazu gekauft</h4>
+                                    <div className="space-y-3">
+                                        <div className="bg-black/[0.02] hover:bg-black/[0.04] transition-all rounded-2xl p-4 flex items-center justify-between border border-black/5 group cursor-pointer">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-electric/10 text-electric flex items-center justify-center">
+                                                    <Zap className="w-4 h-4 fill-electric" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[11px] font-bold text-black">Global HighSpeed Top-Up (+2GB)</p>
+                                                    <p className="text-[9px] text-black/40">Zusatz-Daten für Notfälle</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-[11px] font-black text-electric group-hover:scale-110 transition-transform">+ 4,99€</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Minimalist Footer */}
@@ -160,10 +206,45 @@ export default function CartSidebar() {
                                             {total.toFixed(2).replace('.', ',')}€
                                         </p>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <div className="w-8 h-5 bg-black/5 rounded border border-black/5" />
-                                        <div className="w-8 h-5 bg-black/5 rounded border border-black/5" />
+                                    <div className="flex flex-col items-end gap-2">
+                                        {/* Upselling Progress Bar */}
+                                        {adminSettings.autoDiscountEnabled && total < adminSettings.autoDiscountThreshold && (
+                                            <div className="w-48 space-y-2">
+                                                <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
+                                                    <span className="text-black/40">Noch {(adminSettings.autoDiscountThreshold - total).toFixed(2)}€ bis {adminSettings.autoDiscountPercent}% Rabatt</span>
+                                                    <span className="text-electric">{adminSettings.autoDiscountPercent}% OFF</span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-black/5 rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${(total / adminSettings.autoDiscountThreshold) * 100}%` }}
+                                                        className="h-full bg-electric rounded-full shadow-[0_0_10px_rgba(0,102,255,0.3)]"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                        {adminSettings.autoDiscountEnabled && total >= adminSettings.autoDiscountThreshold && (
+                                            <div className="flex items-center gap-2 bg-green-500/10 text-green-600 px-3 py-1.5 rounded-full border border-green-500/20">
+                                                <Zap className="w-3 h-3 fill-green-600" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">{adminSettings.autoDiscountPercent}% Rabatt aktiviert</span>
+                                            </div>
+                                        )}
                                     </div>
+                                </div>
+
+                                {/* Social Proof Badges */}
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-black/5 flex items-center gap-4">
+                                    <div className="flex -space-x-2">
+                                        {[1, 2, 3].map(i => (
+                                            <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-gray-200 overflow-hidden flex items-center justify-center text-[8px] font-bold text-gray-500 italic">
+                                                {String.fromCharCode(65 + i)}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-[10px] font-bold text-black/50 leading-tight">
+                                        🔥 <span className="text-black">32 Personen</span> haben heute USA eSIM gekauft. <br />
+                                        <span className="text-[9px] opacity-60">Zertifizierter Premium Provider</span>
+                                    </p>
                                 </div>
 
                                 <button

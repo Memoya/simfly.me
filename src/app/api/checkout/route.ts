@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { Bundle } from '@/types';
@@ -30,31 +31,48 @@ export async function POST(request: Request) {
         if (items.length > 0) {
             const catalogue = await getCatalogue();
 
-            lineItems = items.map((item: { id?: string, currency: string, productName: string, metadata: Record<string, unknown>, amount: number, quantity: number }) => {
-                let finalPrice: number;
-
+            // 1. Calculate raw subtotal first
+            let subtotal = 0;
+            const prepared = items.map((item: any) => {
+                let basePrice: number;
                 const bundle = item.id ? catalogue.find((b: Bundle) => b.name === item.id) : undefined;
-
                 if (bundle) {
-                    finalPrice = applyMargin(bundle.price, settings, item.metadata?.region as string);
+                    basePrice = applyMargin(bundle.price, settings, item.metadata?.region as string);
                 } else {
-                    finalPrice = item.amount / 100;
+                    basePrice = item.amount / 100;
                 }
+                subtotal += basePrice * (item.quantity || 1);
+                return { ...item, basePrice };
+            });
+
+            // 2. Enterprise Logic: Dynamic Auto-Discount from Settings
+            const autoDiscountEnabled = settings.autoDiscountEnabled || false;
+            const threshold = settings.autoDiscountThreshold || 50;
+            const discountPercent = settings.autoDiscountPercent || 10;
+
+            const isAutoDiscount = autoDiscountEnabled && subtotal >= threshold;
+
+            lineItems = prepared.map((item: any) => {
+                let finalPrice = item.basePrice;
 
                 if (discount) {
                     if (discount.type === 'percent') {
                         finalPrice = finalPrice * (1 - discount.value / 100);
                     } else if (discount.type === 'fixed') {
-                        finalPrice = Math.max(0, finalPrice - discount.value);
+                        finalPrice = Math.max(0, finalPrice - (discount.value / items.length));
                     }
+                }
+
+                if (isAutoDiscount) {
+                    finalPrice = finalPrice * (1 - discountPercent / 100);
                 }
 
                 return {
                     price_data: {
-                        currency: item.currency,
+                        currency: item.currency || 'eur',
                         product_data: {
                             name: item.productName,
-                            metadata: item.metadata as Stripe.MetadataParam,
+                            metadata: { ...item.metadata, auto_discount: isAutoDiscount ? 'true' : 'false' } as any,
                         },
                         unit_amount: Math.round(finalPrice * 100),
                     },
@@ -77,10 +95,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'No items provided' }, { status: 400 });
         }
 
-
-
         const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
-
         const lang = body.lang || 'de';
 
         const session = await stripe.checkout.sessions.create({
@@ -92,11 +107,14 @@ export async function POST(request: Request) {
             metadata: {
                 discount_code: discountCode || null,
                 payment_intent_data: JSON.stringify({
-                    items: items.map((item: { id?: string, productName: string, metadata: Record<string, unknown>, quantity: number }) => ({
+                    items: items.map((item: any) => ({
                         name: item.productName,
-                        sku: item.id, // Pass technical ID (esim_...)
+                        sku: item.id,
                         region: item.metadata?.region,
-                        quantity: item.quantity
+                        quantity: item.quantity,
+                        providerId: item.metadata?.providerId,
+                        providerProductId: item.metadata?.providerProductId,
+                        costPrice: item.metadata?.costPrice
                     }))
                 })
             },

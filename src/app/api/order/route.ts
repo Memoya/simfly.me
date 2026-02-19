@@ -71,6 +71,8 @@ export async function GET(request: Request) {
         return NextResponse.json({
             qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=LPA:1$${item.smdpAddress || 'rsp.esim-go.com'}$${item.matchingId}`,
             iccid: item.iccid || 'In Vorbereitung...',
+            smdpAddress: item.smdpAddress || 'rsp.esim-go.com',
+            matchingId: item.matchingId,
             status: 'completed',
             receiptUrl: receiptUrl
         });

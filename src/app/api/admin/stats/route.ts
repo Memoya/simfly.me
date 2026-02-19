@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { verifyAuth, unauthorizedResponse } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -26,7 +27,16 @@ export async function GET(request: Request) {
             const totalOrders = sessions.data.length;
             const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-            // Simple aggregation for "Top Countries" based on product names (heuristic)
+            // Activation Stats
+            const [activationStarts, activationFailures] = await Promise.all([
+                prisma.esimActivationEvent.count({ where: { eventType: 'INSTALL_START' } }),
+                prisma.esimActivationFailure.count()
+            ]);
+
+            const iosStarts = await prisma.esimActivationEvent.count({ where: { eventType: 'INSTALL_START', platform: 'ios' } });
+            const androidStarts = await prisma.esimActivationEvent.count({ where: { eventType: 'INSTALL_START', platform: 'android' } });
+
+            // Simple aggregation for "Top Countries" based on product names
             const countryCounts: Record<string, number> = {};
             sessions.data.forEach(s => {
                 s.line_items?.data.forEach(item => {
@@ -44,20 +54,22 @@ export async function GET(request: Request) {
                 revenue: totalRevenue,
                 orders: totalOrders,
                 averageOrderValue,
-                topProducts
+                topProducts,
+                activationStats: {
+                    starts: activationStarts,
+                    failures: activationFailures,
+                    ios: iosStarts,
+                    android: androidStarts
+                }
             });
         } catch (error) {
             console.error('Failed to fetch stats:', error);
-            // Fallback mock data for dev if Stripe fails
             return NextResponse.json({
-                revenue: 1250.50,
-                orders: 42,
-                averageOrderValue: 29.77,
-                topProducts: [
-                    { name: 'eSIM USA 10GB', count: 12 },
-                    { name: 'eSIM Japan 5GB', count: 8 },
-                    { name: 'eSIM Europe 20GB', count: 5 }
-                ]
+                revenue: 0,
+                orders: 0,
+                averageOrderValue: 0,
+                topProducts: [],
+                activationStats: { starts: 0, failures: 0, ios: 0, android: 0 }
             });
         }
     } catch (outerError) {

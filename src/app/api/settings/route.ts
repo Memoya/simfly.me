@@ -12,7 +12,10 @@ export async function GET() {
         const publicSettings = {
             featuredDeals: settings.featuredDeals || [],
             banner: settings.banner || { active: false, text: '', link: '' },
-            faq: settings.faq || []
+            faq: settings.faq || [],
+            autoDiscountEnabled: settings.autoDiscountEnabled || false,
+            autoDiscountPercent: settings.autoDiscountPercent || 10,
+            autoDiscountThreshold: settings.autoDiscountThreshold || 50
         };
 
         return NextResponse.json(publicSettings);

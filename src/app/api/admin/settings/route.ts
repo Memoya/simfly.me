@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { verifyAuth, unauthorizedResponse } from '@/lib/auth';
 
@@ -10,13 +11,9 @@ export async function GET(request: Request) {
             return unauthorizedResponse();
         }
 
-        // Dynamic import
         const { getSettings } = await import('@/lib/settings');
         const settings = await getSettings();
-
-        // Remove sensitive info if it exists
-        const { ...safeSettings } = settings;
-        return NextResponse.json(safeSettings);
+        return NextResponse.json(settings);
     } catch (error) {
         console.error('Failed to get settings:', error);
         return NextResponse.json({ error: 'Failed' }, { status: 500 });
@@ -29,14 +26,12 @@ export async function POST(request: Request) {
             return unauthorizedResponse();
         }
 
-        // Dynamic import
         const { getSettings, saveSettings } = await import('@/lib/settings');
 
         try {
             const body = await request.json();
-            // password is part of body but checked via verifyAuth (Bearer)
             const { password, ...newSettings } = body;
-            void password; // Avoid unused variable warning
+            void password;
 
             const currentSettings = await getSettings();
 
@@ -47,13 +42,28 @@ export async function POST(request: Request) {
 
             await saveSettings(updatedSettings);
 
+            // ENTERPRISE AUDIT LOG
+            const { prisma } = await import('@/lib/prisma');
+            await prisma.auditLog.create({
+                data: {
+                    action: 'UPDATE_SETTINGS',
+                    entity: 'Global Admin Settings',
+                    userId: 'Admin',
+                    details: JSON.stringify({
+                        changed: Object.keys(newSettings).filter(k =>
+                            JSON.stringify((newSettings as any)[k]) !==
+                            JSON.stringify((currentSettings as any)[k])
+                        )
+                    })
+                }
+            });
+
             return NextResponse.json({ success: true, settings: updatedSettings });
         } catch (error: any) {
             console.error('Settings save error:', error);
             return NextResponse.json({
                 error: 'Failed',
-                message: error.message,
-                stack: error.stack
+                message: error.message
             }, { status: 500 });
         }
     } catch (outerError) {
