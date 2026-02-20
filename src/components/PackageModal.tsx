@@ -144,12 +144,19 @@ export default function PackageModal({ country, iso, packages, isOpen, onClose, 
                     <div className="px-8 pt-8 pb-4 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-2xl bg-black/5 flex items-center justify-center relative overflow-hidden">
-                                <Image
-                                    src={getCountryFlagUrl(iso, 'w160')}
-                                    alt={country}
-                                    fill
-                                    className="object-cover p-2.5"
-                                />
+                                {(() => {
+                                    const flagUrl = getCountryFlagUrl(iso, 'w160');
+                                    return flagUrl ? (
+                                        <Image
+                                            src={flagUrl}
+                                            alt={country}
+                                            fill
+                                            className="object-cover p-2.5"
+                                        />
+                                    ) : (
+                                        <span className="text-xs font-bold text-gray-400">-</span>
+                                    );
+                                })()}
                             </div>
                             <div>
                                 <h2 className="text-xl font-black text-black tracking-tight leading-none mb-1">{country}</h2>

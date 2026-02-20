@@ -2,11 +2,11 @@
  * Get flag image URL from FlagCDN for a given country ISO code
  * @param isoCode - Two-letter country code (e.g., "US", "DE", "TH")
  * @param size - Size variant (w20, w40, w80, w160)
- * @returns Flag image URL or fallback globe emoji
+ * @returns Flag image URL or null if invalid
  */
-export function getCountryFlagUrl(isoCode: string | undefined, size: 'w20' | 'w40' | 'w80' | 'w160' = 'w80'): string {
+export function getCountryFlagUrl(isoCode: string | undefined, size: 'w20' | 'w40' | 'w80' | 'w160' = 'w80'): string | null {
     if (!isoCode || isoCode.length !== 2) {
-        return ''; // Return empty for fallback
+        return null; // Return null for invalid codes
     }
 
     return `https://flagcdn.com/${size}/${isoCode.toLowerCase()}.png`;

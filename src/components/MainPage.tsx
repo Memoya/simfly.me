@@ -21,6 +21,7 @@ import { Marquee } from '@/components/Marquee';
 import { ShinyButton } from '@/components/ShinyButton';
 import { AnimatedBeam } from '@/components/AnimatedBeam';
 import { SpotlightCard } from '@/components/SpotlightCard';
+import CountrySearch from '@/components/CountrySearch';
 
 const popularCountriesList = [
   'Thailand', 'United States', 'Turkey', 'Japan',
@@ -82,7 +83,6 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<AdminSettings | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { formatPrice } = useCurrency();
 
@@ -98,11 +98,10 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
   const step3Ref = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/settings').then(res => res.json()).then(data => setSettings(data)).catch(err => console.error(err));
-  }, []);
-
-  useEffect(() => {
-    fetch('/api/settings').then(res => res.json()).then(data => setSettings(data)).catch(err => console.error(err));
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(err => console.error('Failed to load settings:', err));
   }, []);
 
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
@@ -119,7 +118,7 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
         throw new Error('Ungültiges Datenformat');
       }
     } catch (error: unknown) {
-      console.error('Failed to load products', error);
+      console.error('Failed to load products:', error);
     } finally {
       setLoading(false);
     }
@@ -318,75 +317,20 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
             transition={{ duration: 0.6, delay: 0.2 }}
             className="max-w-md mx-auto mt-12"
           >
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                <Search className="w-5 h-5 text-black/20 group-focus-within:text-black transition-colors" />
-              </div>
-              <input
-                type="text"
-                placeholder={dictionary.hero.searchPlaceholder}
-                className="w-full pl-14 pr-6 py-4 md:py-6 rounded-[1.5rem] md:rounded-[2rem] text-black bg-white/50 backdrop-blur-md border border-white/20 focus:bg-white focus:ring-4 focus:ring-black/[0.02] shadow-soft transition-all placeholder:text-black/40 font-black text-sm tracking-wide"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowSuggestions(e.target.value.length > 0);
-                }}
-                onFocus={() => setShowSuggestions(searchTerm.length > 0)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              />
-
-              {/* Autocomplete Dropdown */}
-              <AnimatePresence>
-                {showSuggestions && searchTerm && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[2rem] shadow-2xl border border-black/5 overflow-hidden z-50 max-h-[400px] overflow-y-auto"
-                  >
-                    {filteredCountries.slice(0, 8).map((country) => (
-                      <button
-                        key={country.country}
-                        onClick={() => {
-                          setSearchTerm(country.country);
-                          setShowSuggestions(false);
-                          setSelectedCountry(country);
-                        }}
-                        className="w-full flex items-center gap-4 p-4 hover:bg-black/5 transition-colors group/item"
-                      >
-                        <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-                          {country.iso && (
-                            <Image
-                              src={getCountryFlagUrl(country.iso, 'w80')}
-                              alt={country.country}
-                              fill
-                              sizes="(max-width: 768px) 48px, 48px"
-                              className="object-cover"
-                            />
-                          )}
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="font-black text-sm text-black group-hover/item:text-black/70 transition-colors">
-                            {country.country}
-                          </div>
-                          <div className="text-xs text-black/40 font-bold">
-                            {dictionary.destinations.from} {formatPrice(country.minPrice)} • {country.packages.length} Pakete
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-black/20 group-hover/item:text-black/40 transition-colors" />
-                      </button>
-                    ))}
-                    {filteredCountries.length === 0 && (
-                      <div className="p-8 text-center text-black/40 font-bold text-sm">
-                        Keine Länder gefunden
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-
+            <CountrySearch
+              countries={allCountries}
+              placeholder={dictionary.hero.searchPlaceholder}
+              onCountrySelect={(country) => setSelectedCountry(country)}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              formatPrice={formatPrice}
+              lang={lang}
+              translations={{
+                from: dictionary.destinations.from || 'From',
+                packages: dictionary.destinations.packages || 'packages',
+                noResults: 'Keine Länder gefunden'
+              }}
+            />
           </motion.div>
 
           <motion.div
@@ -419,13 +363,20 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                   onClick={() => setSelectedCountry(country)}
                   className="flex items-center gap-3 bg-white/50 backdrop-blur-sm px-6 py-3 rounded-2xl border border-black/5 cursor-pointer hover:bg-white transition-colors group"
                 >
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-sm">
-                    <Image
-                      src={getCountryFlagUrl(country.iso, 'w40')}
-                      alt={countryName}
-                      fill
-                      className="object-cover"
-                    />
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-sm bg-gray-100 flex items-center justify-center">
+                    {(() => {
+                      const flagUrl = getCountryFlagUrl(country.iso, 'w40');
+                      return flagUrl ? (
+                        <Image
+                          src={flagUrl}
+                          alt={countryName}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="text-xs font-bold text-gray-400">-</span>
+                      );
+                    })()}
                   </div>
                   <span className="font-black text-base uppercase tracking-wider">{countryName}</span>
                 </div>
@@ -443,13 +394,20 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                   onClick={() => setSelectedCountry(country)}
                   className="flex items-center gap-3 bg-white/50 backdrop-blur-sm px-6 py-3 rounded-2xl border border-black/5 cursor-pointer hover:bg-white transition-colors group"
                 >
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-sm">
-                    <Image
-                      src={getCountryFlagUrl(country.iso, 'w40')}
-                      alt={countryName}
-                      fill
-                      className="object-cover"
-                    />
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-sm bg-gray-100 flex items-center justify-center">
+                    {(() => {
+                      const flagUrl = getCountryFlagUrl(country.iso, 'w40');
+                      return flagUrl ? (
+                        <Image
+                          src={flagUrl}
+                          alt={countryName}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="text-xs font-bold text-gray-400">-</span>
+                      );
+                    })()}
                   </div>
                   <span className="font-black text-base uppercase tracking-wider">{countryName}</span>
                 </div>
@@ -515,14 +473,21 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                   </div>
 
                   <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 relative z-10">
-                    <div className="relative w-7 h-7 md:w-10 md:h-10 rounded-full overflow-hidden shadow-sm">
-                      <Image
-                        src={getCountryFlagUrl(deal.iso, 'w40')}
-                        alt={deal.country}
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                      />
+                    <div className="relative w-7 h-7 md:w-10 md:h-10 rounded-full overflow-hidden shadow-sm bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      {(() => {
+                        const flagUrl = getCountryFlagUrl(deal.iso, 'w40');
+                        return flagUrl ? (
+                          <Image
+                            src={flagUrl}
+                            alt={deal.country}
+                            fill
+                            sizes="40px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <span className="text-xs font-bold text-gray-400">-</span>
+                        );
+                      })()}
                     </div>
                     <div>
                       <h3 className="font-black text-base md:text-lg leading-none mb-1 md:mb-0">{deal.country}</h3>
@@ -626,15 +591,22 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                   }}
                   className="group bg-white/40 backdrop-blur-md rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 text-center shadow-soft hover:shadow-card transition-all duration-500 border border-white/50 hover:border-black/10 overflow-hidden relative"
                 >
-                  <div className="relative mb-4 md:mb-6 mx-auto w-16 h-16 md:w-24 md:h-24">
-                    <Image
-                      src={getCountryFlagUrl(country.iso, 'w160')}
-                      alt={country.country}
-                      fill
-                      sizes="(max-width: 768px) 64px, 96px"
-                      loading="lazy"
-                      className="rounded-[2rem] object-cover shadow-sm grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-                    />
+                  <div className="relative w-16 h-16 md:w-24 md:h-24 mx-auto">
+                    {(() => {
+                      const flagUrl = getCountryFlagUrl(country.iso, 'w160');
+                      return flagUrl ? (
+                        <Image
+                          src={flagUrl}
+                          alt={country.country}
+                          fill
+                          sizes="(max-width: 768px) 64px, 96px"
+                          loading="lazy"
+                          className="rounded-[2rem] object-cover shadow-sm grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-[2rem] bg-gray-100 flex items-center justify-center text-gray-400 text-2xl">-</div>
+                      );
+                    })()}
                     <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-[2rem]" />
                   </div>
                   <div className="space-y-0.5 md:space-y-1">
