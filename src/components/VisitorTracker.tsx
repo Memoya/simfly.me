@@ -22,7 +22,9 @@ export function VisitorTracker() {
                     body: JSON.stringify({
                         sessionId,
                         page: pathname,
-                        lang: pathname.split('/')[1] || 'de'
+                        lang: pathname.split('/')[1] || 'de',
+                        screenWidth: typeof window !== 'undefined' ? window.innerWidth : undefined,
+                        screenHeight: typeof window !== 'undefined' ? window.innerHeight : undefined
                     }),
                 });
             } catch (err) {

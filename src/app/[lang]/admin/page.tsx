@@ -10,8 +10,9 @@ import AlertSettings from '@/components/admin/AlertSettings';
 import PriceEditor from '@/components/admin/PriceEditor';
 import ProviderManagement from '@/components/admin/ProviderManagement';
 import EnterpriseAnalytics from '@/components/admin/EnterpriseAnalytics';
+import VisitorAnalytics from '@/components/admin/VisitorAnalytics';
 
-type Tab = 'overview' | 'general' | 'countries' | 'discounts' | 'orders' | 'esim_orders' | 'calculator' | 'content' | 'customers' | 'audit' | 'providers' | 'analytics';
+type Tab = 'overview' | 'general' | 'countries' | 'discounts' | 'orders' | 'calculator' | 'content' | 'customers' | 'audit' | 'providers' | 'analytics' | 'visitors';
 
 export default function AdminPage() {
     const params = useParams();
@@ -48,13 +49,6 @@ export default function AdminPage() {
     const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
     const [orderDetail, setOrderDetail] = useState<any | null>(null);
     const [resendingEmail, setResendingEmail] = useState(false);
-
-    // eSIM Orders Management
-    const [esimOrders, setEsimOrders] = useState<any[]>([]);
-    const [esimOrderPagination, setEsimOrderPagination] = useState({ page: 0, totalPages: 1, totalItems: 0 });
-    const [selectedEsimOrder, setSelectedEsimOrder] = useState<any | null>(null); // For details
-    const [isCreateEsimOrderOpen, setIsCreateEsimOrderOpen] = useState(false);
-    const [newEsimOrder, setNewEsimOrder] = useState({ bundle: '', quantity: 1 });
 
     // Pagination & Sort
     const [pagination, setPagination] = useState({ page: 0, totalPages: 1, totalItems: 0 });
@@ -266,66 +260,8 @@ export default function AdminPage() {
         }
     };
 
-    const fetchEsimOrders = async (page = 0) => {
-        setLoading(true);
-        try {
-            const res = await fetch(`/api/admin/esim/orders?page=${page}&perPage=20`, { headers: { 'Authorization': `Bearer ${password}` } });
-            const data = await res.json();
-            setEsimOrders(data.orders || []);
-            setEsimOrderPagination({ page: page, totalPages: data.totalPages, totalItems: data.totalRecords });
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCreateEsimOrder = async () => {
-        if (!newEsimOrder.bundle) return;
-        setLoading(true);
-        try {
-            const payload = {
-                type: 'transaction',
-                assign: true,
-                Order: [{ type: 'bundle', item: newEsimOrder.bundle, quantity: newEsimOrder.quantity || 1 }]
-            };
-            const res = await fetch('/api/admin/esim/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-            if (res.ok) {
-                alert(`Bestellung angelegt: ${data.orderReference || 'Success'}`);
-                setIsCreateEsimOrderOpen(false);
-                setNewEsimOrder({ bundle: '', quantity: 1 });
-                fetchEsimOrders(0);
-            } else {
-                alert('Fehler: ' + (data.error || 'Unknown'));
-            }
-        } catch (e) {
-            alert('Fehler beim Anlegen');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const openEsimDetails = async (ref: string) => {
-        setLoading(true);
-        try {
-            const res = await fetch(`/api/admin/esim/orders/${ref}`, { headers: { 'Authorization': `Bearer ${password}` } });
-            if (res.ok) {
-                const data = await res.json();
-                setSelectedEsimOrder(data);
-            } else {
-                alert('Fehler beim Laden der Details');
-            }
-        } catch (e) { console.error(e); } finally { setLoading(false); }
-    };
-
     useEffect(() => {
         if (isAuthenticated) {
-            if (activeTab === 'esim_orders') fetchEsimOrders();
             if (activeTab === 'overview') {
                 fetchStats();
                 fetchBalance();
@@ -334,6 +270,9 @@ export default function AdminPage() {
             if (activeTab === 'customers') fetchCustomers();
             if (activeTab === 'audit') fetchAuditLogs();
             if (activeTab === 'content') fetchProductsForDeals();
+            if (activeTab === 'visitors') {
+                // VisitorAnalytics component handles data fetching internally
+            }
             if (activeTab === 'calculator') {
                 const timer = setTimeout(() => {
                     fetchRawProducts(0);
@@ -532,6 +471,7 @@ export default function AdminPage() {
                         {[
                             { id: 'overview', icon: LayoutDashboard, label: 'Dashboard', group: 'Analytics' },
                             { id: 'analytics', icon: BarChart3, label: 'Financial BI', group: 'Analytics' },
+                            { id: 'visitors', icon: Users, label: 'Visitor Analytics', group: 'Analytics' },
                             { id: 'providers', icon: Database, label: 'Carrier Matrix', group: 'Infrastructure' },
                             { id: 'general', icon: SettingsIcon, label: 'Pricing Guard', group: 'Infrastructure' },
                             { id: 'countries', icon: Globe, label: 'Regional Margins', group: 'Infrastructure' },
@@ -539,7 +479,6 @@ export default function AdminPage() {
                             { id: 'content', icon: Box, label: 'CMS Engine', group: 'Marketing' },
                             { id: 'customers', icon: Users, label: 'CRM / Customers', group: 'Operations' },
                             { id: 'orders', icon: ShoppingCart, label: 'Local Orders', group: 'Operations' },
-                            { id: 'esim_orders', icon: Zap, label: 'eSIM Go API', group: 'Operations' },
                             { id: 'audit', icon: Shield, label: 'Audit Engine', group: 'Security' },
                             { id: 'calculator', icon: Calculator, label: 'Profit Simulator', group: 'Security' },
                         ].reduce((acc: any[], item, idx, arr) => {
@@ -1396,52 +1335,6 @@ export default function AdminPage() {
                         <EnterpriseAnalytics token={`Bearer ${password}`} />
                     )}
 
-                    {activeTab === 'esim_orders' && (
-                        <div>
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-navy">eSIM Go API Orders (v2.4)</h2>
-                                <div className="flex gap-2">
-                                    <button onClick={() => setIsCreateEsimOrderOpen(true)} className="bg-electric text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition-all flex items-center gap-2">
-                                        <Plus className="w-4 h-4" /> Order erstellen
-                                    </button>
-                                    <button onClick={() => fetchEsimOrders(esimOrderPagination.page)} className="text-electric hover:bg-blue-50 p-2 rounded-full">
-                                        <RefreshCw className={loading ? 'animate-spin' : ''} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
-                                        <tr>
-                                            <th className="p-4">Reference</th>
-                                            <th className="p-4">Date</th>
-                                            <th className="p-4">Status</th>
-                                            <th className="p-4">Total</th>
-                                            <th className="p-4">Items</th>
-                                            <th className="p-4">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {esimOrders.map((o, i) => (
-                                            <tr key={i} className="hover:bg-gray-50">
-                                                <td className="p-4 font-mono font-bold text-navy select-all text-xs">{o.orderReference}</td>
-                                                <td className="p-4 text-sm text-gray-600">{new Date(o.createDate || o.date).toLocaleString()}</td>
-                                                <td className="p-4"><span className="px-2 py-1 rounded-full text-xs font-bold bg-gray-100">{o.status}</span></td>
-                                                <td className="p-4 font-bold text-sm">{o.total} {o.currency}</td>
-                                                <td className="p-4 text-sm">{o.itemCount || o.items?.length || 0}</td>
-                                                <td className="p-4">
-                                                    <button onClick={() => openEsimDetails(o.orderReference)} className="text-electric hover:underline text-sm font-bold">Details</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {esimOrders.length === 0 && <tr><td colSpan={6} className="p-8 text-center text-gray-400">No orders found (or API empty).</td></tr>}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-
                     {activeTab === 'general' && (
                         <div className="space-y-10">
                             <div>
@@ -1891,54 +1784,8 @@ export default function AdminPage() {
                         </div>
                     )}
 
-                    {isCreateEsimOrderOpen && (
-                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-                                <h2 className="text-xl font-bold mb-4">Neue eSIM Go Order (v2.4)</h2>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Bundle Name</label>
-                                        <input className="w-full p-2 border rounded" placeholder="esim_1GB_7D_US_V2" value={newEsimOrder.bundle} onChange={e => setNewEsimOrder({ ...newEsimOrder, bundle: e.target.value })} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Quantity</label>
-                                        <input type="number" className="w-full p-2 border rounded" value={newEsimOrder.quantity} onChange={e => setNewEsimOrder({ ...newEsimOrder, quantity: Number(e.target.value) })} />
-                                    </div>
-                                    <div className="flex justify-end gap-2 mt-4">
-                                        <button onClick={() => setIsCreateEsimOrderOpen(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded">Cancel</button>
-                                        <button onClick={handleCreateEsimOrder} disabled={loading || !newEsimOrder.bundle} className="px-4 py-2 bg-electric text-white rounded font-bold hover:bg-blue-600 disabled:opacity-50">Create Order</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {selectedEsimOrder && (
-                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedEsimOrder(null)}>
-                            <div className="bg-white rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-bold">Order Details: {selectedEsimOrder.orderReference}</h2>
-                                    <button onClick={() => setSelectedEsimOrder(null)}><X className="w-5 h-5" /></button>
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div className="bg-gray-50 p-3 rounded">
-                                            <span className="text-gray-500 block">Status</span>
-                                            <span className="font-bold">{selectedEsimOrder.status}</span>
-                                        </div>
-                                        <div className="bg-gray-50 p-3 rounded">
-                                            <span className="text-gray-500 block">Total</span>
-                                            <span className="font-bold">{selectedEsimOrder.total} {selectedEsimOrder.currency}</span>
-                                        </div>
-                                    </div>
-
-                                    <h3 className="font-bold border-b pb-2">Raw Data</h3>
-                                    <pre className="bg-gray-50 p-4 rounded text-xs font-mono overflow-x-auto border">
-                                        {JSON.stringify(selectedEsimOrder, null, 2)}
-                                    </pre>
-                                </div>
-                            </div>
-                        </div>
+                    {activeTab === 'visitors' && (
+                        <VisitorAnalytics password={password} />
                     )}
 
                     <PriceEditor

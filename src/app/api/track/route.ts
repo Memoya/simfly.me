@@ -5,7 +5,7 @@ import { UAParser } from 'ua-parser-js';
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { sessionId, page, lang } = body;
+        const { sessionId, page, lang, screenWidth, screenHeight } = body;
 
         if (!sessionId) return NextResponse.json({ error: 'Missing sessionId' }, { status: 400 });
 
@@ -13,9 +13,13 @@ export async function POST(req: NextRequest) {
         const parser = new UAParser(uaString);
         const browser = parser.getBrowser();
         const device = parser.getDevice();
+        const os = parser.getOS();
 
         const browserInfo = browser.name ? `${browser.name} ${browser.version || ''}` : 'Unknown Browser';
         const deviceInfo = device.type || (uaString.includes('Mobi') ? 'mobile' : 'desktop');
+        const osInfo = os.name || 'Unknown OS';
+        const osVersion = os.version || undefined;
+        const referrer = req.headers.get('referer') || undefined;
 
         // Update or create visitor activity
         // Using upsert would be ideal but we use cuid for ID and sessionId for grouping
@@ -47,7 +51,13 @@ export async function POST(req: NextRequest) {
                     lang,
                     browser: browserInfo,
                     device: deviceInfo,
-                    ip: req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+                    os: osInfo,
+                    osVersion: osVersion,
+                    ip: req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown',
+                    referrer: referrer,
+                    screenWidth: screenWidth ? parseInt(screenWidth) : undefined,
+                    screenHeight: screenHeight ? parseInt(screenHeight) : undefined,
+                    createdAt: new Date()
                 }
             });
         }

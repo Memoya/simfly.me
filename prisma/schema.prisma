@@ -244,10 +244,18 @@ model VisitorActivity {
   ip         String?
   browser    String?
   device     String?
+  os         String? // Operating System (Windows, macOS, iOS, Android)
+  osVersion  String?
   page       String
   lang       String?
+  referrer   String? // Traffic source (direct, google, referer domain, etc)
+  screenWidth Int?
+  screenHeight Int?
+  createdAt  DateTime @default(now())
   lastActive DateTime @default(now()) @updatedAt
 
   @@index([sessionId])
   @@index([lastActive])
+  @@index([createdAt])
+  @@index([referrer])
 }
