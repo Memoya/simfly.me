@@ -8,6 +8,9 @@ export async function POST(req: NextRequest) {
         const { sessionId, page, lang, screenWidth, screenHeight } = body;
 
         if (!sessionId) return NextResponse.json({ error: 'Missing sessionId' }, { status: 400 });
+        
+        // Debug logging
+        console.log('[TRACKING] Session:', { sessionId, page, lang, screenWidth, screenHeight });
 
         const uaString = req.headers.get('user-agent') || '';
         const parser = new UAParser(uaString);
@@ -44,7 +47,7 @@ export async function POST(req: NextRequest) {
                 }
             });
         } else {
-            await prisma.visitorActivity.create({
+            const newRecord = await prisma.visitorActivity.create({
                 data: {
                     sessionId,
                     page,
@@ -55,16 +58,20 @@ export async function POST(req: NextRequest) {
                     osVersion: osVersion,
                     ip: req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown',
                     referrer: referrer,
-                    screenWidth: screenWidth ? parseInt(screenWidth) : undefined,
-                    screenHeight: screenHeight ? parseInt(screenHeight) : undefined,
-                    createdAt: new Date()
+                    screenWidth: screenWidth ? Number(screenWidth) : null,
+                    screenHeight: screenHeight ? Number(screenHeight) : null
                 }
             });
+            console.log('[TRACKING] Created record:', newRecord.id);
         }
 
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('[TRACKING-API] Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        if (error instanceof Error) {
+            console.error('[TRACKING-API] Error message:', error.message);
+            console.error('[TRACKING-API] Stack:', error.stack);
+        }
+        return NextResponse.json({ error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }
