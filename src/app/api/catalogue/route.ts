@@ -57,7 +57,8 @@ export async function GET(request: Request) {
 
                 if (unlimitedTier) dataSize = `Unlimited ${unlimitedTier}`;
             } else if (b.dataAmount) {
-                dataSize = b.dataAmount >= 1000 ? `${b.dataAmount / 1000}GB` : `${b.dataAmount}MB`;
+                // Fix: Use binary base (1024) for accurate telecom data formatting
+                dataSize = b.dataAmount >= 1024 ? `${b.dataAmount / 1024}GB` : `${b.dataAmount}MB`;
             } else if (b.dataLimitInBytes) {
                 const gb = b.dataLimitInBytes / (1024 * 1024 * 1024);
                 dataSize = gb >= 1 ? `${gb.toFixed(0)}GB` : `${(b.dataLimitInBytes / (1024 * 1024)).toFixed(0)}MB`;

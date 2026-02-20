@@ -128,7 +128,8 @@ export async function GET(request: Request) {
                 sellPrice: sellPrice,
                 profit: profit,
                 speed: b.speed,
-                providerName: b.providerName
+                providerName: b.providerName,
+                providerProductId: b.providerProductId
             };
         });
 

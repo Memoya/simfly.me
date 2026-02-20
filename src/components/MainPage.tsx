@@ -135,18 +135,29 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
   const countriesMap = useMemo(() => {
     const map: Record<string, CountryGroup> = {};
     products.forEach((p) => {
-      if (!map[p.region]) {
-        map[p.region] = {
-          country: p.region,
+      // Localize country name based on ISO if available
+      let countryName = p.region;
+      if (p.iso && p.iso.length === 2 && lang) {
+        try {
+          const regionNames = new Intl.DisplayNames([lang], { type: 'region' });
+          countryName = regionNames.of(p.iso.toUpperCase()) || p.region;
+        } catch (e) {
+          // Fallback to original
+        }
+      }
+
+      if (!map[countryName]) {
+        map[countryName] = {
+          country: countryName,
           iso: p.iso || '',
           packages: [],
           minPrice: p.price,
           regionGroup: p.regionGroup,
         };
       }
-      map[p.region].packages.push(p);
-      if (p.price < map[p.region].minPrice) {
-        map[p.region].minPrice = p.price;
+      map[countryName].packages.push(p);
+      if (p.price < map[countryName].minPrice) {
+        map[countryName].minPrice = p.price;
       }
     });
     return map;

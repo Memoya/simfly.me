@@ -43,6 +43,15 @@ export const getCatalogue = unstable_cache(
                     .replace(/^eSIMAccess\s+/i, '')
                     .replace(/\s*eSIMAccess\s*/i, '');
 
+                // Helper to get full country name
+                let countryFullName = offer.countryCode;
+                try {
+                    const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+                    countryFullName = regionNames.of(offer.countryCode.toUpperCase()) || offer.countryCode;
+                } catch (e) {
+                    console.warn(`[CATALOGUE] Failed to map ISO ${offer.countryCode} to name`, e);
+                }
+
                 return {
                     id: offer.id,
                     name: cleanName,
@@ -52,7 +61,7 @@ export const getCatalogue = unstable_cache(
                     description: `${dataStr} - ${offer.validityDays} Days`,
                     duration: offer.validityDays,
                     dataAmount: offer.dataAmountMB,
-                    countries: [{ iso: offer.countryCode, name: offer.countryCode }],
+                    countries: [{ iso: offer.countryCode, name: countryFullName }],
                     groups: [],
                     providerId: offer.providerId,
                     providerProductId: offer.providerProductId,
@@ -64,7 +73,7 @@ export const getCatalogue = unstable_cache(
             return [];
         }
     },
-    ['global-catalogue-v3'],
+    ['global-catalogue-v4'],
     {
         revalidate: 3600,
         tags: ['catalogue']

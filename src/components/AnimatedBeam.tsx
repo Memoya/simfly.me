@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -31,7 +31,7 @@ export const AnimatedBeam = ({
     toRef,
     curvature = 0,
     reverse = false,
-    duration = Math.random() * 3 + 4,
+    duration: durationProp,
     delay = 0,
     pathColor = "gray",
     pathWidth = 2,
@@ -44,10 +44,21 @@ export const AnimatedBeam = ({
     endYOffset = 0,
 }: AnimatedBeamProps) => {
     const id = useId();
+    const [mounted, setMounted] = useState(false);
     const [path, setPath] = useState("");
     const [svgDimensions, setSvgDimensions] = useState({ width: 0, height: 0 });
+    const [duration, setDuration] = useState<number>(5);
 
-    const gradientCoordinates = reverse
+    useEffect(() => {
+        setMounted(true);
+        if (durationProp === undefined) {
+            setDuration(Math.random() * 3 + 4);
+        } else {
+            setDuration(durationProp);
+        }
+    }, [durationProp]);
+
+    const gradientCoordinates = useMemo(() => (reverse
         ? {
             x1: "0%",
             x2: "100%",
@@ -59,9 +70,10 @@ export const AnimatedBeam = ({
             x2: "0%",
             y1: "0%",
             y2: "0%",
-        };
+        }), [reverse]);
 
     useEffect(() => {
+        if (!mounted) return;
         const updatePath = () => {
             if (containerRef.current && fromRef.current && toRef.current) {
                 const containerRect = containerRef.current.getBoundingClientRect();
@@ -110,7 +122,10 @@ export const AnimatedBeam = ({
         startYOffset,
         endXOffset,
         endYOffset,
+        mounted
     ]);
+
+    if (!mounted) return null;
 
     return (
         <svg

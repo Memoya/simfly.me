@@ -5,6 +5,7 @@ import "./../globals.css";
 
 import { LANG_TO_OG_LOCALE } from "@/lib/lang-locale-map";
 import StructuredData from "@/components/SEO/StructuredData";
+import { VisitorTracker } from "@/components/VisitorTracker";
 
 export async function generateMetadata(props: {
   params: Promise<{ lang: string }>;
@@ -73,7 +74,7 @@ export default async function RootLayout(props: {
   const defaultCurrency = LOCALE_TO_CURRENCY[lang] || 'EUR';
 
   return (
-    <html lang={lang}>
+    <html lang={lang} suppressHydrationWarning>
       <head>
         {/* Preload popular destination flags for instant display */}
         <link rel="preload" as="image" href="https://flagcdn.com/w160/th.png" />
@@ -84,7 +85,7 @@ export default async function RootLayout(props: {
         {/* DNS Prefetch for external resources */}
         <link rel="dns-prefetch" href="https://flagcdn.com" />
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <StructuredData
           type="Organization"
           data={{
@@ -146,6 +147,7 @@ export default async function RootLayout(props: {
           }}
         />
         <CurrencyProvider defaultCurrency={defaultCurrency}>
+          <VisitorTracker />
           {props.children}
         </CurrencyProvider>
       </body>

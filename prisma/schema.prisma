@@ -237,3 +237,17 @@ model EsimActivationFailure {
 
   @@index([iccid])
 }
+
+model VisitorActivity {
+  id         String   @id @default(cuid())
+  sessionId  String // To group multiple activities from same user
+  ip         String?
+  browser    String?
+  device     String?
+  page       String
+  lang       String?
+  lastActive DateTime @default(now()) @updatedAt
+
+  @@index([sessionId])
+  @@index([lastActive])
+}

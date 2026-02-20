@@ -79,7 +79,9 @@ export default function AdminPage() {
     const checkEsimStatus = async (iccid: string) => {
         setLoadingEsimAction(iccid);
         try {
-            const res = await fetch(`/api/admin/esim/status?iccid=${iccid}`);
+            const res = await fetch(`/api/admin/esim/status?iccid=${iccid}`, {
+                headers: { 'Authorization': `Bearer ${password}` }
+            });
             const data = await res.json();
             setEsimDetails(prev => ({ ...prev, [iccid]: data }));
         } catch (e) {
@@ -97,7 +99,10 @@ export default function AdminPage() {
         try {
             const res = await fetch(`/api/admin/esim/topup`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${password}`
+                },
                 body: JSON.stringify({ iccid, bundle })
             });
             const data = await res.json();
@@ -1391,49 +1396,6 @@ export default function AdminPage() {
                         <EnterpriseAnalytics token={`Bearer ${password}`} />
                     )}
 
-                    {activeTab === 'orders' && (
-                        <div>
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-navy">Letzte Bestellungen</h2>
-                                <button onClick={fetchOrders} className="text-electric hover:bg-blue-50 p-2 rounded-full">
-                                    <RefreshCw className={loading ? 'animate-spin' : ''} />
-                                </button>
-                            </div>
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
-                                        <tr>
-                                            <th className="p-4">Email</th>
-                                            <th className="p-4">Datum</th>
-                                            <th className="p-4">Status</th>
-                                            <th className="p-4">Summe</th>
-                                            <th className="p-4">Artikel</th>
-                                            <th className="p-4">Aktion</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {orders.map((o, i) => (
-                                            <tr key={i} className="hover:bg-gray-50">
-                                                <td className="p-4 text-sm font-medium">{o.customer_email}</td>
-                                                <td className="p-4 text-sm text-gray-500">{new Date(o.date).toLocaleDateString()}</td>
-                                                <td className="p-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${o.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                        {o.payment_status}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4 font-bold">{o.amount.toFixed(2)}€</td>
-                                                <td className="p-4 text-xs text-gray-600 truncate max-w-[150px]">{o.items}</td>
-                                                <td className="p-4">
-                                                    <button onClick={() => setSelectedOrder(o)} className="text-electric hover:underline font-bold text-sm">Details</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-
                     {activeTab === 'esim_orders' && (
                         <div>
                             <div className="flex justify-between items-center mb-6">
@@ -1565,226 +1527,6 @@ export default function AdminPage() {
                         </div>
                     )}
 
-                    {activeTab === 'countries' && (
-                        <div className="space-y-8">
-                            <h2 className="text-2xl font-bold text-navy">Länderspezifische Margen</h2>
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                                    <input className="p-2 border rounded" placeholder="Region (z.B. turkiye)" value={newCountryOverride.region} onChange={e => setNewCountryOverride({ ...newCountryOverride, region: e.target.value })} />
-                                    <input type="number" className="p-2 border rounded" placeholder="Marge %" value={newCountryOverride.percent} onChange={e => setNewCountryOverride({ ...newCountryOverride, percent: Number(e.target.value) })} />
-                                    <input type="number" className="p-2 border rounded" placeholder="Fix €" value={newCountryOverride.fixed} onChange={e => setNewCountryOverride({ ...newCountryOverride, fixed: Number(e.target.value) })} />
-                                    <button onClick={addCountryOverride} className="bg-electric text-white py-2 px-4 rounded font-bold hover:bg-blue-600">Hinzufügen</button>
-                                </div>
-                                <div className="space-y-2">
-                                    {Object.entries(settings.countryMargins || {}).map(([region, margin]: [string, any]) => (
-                                        <div key={region} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                            <span className="font-bold">{region}</span>
-                                            <div className="flex items-center gap-4">
-                                                <span className="text-sm">{margin.percent}% + {margin.fixed}€</span>
-                                                <button onClick={() => removeCountryOverride(region)} className="text-red-500 p-1 hover:bg-red-50 rounded"><Trash2 size={16} /></button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'discounts' && (
-                        <div className="space-y-8">
-                            <h2 className="text-2xl font-bold text-navy">Gutscheincodes</h2>
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-                                    <input className="p-2 border rounded" placeholder="CODE" value={newDiscount.code || ''} onChange={e => setNewDiscount({ ...newDiscount, code: e.target.value.toUpperCase() })} />
-                                    <select className="p-2 border rounded" value={newDiscount.type} onChange={e => setNewDiscount({ ...newDiscount, type: e.target.value as any })}>
-                                        <option value="percent">Prozent (%)</option>
-                                        <option value="fixed">Fixer Betrag (€)</option>
-                                    </select>
-                                    <input type="number" className="p-2 border rounded" placeholder="Wert" value={newDiscount.value || 0} onChange={e => setNewDiscount({ ...newDiscount, value: Number(e.target.value) })} />
-                                    <button onClick={addDiscount} className="bg-electric text-white py-2 px-4 rounded font-bold">Hinzufügen</button>
-                                </div>
-                                <div className="space-y-2">
-                                    {settings.discountCodes?.map((d) => (
-                                        <div key={d.code} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                            <span className="font-mono font-bold tracking-widest">{d.code}</span>
-                                            <div className="flex items-center gap-4">
-                                                <span className={`px-2 py-1 rounded text-xs font-bold ${d.type === 'percent' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                                                    {d.type === 'percent' ? `-${d.value}%` : `-${d.value}€`}
-                                                </span>
-                                                <button onClick={() => removeDiscount(d.code)} className="text-red-500 p-1 hover:bg-red-50 rounded"><Trash2 size={16} /></button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'customers' && (
-                        <div>
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-navy">Kunden (CRM)</h2>
-                                <button
-                                    onClick={() => {
-                                        const csv = 'Email,Total Spend,Orders,Last Order\n' + customers.map(c => `${c.email},${c.totalSpend},${c.orders},${c.lastOrderDate}`).join('\n');
-                                        const blob = new Blob([csv], { type: 'text/csv' });
-                                        const url = window.URL.createObjectURL(blob);
-                                        const a = document.createElement('a');
-                                        a.href = url;
-                                        a.download = 'customers.csv';
-                                        a.click();
-                                    }}
-                                    className="bg-electric text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-600"
-                                >
-                                    <Download className="w-4 h-4" /> Export CSV
-                                </button>
-                            </div>
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
-                                        <tr>
-                                            <th className="p-4">Email</th>
-                                            <th className="p-4">Anzahl Bestellungen</th>
-                                            <th className="p-4">Gesamtwert (LTV)</th>
-                                            <th className="p-4">Letzte Bestellung</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {customers.map((c, i) => (
-                                            <tr key={i} className="hover:bg-gray-50">
-                                                <td className="p-4 font-bold text-navy">{c.email}</td>
-                                                <td className="p-4">{c.orders}x</td>
-                                                <td className="p-4 font-bold text-green-600">
-                                                    {new Intl.NumberFormat('de-DE', { style: 'currency', currency: c.currency || 'EUR' }).format(c.totalSpend)}
-                                                </td>
-                                                <td className="p-4 text-gray-500">{new Date(c.lastOrderDate).toLocaleDateString()}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                                {customers.length === 0 && <p className="p-8 text-center text-gray-400">Keine Kunden gefunden.</p>}
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'audit' && (
-                        <div>
-                            <h2 className="text-2xl font-bold mb-6 text-navy">Audit Log</h2>
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50 text-gray-500 text-sm uppercase">
-                                        <tr>
-                                            <th className="p-4">Zeitpunkt</th>
-                                            <th className="p-4">User</th>
-                                            <th className="p-4">Aktion</th>
-                                            <th className="p-4">Details</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {auditLogs.map((log) => (
-                                            <tr key={log.id} className="hover:bg-gray-50">
-                                                <td className="p-4 text-gray-500 text-sm">
-                                                    {new Date(log.createdAt).toLocaleString()}
-                                                </td>
-                                                <td className="p-4 font-medium">{log.userId}</td>
-                                                <td className="p-4">
-                                                    <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold">
-                                                        {log.action}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4 text-sm text-gray-600 truncate max-w-xs" title={log.details}>
-                                                    {log.details}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                                {auditLogs.length === 0 && <p className="p-8 text-center text-gray-400">Keine Logs vorhanden.</p>}
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'content' && (
-                        <div className="space-y-12">
-                            <h2 className="text-2xl font-bold text-navy">Content & Marketing Management</h2>
-
-                            {/* Featured Deals Management */}
-                            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-lg font-black text-navy flex items-center gap-2">
-                                        <Zap className="w-5 h-5 text-amber-500" /> Aktive Featured Deals (Homepage)
-                                    </h3>
-                                    <button
-                                        onClick={() => setIsPackageModalOpen(true)}
-                                        className="bg-navy text-white px-5 py-2.5 rounded-2xl font-bold text-sm hover:bg-black transition-all flex items-center gap-2"
-                                    >
-                                        <Plus className="w-4 h-4" /> Deal hinzufügen
-                                    </button>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {(settings.featuredDeals || []).map((deal) => (
-                                        <div key={deal.id} className="p-6 rounded-2xl border-2 border-gray-50 hover:border-electric/20 transition-all group relative">
-                                            <button
-                                                onClick={() => removeDeal(deal.id)}
-                                                className="absolute -top-3 -right-3 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                            <div className="flex items-center gap-3 mb-4">
-                                                <img
-                                                    src={`https://flagcdn.com/w40/${deal.iso?.toLowerCase() || 'un'}.png`}
-                                                    alt={deal.country}
-                                                    className="w-10 h-7 object-cover rounded shadow-sm"
-                                                />
-                                                <div>
-                                                    <p className="font-black text-navy text-sm break-words">{deal.country}</p>
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{deal.region}</p>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="font-black text-2xl text-navy">{deal.data}</p>
-                                                <p className="text-xs font-bold text-gray-500">{deal.days} Tage Laufzeit</p>
-                                            </div>
-                                            <div className="mt-4 pt-4 border-t border-gray-50 flex justify-between items-center">
-                                                <span className="text-[10px] font-black text-electric uppercase tracking-widest">Base Cost: {deal.price.toFixed(2)}€</span>
-                                                <div className="text-right">
-                                                    <span className="text-lg font-black text-navy">{(deal.price * 1.5).toFixed(2)}€</span>
-                                                    <p className="text-[8px] text-gray-400 font-bold uppercase">Estimated Sell</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {(settings.featuredDeals || []).length === 0 && (
-                                        <div className="col-span-full py-12 text-center border-2 border-dashed border-gray-100 rounded-3xl">
-                                            <p className="text-gray-400 font-bold">Keine Featured Deals konfiguriert.</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* FAQ Management */}
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <h3 className="text-lg font-bold mb-4">FAQ / Häufige Fragen</h3>
-                                <div className="space-y-4 mb-6">
-                                    <input className="w-full p-2 border rounded" placeholder="Frage" value={newFAQ.question || ''} onChange={e => setNewFAQ({ ...newFAQ, question: e.target.value })} />
-                                    <textarea className="w-full p-2 border rounded h-24" placeholder="Antwort (HTML erlaubt)" value={newFAQ.answer || ''} onChange={e => setNewFAQ({ ...newFAQ, answer: e.target.value })} />
-                                    <button onClick={addFAQ} className="bg-navy text-white px-4 py-2 rounded font-bold">FAQ hinzufügen</button>
-                                </div>
-                                <div className="space-y-2">
-                                    {(settings.faq || []).map((faq, i) => (
-                                        <div key={i} className="p-4 bg-gray-50 rounded-lg">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <p className="font-bold">{faq.question}</p>
-                                                <button onClick={() => removeFAQ(i)} className="text-red-500"><Trash2 size={16} /></button>
-                                            </div>
-                                            <p className="text-sm text-gray-600 line-clamp-2">{faq.answer}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
 
                     {/* Order Details Modal */}
