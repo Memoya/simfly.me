@@ -4,12 +4,18 @@ import { useState, useEffect } from 'react';
 
 export default function DebugPage() {
     const [sessionId, setSessionId] = useState('');
+    const [viewport, setViewport] = useState({ width: 0, height: 0 });
+    const [userAgent, setUserAgent] = useState('');
     const [trackingStatus, setTrackingStatus] = useState('Initializing...');
     const [visitorCount, setVisitorCount] = useState(0);
     const [adminPassword, setAdminPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        // Get viewport size
+        setViewport({ width: window.innerWidth, height: window.innerHeight });
+        setUserAgent(navigator.userAgent);
+
         let sessionId = sessionStorage.getItem('simfly_visitor_session');
         if (!sessionId) {
             sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -29,8 +35,8 @@ export default function DebugPage() {
                     sessionId,
                     page: '/debug',
                     lang: 'de',
-                    screenWidth: window.innerWidth,
-                    screenHeight: window.innerHeight
+                    screenWidth: viewport.width,
+                    screenHeight: viewport.height
                 }),
             });
 
@@ -82,9 +88,9 @@ export default function DebugPage() {
                 <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
                     <h2 className="text-xl font-bold text-navy mb-4">Session Info</h2>
                     <div className="space-y-2 text-sm font-mono">
-                        <p><span className="font-bold">Session ID:</span> {sessionId}</p>
-                        <p><span className="font-bold">Viewport:</span> {window.innerWidth}x{window.innerHeight}</p>
-                        <p><span className="font-bold">User Agent:</span> {navigator.userAgent}</p>
+                        <p><span className="font-bold">Session ID:</span> {sessionId || 'Loading...'}</p>
+                        <p><span className="font-bold">Viewport:</span> {viewport.width}x{viewport.height}</p>
+                        <p><span className="font-bold">User Agent:</span> {userAgent || 'Loading...'}</p>
                     </div>
                 </div>
 
