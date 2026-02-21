@@ -4,8 +4,6 @@ const nextConfig: NextConfig = {
   /* config options here */
   compress: true,
   poweredByHeader: false, // Remove X-Powered-By header for security
-  swcMinify: true, // Aggressive minification for all output
-  productionBrowserSourceMaps: false, // Smaller bundles in production
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
     optimizeCss: true, // CSS tree-shaking for unused styles

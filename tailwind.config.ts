@@ -10,10 +10,6 @@ const config: Config = {
     extend: {},
   },
   plugins: [],
-  // Aggressive purge settings for production
-  safelist: [
-    // Only add classes that are dynamically generated if needed
-  ],
 };
 
 export default config;
