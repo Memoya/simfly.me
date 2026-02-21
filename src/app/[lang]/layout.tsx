@@ -86,8 +86,12 @@ export default async function RootLayout(props: {
   return (
     <html lang={lang} suppressHydrationWarning>
       <head>
-        {/* DNS Prefetch for external resources */}
-        <link rel="dns-prefetch" href="https://flagcdn.com" />
+        {/* Preconnect to critical third-party services */}
+        <link rel="preconnect" href="https://flagcdn.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://checkout.stripe.com" crossOrigin="anonymous" />
+        
+        {/* DNS Prefetch for lower-priority origins */}
+        <link rel="dns-prefetch" href="https://api.qrserver.com" />
       </head>
       <body className="antialiased" suppressHydrationWarning>
         <StructuredData

@@ -1,0 +1,12 @@
+# Target modern browsers only - remove unnecessary polyfills
+# This eliminates ~14 KiB of old ES5 polyfills
+
+# Last 2 major versions of major browsers
+last 2 versions
+
+# Include browsers with >0.5% market share
+> 0.5%
+
+# Exclude old IE versions
+not dead
+not ie 11
