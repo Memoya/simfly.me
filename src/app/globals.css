@@ -3,8 +3,8 @@
 :root {
   --background: #FFFFFF;
   --foreground: #000000;
-  --navy: #000000;
-  --electric: #000000;
+  --navy: #0A0A0A;
+  --electric: #2563EB;
   --accent: #E5E7EB;
   --magenta: #F3F4F6;
   --emerald: #10B981;
@@ -14,8 +14,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-navy: #000000;
-  --color-electric: #000000;
+  --color-navy: #0A0A0A;
+  --color-electric: #2563EB;
   --color-accent: #E5E7EB;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

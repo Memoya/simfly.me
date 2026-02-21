@@ -122,7 +122,7 @@ export default function CompatibilityCheck() {
                             <h2 className="text-xl sm:text-3xl md:text-6xl font-black tracking-tighter italic uppercase leading-tight break-words">
                                 Kompatibilitäts-Check
                             </h2>
-                            <p className="text-black/30 font-bold uppercase tracking-[0.3em] text-[10px]">
+                            <p className="text-black/60 font-bold uppercase tracking-[0.3em] text-[10px]">
                                 {allDevices.length}+ eSIM-fähige Geräte
                             </p>
                         </div>
@@ -202,7 +202,7 @@ export default function CompatibilityCheck() {
                                                                         </div>
                                                                         <div className="flex flex-col">
                                                                             <span className="font-bold text-sm">{device.model}</span>
-                                                                            <span className="text-[10px] text-black/30 font-bold">{device.brand}</span>
+                                                                            <span className="text-[10px] text-black/60 font-bold">{device.brand}</span>
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex items-center gap-2 text-green-500 font-black text-[10px] uppercase tracking-widest shrink-0">
@@ -251,9 +251,9 @@ export default function CompatibilityCheck() {
                             </AnimatePresence>
                         </div>
 
-                        <div className="flex flex-wrap justify-center gap-4 md:gap-6 opacity-20 px-4">
+                        <div className="flex flex-wrap justify-center gap-4 md:gap-6 opacity-80 px-4">
                             {brandLogos.map(brand => (
-                                <span key={brand} className="text-[8px] md:text-[9px] font-black tracking-[0.3em] md:tracking-[0.4em]">{brand}</span>
+                                <span key={brand} className="text-[8px] md:text-[9px] font-black tracking-[0.3em] md:tracking-[0.4em] text-black/70">{brand}</span>
                             ))}
                         </div>
 
@@ -261,7 +261,7 @@ export default function CompatibilityCheck() {
                         <div className="text-center">
                             <button
                                 onClick={() => setShowDebug(!showDebug)}
-                                className="text-[8px] text-black/20 hover:text-black/40 font-bold uppercase tracking-widest transition-colors"
+                                className="text-[8px] text-black/50 hover:text-black/70 font-bold uppercase tracking-widest transition-colors"
                             >
                                 {showDebug ? '▼ Debug schließen' : '▶ Gerät wird nicht erkannt?'}
                             </button>
