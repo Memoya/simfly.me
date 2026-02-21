@@ -529,9 +529,10 @@ export default function VisitorAnalytics({ password }: VisitorAnalyticsProps) {
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
                                 <th className="px-4 py-3 text-left font-bold text-gray-600">Session ID</th>
+                                <th className="px-4 py-3 text-left font-bold text-gray-600">IP-Adresse</th>
                                 <th className="px-4 py-3 text-left font-bold text-gray-600">Seite</th>
                                 <th className="px-4 py-3 text-left font-bold text-gray-600">Gerät/OS</th>
-                                <th className="px-4 py-3 text-left font-bold text-gray-600">Quelle</th>
+                                <th className="px-4 py-3 text-left font-bold text-gray-600">Browser</th>
                                 <th className="px-4 py-3 text-left font-bold text-gray-600">Zeit</th>
                             </tr>
                         </thead>
@@ -542,9 +543,10 @@ export default function VisitorAnalytics({ password }: VisitorAnalyticsProps) {
                                         <td className="px-4 py-3">
                                             <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">{v.sessionId.slice(0, 8)}</code>
                                         </td>
+                                        <td className="px-4 py-3 text-sm font-mono text-blue-600">{v.ip || '—'}</td>
                                         <td className="px-4 py-3 text-navy font-bold">{v.page}</td>
                                         <td className="px-4 py-3 text-sm">{v.device} / {v.os}</td>
-                                        <td className="px-4 py-3 text-sm">{v.referrer || 'Direct'}</td>
+                                        <td className="px-4 py-3 text-sm">{v.browser || 'Unknown'}</td>
                                         <td className="px-4 py-3 text-gray-500 text-xs">
                                             {new Date(v.createdAt).toLocaleString('de-DE')}
                                         </td>
@@ -552,7 +554,7 @@ export default function VisitorAnalytics({ password }: VisitorAnalyticsProps) {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                                    <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
                                         Keine Besucher gefunden
                                     </td>
                                 </tr>
