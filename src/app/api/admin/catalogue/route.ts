@@ -2,6 +2,31 @@ import { NextResponse } from 'next/server';
 import { verifyAuth, unauthorizedResponse } from '@/lib/auth';
 import { Bundle } from '@/types';
 
+interface ProcessedBundle {
+    id: string;
+    name: string;
+    price: number;
+    region: string;
+    regionGroup: string;
+    iso: string;
+    data: string;
+    duration: string;
+    durationRaw: number | string;
+    unlimitedDetails: { tier: string; highSpeed: string; throttle: string } | undefined;
+    sellPrice: number;
+    profit: number;
+    speed?: string;
+    regionType?: string;
+    dataType?: string;
+    billingStarts?: string;
+    topUpType?: string;
+    planValidityDays?: number;
+    breakoutIp?: string;
+    isResaleable?: boolean;
+    providerName?: string;
+    providerProductId?: string;
+}
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -43,7 +68,7 @@ export async function GET(request: Request) {
         }
 
         // Process all items: Calculate Sell Price & Profit
-        let processed = allBundles.map((b: any) => {
+        let processed = allBundles.map((b: Bundle) => {
             const region = b.countries && b.countries.length > 0 ? b.countries[0].name : 'Global';
             const iso = b.countries && b.countries.length > 0 ? b.countries[0].iso : '';
             const regionGroup = b.groups && b.groups.length > 0 ? b.groups[0] : 'Global';
@@ -142,7 +167,7 @@ export async function GET(request: Request) {
 
         // 1. Filter
         if (search) {
-            processed = processed.filter((p: any) =>
+            processed = processed.filter((p: ProcessedBundle) =>
                 p.name.toLowerCase().includes(search) ||
                 p.region.toLowerCase().includes(search)
             );
@@ -150,9 +175,11 @@ export async function GET(request: Request) {
 
         // 2. Sort
         if (sort) {
-            processed.sort((a: any, b: any) => {
-                let valA = a[sort as keyof typeof a];
-                let valB = b[sort as keyof typeof b];
+            processed.sort((a: ProcessedBundle, b: ProcessedBundle) => {
+                let valA = a[sort as keyof ProcessedBundle];
+                let valB = b[sort as keyof ProcessedBundle];
+
+                if (valA == null || valB == null) return 0;
 
                 if (typeof valA === 'string') {
                     valA = valA.toLowerCase();

@@ -158,7 +158,7 @@ export default function CompatibilityCheck() {
                                         exit={{ opacity: 0, maxHeight: 0 }}
                                         className="mt-6 bg-white rounded-[2rem] p-4 shadow-xl border border-black/5 overflow-hidden"
                                     >
-                                        <div className="space-y-4 max-h-[540px] overflow-y-auto scrollbar-thin scrollbar-thumb-black/10 scrollbar-track-transparent">{
+                                        <div className="space-y-4 max-h-[540px] overflow-y-auto scrollbar-thin scrollbar-thumb-black/10 scrollbar-track-transparent">
                                             {!search && (
                                                 <div className="px-2 pt-2">
                                                     <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-4">Beliebte Modelle</p>
