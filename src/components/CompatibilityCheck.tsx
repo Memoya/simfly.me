@@ -5,78 +5,133 @@ import { Search, Check, X, Smartphone, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import devicesData from '@/data/esim-devices.json';
 
-// Helper function to detect device from user agent
-function detectDevice(): string | null {
-    if (typeof navigator === 'undefined') return null;
+// Helper function to detect device from user agent and features
+function detectDevice(): { device: string | null; confidence: 'high' | 'medium' | 'low' } {
+    if (typeof navigator === 'undefined' || typeof window === 'undefined') {
+        return { device: null, confidence: 'low' };
+    }
     
     const ua = navigator.userAgent;
+    const platform = navigator.platform || '';
+    const screenWidth = window.screen?.width || 0;
+    const screenHeight = window.screen?.height || 0;
+    const pixelRatio = window.devicePixelRatio || 1;
     
-    // iPhone detection
-    const iphoneMatch = ua.match(/iPhone(\d+[,\d]*)/);
-    if (iphoneMatch || ua.includes('iPhone')) {
-        // Try to detect specific model
-        if (ua.includes('iPhone16,')) return 'iPhone 15 Pro';
-        if (ua.includes('iPhone15,')) return 'iPhone 14';
-        if (ua.includes('iPhone14,')) return 'iPhone 13';
-        if (ua.includes('iPhone13,')) return 'iPhone 12';
-        if (ua.includes('iPhone12,')) return 'iPhone 11';
-        return 'iPhone'; // Generic iPhone
+    // Debug: Log User Agent (only in development)
+    if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Device Detection Debug:', {
+            userAgent: ua,
+            platform,
+            screenWidth,
+            screenHeight,
+            pixelRatio
+        });
+    }
+    
+    // iPhone detection with screen size verification
+    if (ua.includes('iPhone') || (platform.includes('iPhone'))) {
+        // Try to detect model by identifier
+        const modelMatch = ua.match(/iPhone(\d+[,\d]*)/);
+        if (modelMatch) {
+            const identifier = modelMatch[1];
+            // iPhone model identifiers (these are rare in modern browsers)
+            if (identifier.startsWith('16')) return { device: 'iPhone 15 Pro', confidence: 'high' };
+            if (identifier.startsWith('15')) return { device: 'iPhone 14', confidence: 'high' };
+            if (identifier.startsWith('14')) return { device: 'iPhone 13', confidence: 'high' };
+            if (identifier.startsWith('13')) return { device: 'iPhone 12', confidence: 'high' };
+            if (identifier.startsWith('12')) return { device: 'iPhone 11', confidence: 'high' };
+        }
+        
+        // Fallback: Use screen dimensions to guess iPhone model
+        // All iPhones since iPhone 11 support eSIM
+        const screenSize = Math.max(screenWidth, screenHeight) * pixelRatio;
+        
+        if (screenSize >= 2796) return { device: 'iPhone 15 Pro Max', confidence: 'medium' }; // 6.7"
+        if (screenSize >= 2556) return { device: 'iPhone 15 Pro', confidence: 'medium' }; // 6.1"
+        if (screenSize >= 2532) return { device: 'iPhone 14 Pro', confidence: 'medium' }; // 6.1"
+        if (screenSize >= 2436) return { device: 'iPhone 13', confidence: 'medium' }; // 6.1"
+        
+        // Generic iPhone (all iPhones from 2018+ support eSIM)
+        return { device: 'iPhone (eSIM kompatibel)', confidence: 'medium' };
     }
     
     // iPad detection
-    if (ua.includes('iPad')) {
-        return 'iPad Pro';
+    if (ua.includes('iPad') || (platform.includes('iPad')) || 
+        (ua.includes('Macintosh') && 'ontouchend' in document)) { // iPadOS 13+ identifies as Mac
+        // Check screen size for iPad Pro
+        const diagonal = Math.sqrt(screenWidth * screenWidth + screenHeight * screenHeight) / pixelRatio;
+        if (diagonal > 11) {
+            return { device: 'iPad Pro (eSIM kompatibel)', confidence: 'medium' };
+        }
+        return { device: 'iPad (eSIM kompatibel)', confidence: 'medium' };
     }
     
     // Samsung Galaxy detection
-    if (ua.includes('SM-S')) {
-        if (ua.includes('SM-S926') || ua.includes('SM-S928')) return 'Galaxy S24';
-        if (ua.includes('SM-S916') || ua.includes('SM-S918')) return 'Galaxy S23';
-        if (ua.includes('SM-S906') || ua.includes('SM-S908')) return 'Galaxy S22';
-        return 'Galaxy S';
+    if (ua.includes('Samsung') || ua.includes('SM-')) {
+        // Try to extract model number
+        const modelMatch = ua.match(/SM-([A-Z]\d+)/);
+        if (modelMatch) {
+            const model = modelMatch[1];
+            if (model.startsWith('S93')) return { device: 'Galaxy S24', confidence: 'high' };
+            if (model.startsWith('S92')) return { device: 'Galaxy S23', confidence: 'high' };
+            if (model.startsWith('S91')) return { device: 'Galaxy S22', confidence: 'high' };
+            if (model.startsWith('S90')) return { device: 'Galaxy S21', confidence: 'high' };
+            if (model.startsWith('F')) return { device: 'Galaxy Z Fold/Flip', confidence: 'medium' };
+        }
+        return { device: 'Samsung Galaxy (eSIM kompatibel)', confidence: 'medium' };
     }
     
     // Google Pixel detection
     if (ua.includes('Pixel')) {
-        if (ua.includes('Pixel 9')) return 'Pixel 9';
-        if (ua.includes('Pixel 8')) return 'Pixel 8';
-        if (ua.includes('Pixel 7')) return 'Pixel 7';
-        if (ua.includes('Pixel 6')) return 'Pixel 6';
-        return 'Pixel';
+        if (ua.includes('Pixel 9')) return { device: 'Google Pixel 9', confidence: 'high' };
+        if (ua.includes('Pixel 8')) return { device: 'Google Pixel 8', confidence: 'high' };
+        if (ua.includes('Pixel 7')) return { device: 'Google Pixel 7', confidence: 'high' };
+        if (ua.includes('Pixel 6')) return { device: 'Google Pixel 6', confidence: 'high' };
+        if (ua.includes('Pixel 5')) return { device: 'Google Pixel 5', confidence: 'high' };
+        if (ua.includes('Pixel 4')) return { device: 'Google Pixel 4', confidence: 'high' };
+        return { device: 'Google Pixel (eSIM kompatibel)', confidence: 'medium' };
     }
     
     // Xiaomi detection
-    if (ua.includes('Xiaomi') || ua.includes('Redmi')) {
-        return 'Xiaomi';
+    if (ua.includes('Xiaomi') || ua.includes('Redmi') || ua.includes('MI ')) {
+        return { device: 'Xiaomi (neuere Modelle eSIM-fähig)', confidence: 'low' };
     }
     
     // Oppo detection
-    if (ua.includes('OPPO')) {
-        return 'Oppo';
+    if (ua.includes('OPPO') || ua.includes('CPH')) {
+        return { device: 'Oppo (neuere Modelle eSIM-fähig)', confidence: 'low' };
     }
     
     // OnePlus detection  
     if (ua.includes('OnePlus')) {
-        return 'OnePlus';
+        return { device: 'OnePlus (neuere Modelle eSIM-fähig)', confidence: 'low' };
     }
     
-    return null;
+    // Motorola detection
+    if (ua.includes('Motorola') || ua.includes('moto')) {
+        return { device: 'Motorola (neuere Modelle eSIM-fähig)', confidence: 'low' };
+    }
+    
+    return { device: null, confidence: 'low' };
 }
 
 export default function CompatibilityCheck() {
     const [search, setSearch] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [detectedDevice, setDetectedDevice] = useState<string | null>(null);
+    const [deviceConfidence, setDeviceConfidence] = useState<'high' | 'medium' | 'low'>('low');
     const [showDetection, setShowDetection] = useState(false);
+    const [showDebug, setShowDebug] = useState(false);
 
     // Detect device on mount
     useEffect(() => {
-        const device = detectDevice();
-        if (device) {
-            setDetectedDevice(device);
+        const detection = detectDevice();
+        if (detection.device) {
+            setDetectedDevice(detection.device);
+            setDeviceConfidence(detection.confidence);
             setShowDetection(true);
-            // Auto-hide after 5 seconds
-            setTimeout(() => setShowDetection(false), 5000);
+            // Auto-hide after 8 seconds
+            setTimeout(() => setShowDetection(false), 8000);
         }
     }, []);
 
@@ -123,10 +178,23 @@ export default function CompatibilityCheck() {
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
-                                className="absolute top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-2xl shadow-lg flex items-center gap-2 z-20 text-xs font-bold"
+                                className={`absolute top-4 right-4 px-4 py-3 rounded-2xl shadow-lg flex flex-col gap-1 z-20 text-xs font-bold max-w-xs ${
+                                    deviceConfidence === 'high' ? 'bg-green-500 text-white' :
+                                    deviceConfidence === 'medium' ? 'bg-blue-500 text-white' :
+                                    'bg-yellow-500 text-black'
+                                }`}
                             >
-                                <CheckCircle2 className="w-4 h-4" />
-                                <span>{detectedDevice} erkannt ✓</span>
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                                    <span className="font-black">{detectedDevice}</span>
+                                </div>
+                                {deviceConfidence !== 'high' && (
+                                    <span className="text-[9px] opacity-80 leading-tight">
+                                        {deviceConfidence === 'medium' 
+                                            ? 'Wahrscheinlich eSIM-kompatibel'
+                                            : 'Bitte manuell prüfen'}
+                                    </span>
+                                )}
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -234,6 +302,52 @@ export default function CompatibilityCheck() {
                             {brandLogos.map(brand => (
                                 <span key={brand} className="text-[8px] md:text-[9px] font-black tracking-[0.3em] md:tracking-[0.4em]">{brand}</span>
                             ))}
+                        </div>
+
+                        {/* Debug Button - Shows device info */}
+                        <div className="text-center">
+                            <button
+                                onClick={() => setShowDebug(!showDebug)}
+                                className="text-[8px] text-black/20 hover:text-black/40 font-bold uppercase tracking-widest transition-colors"
+                            >
+                                {showDebug ? '▼ Debug schließen' : '▶ Gerät wird nicht erkannt?'}
+                            </button>
+                            <AnimatePresence>
+                                {showDebug && typeof navigator !== 'undefined' && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="mt-4 mx-4 p-4 bg-white rounded-2xl border border-black/5 text-left overflow-hidden"
+                                    >
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-2">
+                                            Device Info (für Support)
+                                        </p>
+                                        <div className="space-y-1 text-[10px] font-mono text-black/60">
+                                            <p><strong>User Agent:</strong> {navigator.userAgent}</p>
+                                            <p><strong>Platform:</strong> {navigator.platform}</p>
+                                            {typeof window !== 'undefined' && (
+                                                <>
+                                                    <p><strong>Screen:</strong> {window.screen?.width}x{window.screen?.height}</p>
+                                                    <p><strong>Pixel Ratio:</strong> {window.devicePixelRatio}</p>
+                                                </>
+                                            )}
+                                            {detectedDevice && (
+                                                <p className="mt-2 pt-2 border-t border-black/5">
+                                                    <strong>Erkannt als:</strong> {detectedDevice} 
+                                                    <span className={`ml-2 px-2 py-0.5 rounded text-[8px] ${
+                                                        deviceConfidence === 'high' ? 'bg-green-500 text-white' :
+                                                        deviceConfidence === 'medium' ? 'bg-blue-500 text-white' :
+                                                        'bg-yellow-500 text-black'
+                                                    }`}>
+                                                        {deviceConfidence}
+                                                    </span>
+                                                </p>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
