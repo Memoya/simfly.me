@@ -74,8 +74,12 @@ export const AnimatedBeam = ({
 
     useEffect(() => {
         if (!mounted) return;
+        
+        let rafId: number | null = null;
+        
         const updatePath = () => {
             if (containerRef.current && fromRef.current && toRef.current) {
+                // Batch all getBoundingClientRect calls with RAF
                 const containerRect = containerRef.current.getBoundingClientRect();
                 const fromRect = fromRef.current.getBoundingClientRect();
                 const toRect = toRef.current.getBoundingClientRect();
@@ -101,7 +105,11 @@ export const AnimatedBeam = ({
         };
 
         const resizeObserver = new ResizeObserver(() => {
-            updatePath();
+            // Batch layout reads with RAF
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+            }
+            rafId = requestAnimationFrame(updatePath);
         });
 
         if (containerRef.current) {
@@ -112,6 +120,9 @@ export const AnimatedBeam = ({
 
         return () => {
             resizeObserver.disconnect();
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+            }
         };
     }, [
         containerRef,

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -14,7 +14,7 @@ interface MarqueeProps {
   [key: string]: any;
 }
 
-export const Marquee = ({
+const MarqueeComponent = ({
   className,
   reverse,
   pauseOnHover = false,
@@ -52,3 +52,5 @@ export const Marquee = ({
     </div>
   );
 };
+
+export const Marquee = memo(MarqueeComponent);

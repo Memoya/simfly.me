@@ -1,9 +1,9 @@
 'use client';
 
 import createGlobe from 'cobe';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 
-export default function Globe() {
+function Globe() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -63,3 +63,5 @@ export default function Globe() {
         </div>
     );
 }
+
+export default memo(Globe);

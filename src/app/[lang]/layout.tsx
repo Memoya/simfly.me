@@ -9,6 +9,7 @@ import { isEUCountry } from "@/lib/geo";
 import StructuredData from "@/components/SEO/StructuredData";
 import { VisitorTracker } from "@/components/VisitorTracker";
 import CookieConsent from "@/components/CookieConsent";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export async function generateMetadata(props: {
   params: Promise<{ lang: string }>;
@@ -156,7 +157,9 @@ export default async function RootLayout(props: {
         />
         <CurrencyProvider defaultCurrency={defaultCurrency}>
           <VisitorTracker />
-          {props.children}
+          <ErrorBoundary>
+            {props.children}
+          </ErrorBoundary>
           <CookieConsent isEU={isEU} />
         </CurrencyProvider>
       </body>

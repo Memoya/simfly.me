@@ -15,6 +15,8 @@ export const SpotlightCard = ({
     spotlightColor = "rgba(255, 255, 255, 0.2)",
 }: SpotlightCardProps) => {
     const divRef = useRef<HTMLDivElement>(null);
+    const rectCacheRef = useRef<DOMRect | null>(null);
+    const rafRef = useRef<number | null>(null);
     const [isFocused, setIsFocused] = useState(false);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [opacity, setOpacity] = useState(0);
@@ -22,18 +24,34 @@ export const SpotlightCard = ({
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!divRef.current || isFocused) return;
 
-        const div = divRef.current;
-        const rect = div.getBoundingClientRect();
+        // Cancel previous RAF
+        if (rafRef.current !== null) {
+            cancelAnimationFrame(rafRef.current);
+        }
 
-        setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        // Use cached rect if available, batch updates with RAF
+        rafRef.current = requestAnimationFrame(() => {
+            const rect = rectCacheRef.current;
+            if (rect) {
+                setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+            }
+        });
     };
 
     const handleMouseEnter = () => {
         setOpacity(1);
+        // Cache rect on enter (no layout thrashing)
+        if (divRef.current) {
+            rectCacheRef.current = divRef.current.getBoundingClientRect();
+        }
     };
 
     const handleMouseLeave = () => {
         setOpacity(0);
+        // Clear RAF queue
+        if (rafRef.current !== null) {
+            cancelAnimationFrame(rafRef.current);
+        }
     };
 
     const handleFocus = () => {

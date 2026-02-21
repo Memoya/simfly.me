@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
 export function VisitorTracker() {
     const pathname = usePathname();
+    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         // Generate a stable session ID for this browser tab/window session
@@ -32,11 +33,20 @@ export function VisitorTracker() {
             }
         };
 
-        track();
+        // Debounce tracking to prevent excessive API calls on rapid navigation
+        if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
+        }
+        debounceTimer.current = setTimeout(track, 300);
 
         // Keep session alive every 5 minutes if they stay on page
         const interval = setInterval(track, 5 * 60 * 1000);
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            if (debounceTimer.current) {
+                clearTimeout(debounceTimer.current);
+            }
+        };
     }, [pathname]);
 
     return null;
