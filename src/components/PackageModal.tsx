@@ -39,6 +39,21 @@ export default function PackageModal({ country, iso, packages, isOpen, onClose, 
         return durations.includes(30) ? 30 : (durations[0] || 7);
     });
 
+    // Helper: Convert data string to MB for sorting (100MB=100, 1GB=1024, etc)
+    const convertToMB = (dataStr: string): number => {
+        if (!dataStr) return 0;
+        const normalized = dataStr.replace(/\s+/g, '').toUpperCase();
+        
+        if (normalized.includes('GB')) {
+            const gb = parseFloat(normalized.replace('GB', '')) || 0;
+            return gb * 1024;
+        } else if (normalized.includes('MB')) {
+            return parseFloat(normalized.replace('MB', '')) || 0;
+        } else if (normalized.includes('UNLIMITED')) {
+            return Infinity;
+        }
+        return 0;
+    };
 
     // 2. Filtered & Sorted Packages for current Duration
     const durationPackages = useMemo(() => {
@@ -49,9 +64,9 @@ export default function PackageModal({ country, iso, packages, isOpen, onClose, 
         return durationPackages
             .filter(p => !p.data.startsWith('Unlimited'))
             .sort((a, b) => {
-                const aVal = parseFloat(a.data) || 0;
-                const bVal = parseFloat(b.data) || 0;
-                return aVal - bVal;
+                const aMB = convertToMB(a.data);
+                const bMB = convertToMB(b.data);
+                return aMB - bMB;
             });
     }, [durationPackages]);
 
