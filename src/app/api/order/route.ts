@@ -6,11 +6,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
     try {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? 'sk_test_mock', {
-            apiVersion: '2025-01-27.acacia' as unknown as Stripe.LatestApiVersion,
+            apiVersion: '2023-10-16' as any,
         });
-
-        const ESIM_GO_API_KEY = process.env.ESIM_GO_API_KEY;
-        const ESIM_GO_URL = 'https://api.esim-go.com/v2';
 
         const { searchParams } = new URL(request.url);
         const session_id = searchParams.get('session_id');
@@ -25,6 +22,26 @@ export async function GET(request: Request) {
                 iccid: '89001234567890123456',
                 status: 'completed'
             });
+        }
+
+        // Handle test sessions (cs_test_...)
+        if (session_id.startsWith('cs_test_')) {
+            const { prisma } = await import('@/lib/prisma');
+            const order = await prisma.order.findUnique({
+                where: { stripeSessionId: session_id },
+                include: { items: true }
+            });
+
+            if (order && order.items && order.items.length > 0) {
+                // Return test data
+                return NextResponse.json({
+                    qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TEST-ESIM-SUCCESS',
+                    iccid: order.items[0]?.iccid || `TEST${Date.now()}`,
+                    smdpAddress: 'smdp.example.test',
+                    matchingId: `TEST-${Math.random().toString(36).slice(2, 10)}`,
+                    status: 'completed'
+                });
+            }
         }
 
         const session = await stripe.checkout.sessions.retrieve(session_id, {
@@ -44,15 +61,6 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Payment not completed' }, { status: 400 });
         }
 
-        // ... (API Key checks for mock mode)
-        // Note: Code below (lines 36-41) returns mock data if livemode is false OR API key missing.
-        // We need to pass receiptUrl there too if available (likely mock url in test mode?)
-
-        if (!ESIM_GO_API_KEY || session.livemode === false) {
-            // ...
-            // Let's just update the return at line 60 effectively.
-        }
-
         const { prisma } = await import('@/lib/prisma');
         const order = await prisma.order.findUnique({
             where: { stripeSessionId: session_id },
@@ -68,11 +76,17 @@ export async function GET(request: Request) {
 
         const item = order.items[0];
 
+        const smdpAddress = item.smdpAddress || '';
+        const matchingId = item.matchingId || '';
+        const hasActivation = Boolean(smdpAddress && matchingId);
+
         return NextResponse.json({
-            qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=LPA:1$${item.smdpAddress || 'rsp.esim-go.com'}$${item.matchingId}`,
+            qrCodeUrl: hasActivation
+                ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=LPA:1$${smdpAddress}$${matchingId}`
+                : '',
             iccid: item.iccid || 'In Vorbereitung...',
-            smdpAddress: item.smdpAddress || 'rsp.esim-go.com',
-            matchingId: item.matchingId,
+            smdpAddress,
+            matchingId,
             status: 'completed',
             receiptUrl: receiptUrl
         });

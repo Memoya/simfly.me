@@ -21,7 +21,9 @@ Since the app uses SQLite, Docker is the easiest way to deploy while keeping the
     ```env
     DATABASE_URL="file:/app/data/prod.db"
     NEXT_PUBLIC_BASE_URL="https://your-domain.com"
-    ESIM_GO_API_KEY="your-key"
+    ESIM_ACCESS_CODE="your-access-code"
+    ESIM_ACCESS_SECRET="your-access-secret"
+    ESIM_ACCESS_TEST_MODE="false"
     STRIPE_SECRET_KEY="sk_live_..."
     ADMIN_PASSWORD="secure-password"
     RESEND_API_KEY="re_..."

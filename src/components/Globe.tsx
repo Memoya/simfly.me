@@ -11,15 +11,21 @@ export default function Globe() {
 
         if (!canvasRef.current) return;
 
+        // Optimize for performance based on device
+        const isMobile = window.innerWidth < 768;
+        const devicePixelRatio = isMobile ? 1 : 1.5;
+        const mapSamples = isMobile ? 6000 : 10000;
+        const canvasSize = isMobile ? 400 : 600;
+
         const globe = createGlobe(canvasRef.current, {
-            devicePixelRatio: 2,
-            width: 600 * 2,
-            height: 600 * 2,
+            devicePixelRatio,
+            width: canvasSize * devicePixelRatio,
+            height: canvasSize * devicePixelRatio,
             phi: 0,
             theta: 0,
             dark: 0, // 0 = Light Mode (white/gray), 1 = Dark Mode
             diffuse: 1.2,
-            mapSamples: 16000,
+            mapSamples,
             mapBrightness: 6,
             baseColor: [1, 1, 1], // White
             markerColor: [0, 0, 0], // Black markers
@@ -49,10 +55,10 @@ export default function Globe() {
     }, []);
 
     return (
-        <div className="w-full h-full flex justify-center items-center">
+        <div className="w-full flex justify-center items-center" style={{ aspectRatio: '1 / 1', maxHeight: '600px' }}>
             <canvas
                 ref={canvasRef}
-                style={{ width: 600, height: 600, maxWidth: '100%', aspectRatio: 1 }}
+                style={{ width: '100%', height: '100%', maxWidth: '600px' }}
             />
         </div>
     );

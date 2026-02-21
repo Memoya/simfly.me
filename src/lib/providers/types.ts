@@ -12,6 +12,15 @@ export interface NormalizedProduct {
     isUnlimited: boolean;
     networkType?: string; // e.g. "5G"
 
+    // eSIMAccess metadata (optional)
+    regionType?: string;
+    dataType?: string;
+    billingStarts?: string;
+    topUpType?: string;
+    planValidityDays?: number;
+    breakoutIp?: string;
+    isResaleable?: boolean;
+
     originalData: any; // Raw provider data for debugging
 }
 
@@ -29,7 +38,7 @@ export interface OrderResult {
 
 export interface EsimProvider {
     name: string;
-    slug: string; // Unique identifier (e.g. "esim-go")
+    slug: string; // Unique identifier (e.g. "esim-access")
 
     /**
      * Fetch the full catalog from the provider and normalize it.

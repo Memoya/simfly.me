@@ -33,6 +33,7 @@ export async function generateMetadata(props: {
     description: description,
     keywords: keywords,
     authors: [{ name: "Simfly.me Team" }],
+    manifest: `/${lang}/manifest.webmanifest`,
     openGraph: {
       title: title,
       description: description,
@@ -76,12 +77,6 @@ export default async function RootLayout(props: {
   return (
     <html lang={lang} suppressHydrationWarning>
       <head>
-        {/* Preload popular destination flags for instant display */}
-        <link rel="preload" as="image" href="https://flagcdn.com/w160/th.png" />
-        <link rel="preload" as="image" href="https://flagcdn.com/w160/de.png" />
-        <link rel="preload" as="image" href="https://flagcdn.com/w160/us.png" />
-        <link rel="preload" as="image" href="https://flagcdn.com/w160/tr.png" />
-        <link rel="preload" as="image" href="https://flagcdn.com/w160/jp.png" />
         {/* DNS Prefetch for external resources */}
         <link rel="dns-prefetch" href="https://flagcdn.com" />
       </head>

@@ -237,11 +237,12 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
             <LanguageCurrencySelector />
             <button
               onClick={openCart}
+              aria-label={`Einkaufswagen öffnen, ${cartCount} Artikel`}
               className="relative p-2 text-navy hover:text-electric transition-transform hover:scale-110"
             >
               <ShoppingBag className="w-6 h-6" />
               {cartCount > 0 && (
-                <span className="absolute top-0 right-0 bg-electric text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-lg animate-bounce-subtle">
+                <span className="absolute top-0 right-0 bg-electric text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-lg animate-bounce-subtle" aria-hidden="true">
                   {cartCount}
                 </span>
               )}
@@ -253,6 +254,7 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
             <LanguageCurrencySelector />
             <button
               onClick={openCart}
+              aria-label={`Einkaufswagen öffnen, ${cartCount} Artikel`}
               className="relative p-2 text-navy"
             >
               <ShoppingBag className="w-6 h-6" />
@@ -262,7 +264,11 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                 </span>
               )}
             </button>
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "Menü schließen" : "Menü öffnen"}
+              className="p-2"
+            >
               {isMenuOpen ? <X /> : <Menu />}
             </button>
           </div>
@@ -272,10 +278,11 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white border-b border-gray-100 overflow-hidden"
+              initial={{ opacity: 0, maxHeight: "0px" }}
+              animate={{ opacity: 1, maxHeight: "320px" }}
+              exit={{ opacity: 0, maxHeight: "0px" }}
+              style={{ overflow: "hidden", maxHeight: 0 }}
+              className="md:hidden bg-white border-b border-gray-100"
             >
               <div className="flex flex-col p-4 space-y-4 font-semibold text-gray-600">
                 <a href="#destinations" onClick={() => setIsMenuOpen(false)}>{dictionary.nav.destinations}</a>
@@ -294,7 +301,7 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-white pt-24 pb-12 md:pt-32 md:pb-20 px-4 md:px-8 text-center relative overflow-hidden min-h-[60vh] md:min-h-[80vh] flex flex-col justify-center">
+      <section role="main" className="bg-white pt-24 pb-12 md:pt-32 md:pb-20 px-4 md:px-8 text-center relative overflow-hidden min-h-[60vh] md:min-h-[80vh] flex flex-col justify-center">
         {/* Globe Background */}
         <div className="absolute inset-0 pointer-events-none opacity-40 grayscale translate-y-20 scale-150 md:scale-100">
           <GlobeComponent />
@@ -371,6 +378,7 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                           src={flagUrl}
                           alt={countryName}
                           fill
+                          sizes="32px"
                           className="object-cover"
                         />
                       ) : (
@@ -402,6 +410,7 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                           src={flagUrl}
                           alt={countryName}
                           fill
+                          sizes="32px"
                           className="object-cover"
                         />
                       ) : (
@@ -433,27 +442,40 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 + (index * 0.1) }}
                 onClick={() => {
-                  const countryData = allCountries.find(c => c.country === deal.country);
-                  if (countryData) {
+                  // Search by ISO code instead of localized country name
+                  const countryData = allCountries.find(c => 
+                    c.iso?.toLowerCase() === deal.iso?.toLowerCase()
+                  );
+                  
+                  if (countryData && countryData.packages.length > 0) {
+                    // Normalize data strings for comparison (remove spaces)
+                    const normalizeData = (str: string) => str.replace(/\s+/g, '').toUpperCase();
+                    
                     // Find the specific package matching the deal
-                    const targetPkg = countryData.packages.find(p =>
-                      (p.data === deal.data || parseFloat(p.data) === parseFloat(deal.data)) &&
-                      Math.abs(p.price - deal.price) < 0.1
-                    );
+                    const targetPkg = countryData.packages.find(p => {
+                      const dataMatch = normalizeData(p.data) === normalizeData(deal.data);
+                      const priceMatch = Math.abs(p.price - deal.price) < 0.1;
+                      const durationMatch = p.durationRaw === deal.days;
+                      
+                      return dataMatch && priceMatch && durationMatch;
+                    });
+                    
                     setSelectedPackage(targetPkg || null);
                     setSelectedCountry(countryData);
-                    trackEvent('VIEW_DEAL', { country: deal.country, package: targetPkg?.name });
-                  } else {
-                    // Fallback if country data not loaded or not found (less likely if catalogue is loaded)
-                    const fallback: CountryGroup = {
-                      country: deal.country,
+                    trackEvent('VIEW_DEAL', { 
+                      country: deal.country, 
                       iso: deal.iso,
-                      packages: [],
-                      minPrice: deal.price,
-                      regionGroup: deal.region || 'Other'
-                    };
-                    setSelectedCountry(fallback);
-                    trackEvent('VIEW_DEAL', { country: deal.country, error: 'not_found' });
+                      package: targetPkg?.name,
+                      found: !!targetPkg 
+                    });
+                  } else {
+                    // Country not found in catalogue - should not happen if data is correct
+                    console.warn('Deal country not found:', deal.country, deal.iso);
+                    trackEvent('VIEW_DEAL', { 
+                      country: deal.country, 
+                      iso: deal.iso,
+                      error: 'country_not_found' 
+                    });
                   }
                 }}
                 className="min-w-[180px] md:min-w-[280px] snap-center relative group hover:-translate-y-1 transition-transform duration-300 text-left flex-shrink-0 p-0 bg-transparent border-none outline-none focus:outline-none"
@@ -514,7 +536,7 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                       if (productMatch?.unlimitedDetails) {
                         return (
                           <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider text-center mt-2">
-                            {productMatch.unlimitedDetails.highSpeed} {dictionary.featured.highSpeed} • {productMatch.unlimitedDetails.throttle} {productMatch.unlimitedDetails.throttle}
+                            {productMatch.unlimitedDetails.highSpeed} {dictionary.featured.highSpeed} • {productMatch.unlimitedDetails.throttle}
                           </div>
                         );
                       }

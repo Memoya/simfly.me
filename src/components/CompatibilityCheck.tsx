@@ -32,7 +32,7 @@ export default function CompatibilityCheck() {
                 <motion.div
                     animate={{
                         padding: (search || isFocused) ? '2.5rem 1.5rem' : '3rem 1.5rem',
-                        minHeight: (search || isFocused) ? '500px' : 'auto'
+                        maxHeight: (search || isFocused) ? 640 : 360,
                     }}
                     className="bg-black/5 rounded-[3rem] md:rounded-[4rem] relative overflow-hidden border border-black/5 transition-all duration-500"
                 >
@@ -61,9 +61,9 @@ export default function CompatibilityCheck() {
                             <AnimatePresence>
                                 {(search || isFocused) && (
                                     <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
+                                        initial={{ opacity: 0, maxHeight: 0 }}
+                                        animate={{ opacity: 1, maxHeight: 420 }}
+                                        exit={{ opacity: 0, maxHeight: 0 }}
                                         className="mt-6 bg-white rounded-[2rem] p-4 shadow-xl border border-black/5 overflow-hidden"
                                     >
                                         <div className="space-y-4">

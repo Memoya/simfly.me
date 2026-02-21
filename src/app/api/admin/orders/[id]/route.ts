@@ -45,21 +45,23 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
                 console.error('Stripe fetch failed:', e);
             }
 
-            // 3. Fetch eSIM Go Status (Live)
+            // 3. Fetch eSIMAccess Status (Live)
             const esimStatus: any[] = [];
             if (order?.items) {
-                for (const item of order.items) {
-                    if (item.iccid) {
-                        try {
-                            const res = await fetch(`https://api.esim-go.com/v2.2/esims/${item.iccid}`, {
-                                headers: { 'X-API-Key': process.env.ESIM_GO_API_KEY || '' }
-                            });
-                            if (res.ok) {
-                                const data = await res.json();
-                                esimStatus.push({ iccid: item.iccid, status: data.status, bundle: data.bundle });
+                const { getProvider } = await import('@/lib/providers');
+                const provider = getProvider('esim-access');
+
+                if (provider?.getEsimDetails) {
+                    for (const item of order.items) {
+                        if (item.iccid) {
+                            try {
+                                const data = await provider.getEsimDetails(item.iccid);
+                                if (data) {
+                                    esimStatus.push({ iccid: item.iccid, status: data.status || 'unknown', raw: data });
+                                }
+                            } catch (e) {
+                                console.error('eSIMAccess fetch failed:', e);
                             }
-                        } catch (e) {
-                            console.error('eSIM Go fetch failed:', e);
                         }
                     }
                 }

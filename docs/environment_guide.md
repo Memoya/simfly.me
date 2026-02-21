@@ -1,6 +1,6 @@
 # Environment Variable Configuration Guide
 
-To ensure all features (Prisma, Stripe, eSIM Go, Resend, SEO) work correctly in production, please configure the following environment variables.
+To ensure all features (Prisma, Stripe, eSIMAccess, Resend, SEO) work correctly in production, please configure the following environment variables.
 
 ## Required Variables
 
@@ -8,7 +8,9 @@ To ensure all features (Prisma, Stripe, eSIM Go, Resend, SEO) work correctly in 
 | :--- | :--- | :--- |
 | `DATABASE_URL` | Prisma SQLite connection string | `file:./data/prod.db` |
 | `NEXT_PUBLIC_BASE_URL` | The public URL of your site | `https://simfly.me` |
-| `ESIM_GO_API_KEY` | Your eSIM Go API Key | `yoRLA4...` |
+| `ESIM_ACCESS_CODE` | Your eSIMAccess API code | `ea_...` |
+| `ESIM_ACCESS_SECRET` | Your eSIMAccess API secret | `ea_...` |
+| `ESIM_ACCESS_TEST_MODE` | Use safe test mode (no paid orders) | `true` |
 | `STRIPE_SECRET_KEY` | Your Stripe Secret Key (Live/Test) | `sk_test_...` |
 | `ADMIN_PASSWORD` | Password for the Admin Dashboard | `your-secure-password` |
 | `RESEND_API_KEY` | Your Resend API Key for emails | `re_...` |

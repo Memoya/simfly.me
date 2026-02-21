@@ -87,7 +87,7 @@ export async function POST(request: Request) {
                                 quantity: item.quantity || 1,
                                 price: item.price || 0,
                                 costPrice: item.costPrice || 0,
-                                providerId: item.providerId || 'esim-go'
+                                providerId: item.providerId || undefined
                             }))
                         }
                     },
@@ -110,11 +110,11 @@ export async function POST(request: Request) {
                 for (const item of newOrder.items) {
                     try {
                         const bundleId = item.productName;
-                        const providerId = (item as any).providerId || 'esim-go';
+                        const providerId = (item as any).providerId || undefined;
 
-                        console.log(`[STRIPE-WEBHOOK] Fulfilling ${bundleId} via ${providerId} (Smart Routing)`);
+                        console.log(`[STRIPE-WEBHOOK] Fulfilling ${bundleId}` + (providerId ? ` via ${providerId}` : ' (auto-select provider)'));
 
-                        // Use the new fulfillment engine with failover support
+                        // Use the new fulfillment engine with failover support and auto-provider-selection
                         const result = await fulfillProduct(bundleId, providerId);
 
                         if (result.success && result.esim) {
@@ -211,6 +211,20 @@ export async function POST(request: Request) {
                             console.error(`[STRIPE-WEBHOOK] Fulfillment FAILED: ${result.error}`);
                             await sendAdminAlert('eSIM Order Failed', `Order ${sessionId} paid but eSIM fulfillment failed for SKU ${bundleId}. Error: ${result.error}. Customer: ${customerEmail}`);
                             allSuccess = false;
+                            
+                            // Send email to customer even when fulfillment fails
+                            console.log(`[STRIPE-WEBHOOK] Sending failure notification email to ${customerEmail}`);
+                            try {
+                                const { sendFailureNotification } = await import('@/lib/email-failure');
+                                await sendFailureNotification({
+                                    customerEmail: customerEmail || 'customer@example.com',
+                                    orderId: sessionId,
+                                    productName: item.productName,
+                                    error: result.error
+                                });
+                            } catch (emailErr) {
+                                console.error(`[STRIPE-WEBHOOK] Failure email error: ${emailErr}`);
+                            }
                         }
                     } catch (itemErr) {
                         console.error(`[STRIPE-WEBHOOK] Loop error: ${itemErr}`);

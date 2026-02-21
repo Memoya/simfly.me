@@ -7,15 +7,7 @@ async function hardPurge() {
 
     try {
         // 1. Delete all ProviderProducts EXCEPT eSIMAccess
-        const go = await prisma.provider.findUnique({ where: { slug: 'esim-go' } });
         const access = await prisma.provider.findUnique({ where: { slug: 'esim-access' } });
-
-        if (go) {
-            const deletedPP = await prisma.providerProduct.deleteMany({
-                where: { providerId: go.id }
-            });
-            console.log(`Deleted ${deletedPP.count} products from ProviderProduct for eSIM Go.`);
-        }
 
         // 2. Wipe BestOffer (Unified view)
         const deletedBO = await prisma.bestOffer.deleteMany({});

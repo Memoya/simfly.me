@@ -19,6 +19,10 @@ export interface OrderEmailData {
 export async function sendOrderConfirmation(data: OrderEmailData) {
     console.log(`[MAIL] Preparing to send order confirmation to ${data.customerEmail}`);
 
+    const smdpAddress = data.smdpAddress || '';
+    const matchingId = data.matchingId || '';
+    const hasActivation = Boolean(smdpAddress && matchingId);
+
     // Integration logic for Resend
     try {
         const res = await fetch('https://api.resend.com/emails', {
@@ -28,7 +32,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                from: 'Simfly <bestellung@simfly.me>',
+                from: process.env.RESEND_FROM_EMAIL || 'Simfly <onboarding@resend.dev>',
                 to: data.customerEmail,
                 subject: `[V7] Deine eSIM für ${data.productName} ist bereit! 🌍`,
                 html: `
@@ -43,18 +47,25 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
                             Vielen Dank für deine Bestellung. Deine eSIM ist bereit zur Aktivierung. Nutze eine der folgenden Methoden:
                         </p>
 
+                        ${hasActivation ? `
                         <div style="text-align: center; margin: 30px 0; padding: 20px; background: #fff; border: 1px dashed #ddd; border-radius: 16px;">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=LPA:1$${data.smdpAddress || 'rsp.esim-go.com'}$${data.matchingId || 'ERROR'}" alt="eSIM QR Code" style="width: 200px; height: 200px; display: block; margin: 0 auto;" />
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=LPA:1$${smdpAddress}$${matchingId}" alt="eSIM QR Code" style="width: 200px; height: 200px; display: block; margin: 0 auto;" />
                             <p style="font-size: 13px; color: #999; margin-top: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Methode 1: QR-Code scannen</p>
                             <p style="font-size: 12px; color: #666; margin-top: 5px;">In den Einstellungen unter "Mobilfunk" > "eSIM hinzufügen"</p>
                         </div>
+                        ` : `
+                        <div style="text-align: center; margin: 30px 0; padding: 20px; background: #fff7e6; border: 1px dashed #ffd28a; border-radius: 16px;">
+                            <p style="font-size: 13px; color: #b36b00; margin: 0; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">QR-Code wird vorbereitet</p>
+                            <p style="font-size: 12px; color: #7a4a00; margin-top: 8px;">Sobald die Aktivierungsdaten vorliegen, senden wir dir eine zweite E-Mail.</p>
+                        </div>
+                        `}
 
-                        ${data.matchingId && data.smdpAddress ? `
+                        ${hasActivation ? `
                         <div style="margin: 30px 0; padding: 25px; background: #f0f7ff; border-radius: 16px; border: 1px solid #e0eeff;">
                             <div style="margin-bottom: 25px;">
                                 <h3 style="margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #0066FF; letter-spacing: 1px;">Methode 2: Direkt-Aktivierung (iOS)</h3>
                                 <p style="margin: 0 0 15px 0; font-size: 13px; color: #444;">Nur für iPhones: Klicke auf den Button, um das eSIM-Menü direkt zu öffnen.</p>
-                                <a href="${process.env.NEXT_PUBLIC_BASE_URL}/de/install?address=${data.smdpAddress}&matchingId=${data.matchingId}" style="display: block; background: #000; color: #fff; text-decoration: none; padding: 16px 20px; border-radius: 12px; font-size: 14px; font-weight: 900; text-align: center; letter-spacing: 0.5px;">JETZT AUF iPHONE INSTALLIEREN</a>
+                                <a href="${process.env.NEXT_PUBLIC_BASE_URL}/de/install?address=${smdpAddress}&matchingId=${matchingId}" style="display: block; background: #000; color: #fff; text-decoration: none; padding: 16px 20px; border-radius: 12px; font-size: 14px; font-weight: 900; text-align: center; letter-spacing: 0.5px;">JETZT AUF iPHONE INSTALLIEREN</a>
                             </div>
 
                             <div style="border-top: 1px solid #e0eeff; padding-top: 20px;">
@@ -63,12 +74,12 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
                                 
                                 <div style="margin-bottom: 12px;">
                                     <span style="display: block; font-size: 9px; text-transform: uppercase; color: #999; font-weight: bold; margin-bottom: 4px;">SM-DP+ Adresse</span>
-                                    <code style="display: block; background: #fff; padding: 12px; border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 13px; border: 1px solid #dce8f5; color: #0066FF; word-break: break-all;">${data.smdpAddress}</code>
+                                    <code style="display: block; background: #fff; padding: 12px; border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 13px; border: 1px solid #dce8f5; color: #0066FF; word-break: break-all;">${smdpAddress}</code>
                                 </div>
                                 
                                 <div>
                                     <span style="display: block; font-size: 9px; text-transform: uppercase; color: #999; font-weight: bold; margin-bottom: 4px;">Aktivierungscode</span>
-                                    <code style="display: block; background: #fff; padding: 12px; border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 13px; border: 1px solid #dce8f5; color: #0066FF; word-break: break-all;">${data.matchingId}</code>
+                                    <code style="display: block; background: #fff; padding: 12px; border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 13px; border: 1px solid #dce8f5; color: #0066FF; word-break: break-all;">${matchingId}</code>
                                 </div>
                             </div>
                         </div>
@@ -114,9 +125,9 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
         });
 
         if (!res.ok) {
-            const error = await res.text();
-            console.error('[MAIL] Failed to send email via Resend:', error);
-            return { success: false, error };
+            const errorText = await res.text();
+            console.error('[MAIL] Failed to send email via Resend:', errorText);
+            return { success: false, error: 'Email delivery failed' };
         }
 
         const dataRes = await res.json();
@@ -125,7 +136,8 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
 
     } catch (error) {
         console.error('[MAIL] Error sending email:', error);
-        return { success: false, error };
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return { success: false, error: errorMessage };
     }
 }
 
@@ -141,7 +153,7 @@ export async function sendAdminAlert(subject: string, message: string) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                from: 'Simfly System <system@simfly.me>',
+                from: process.env.RESEND_FROM_EMAIL || 'Simfly System <onboarding@resend.dev>',
                 to: adminEmail,
                 subject: `[ALERT] ${subject}`,
                 html: `

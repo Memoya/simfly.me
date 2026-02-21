@@ -28,6 +28,17 @@ export interface Bundle {
     duration: string | number;
     dataAmount: number;
     dataLimitInBytes: number;
+    providerId?: string;
+    providerProductId?: string;
+    providerName?: string;
+    speed?: string;
+    regionType?: string;
+    dataType?: string;
+    billingStarts?: string;
+    topUpType?: string;
+    planValidityDays?: number;
+    breakoutIp?: string;
+    isResaleable?: boolean;
     countries?: Array<{
         name: string;
         iso: string;

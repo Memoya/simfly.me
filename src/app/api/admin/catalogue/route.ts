@@ -128,6 +128,13 @@ export async function GET(request: Request) {
                 sellPrice: sellPrice,
                 profit: profit,
                 speed: b.speed,
+                regionType: b.regionType,
+                dataType: b.dataType,
+                billingStarts: b.billingStarts,
+                topUpType: b.topUpType,
+                planValidityDays: b.planValidityDays,
+                breakoutIp: b.breakoutIp,
+                isResaleable: b.isResaleable,
                 providerName: b.providerName,
                 providerProductId: b.providerProductId
             };

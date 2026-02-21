@@ -1,0 +1,23 @@
+{
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "jsx": true,
+      "decorators": false
+    },
+    "minify": {
+      "compress": {
+        "unused": true,
+        "dead_code": true,
+        "reduce_funcs": true,
+        "reduce_vars": true,
+        "pure_getters": true
+      },
+      "mangle": {
+        "topLevel": false
+      }
+    },
+    "target": "es2020"
+  },
+  "minify": true
+}

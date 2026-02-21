@@ -98,10 +98,19 @@ export async function POST(request: Request) {
         const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
         const lang = body.lang || 'de';
 
+        // Only use payment methods that are activated in Stripe Dashboard
+        const paymentMethods = ['card'];
+        
+        // Optional: Add other payment methods if configured
+        // PayPal temporarily disabled
+        // if (process.env.STRIPE_ENABLE_PAYPAL === 'true') paymentMethods.push('paypal');
+        if (process.env.STRIPE_ENABLE_KLARNA === 'true') paymentMethods.push('klarna');
+        if (process.env.STRIPE_ENABLE_AMAZON_PAY === 'true') paymentMethods.push('amazon_pay');
+
         const session = await stripe.checkout.sessions.create({
             line_items: lineItems,
             mode: 'payment',
-            payment_method_types: ['card', 'paypal', 'klarna', 'amazon_pay'],
+            payment_method_types: paymentMethods as any,
             success_url: `${origin}/${lang}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${origin}/${lang}`,
             metadata: {

@@ -12,23 +12,6 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url);
         const region = searchParams.get('region');
 
-        // API Key check
-        const apiKey = process.env.ESIM_GO_API_KEY;
-        if (!apiKey || apiKey === 'mock_esim_key') {
-            console.warn('Using mock catalogue data (Key missing or mock)');
-            const mockProducts: Product[] = [{
-                id: 'mock_1',
-                name: 'Mock Data 1GB',
-                price: 5.00,
-                region: 'Global',
-                regionGroup: 'Global',
-                data: '1GB',
-                durationRaw: '7 Days',
-                duration: '7 Tage',
-            }];
-            return NextResponse.json(mockProducts);
-        }
-
         let bundles: Bundle[] = await getCatalogue();
 
         // Filter logic

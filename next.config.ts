@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   compress: true,
   poweredByHeader: false, // Remove X-Powered-By header for security
+  experimental: {
+    optimizePackageImports: ["lucide-react", "framer-motion"],
+  },
   images: {
     minimumCacheTTL: 60 * 60 * 24 * 7, // 1 week cache for remote images
     remotePatterns: [

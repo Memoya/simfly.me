@@ -10,10 +10,9 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'ICCID is required' }, { status: 400 });
     }
 
-    const API_KEY = process.env.ESIM_GO_API_KEY;
-    const isMock = !API_KEY || API_KEY === 'mock_esim_key';
+    const isTestMode = process.env.ESIM_ACCESS_TEST_MODE === 'true';
 
-    if (isMock) {
+    if (isTestMode) {
         // Mock Response for testing
         return NextResponse.json({
             iccid,
@@ -28,57 +27,26 @@ export async function GET(request: Request) {
     }
 
     try {
-        // Check active bundles on the eSIM
-        const res = await fetch(`https://api.esim-go.com/v2.2/esims/${iccid}/bundles`, {
-            headers: { 'X-API-Key': API_KEY! }
+        const { prisma } = await import('@/lib/prisma');
+        const item = await prisma.orderItem.findFirst({
+            where: { iccid }
         });
 
-        if (!res.ok) {
-            if (res.status === 404) {
-                return NextResponse.json({ error: 'eSIM not found' }, { status: 404 });
-            }
-            throw new Error(`eSIM-Go API error: ${res.status}`);
+        if (!item) {
+            return NextResponse.json({ error: 'eSIM not found' }, { status: 404 });
         }
 
-        const data = await res.json();
-
-        // Calculate totals from active bundles
-        let totalBytes = 0;
-        let remainingBytes = 0;
-        let expiryDate: string | null = null;
-        let status = 'expired';
-
-        if (data.bundles && data.bundles.length > 0) {
-            // Find the most relevant active bundle
-            const activeBundle = data.bundles.find((b: any) =>
-                b.assignments?.some((a: any) => a.status === 'active')
-            );
-
-            if (activeBundle) {
-                status = 'active';
-                const assignment = activeBundle.assignments.find((a: any) => a.status === 'active');
-                if (assignment) {
-                    totalBytes = assignment.initialQuantity;
-                    remainingBytes = assignment.remainingQuantity;
-                    expiryDate = assignment.endTime || null;
-                }
-            } else {
-                // Check if there are queued bundles or just expired
-                status = data.bundles.some((b: any) => b.assignments?.some((a: any) => a.status === 'queued')) ? 'queued' : 'expired';
-            }
-        } else {
-            status = 'inactive';
-        }
+        const totalMB = item.totalData ?? 0;
+        const usedMB = item.dataUsage ?? 0;
+        const remainingMB = Math.max(0, totalMB - usedMB);
 
         return NextResponse.json({
             iccid,
-            totalData: Number((totalBytes / (1024 * 1024 * 1024)).toFixed(2)),
-            remainingData: Number((remainingBytes / (1024 * 1024 * 1024)).toFixed(2)),
-            status,
-            expiryDate,
-            raw: data // Keep raw data for advanced debugging if needed
+            totalData: Number((totalMB / 1024).toFixed(2)),
+            remainingData: Number((remainingMB / 1024).toFixed(2)),
+            status: item.activationStatus || 'unknown',
+            expiryDate: null
         });
-
     } catch (error) {
         console.error('Usage check failed:', error);
         return NextResponse.json({ error: 'Failed to fetch usage data' }, { status: 500 });

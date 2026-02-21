@@ -103,7 +103,10 @@ function SuccessContent() {
         );
     }
 
-    const activationCode = `LPA:1$${orderData.smdpAddress || 'rsp.esim-go.com'}$${orderData.matchingId}`;
+    const hasActivation = Boolean(orderData.smdpAddress && orderData.matchingId);
+    const activationCode = hasActivation
+        ? `LPA:1$${orderData.smdpAddress}$${orderData.matchingId}`
+        : '';
 
     return (
         <div className="min-h-screen bg-white text-black p-6 md:p-12">
@@ -148,13 +151,19 @@ function SuccessContent() {
                         <div className="relative space-y-6 text-center">
                             <p className="text-[10px] font-black tracking-[0.3em] uppercase opacity-50 italic">QR-CODE SCANNEN</p>
                             <div className="bg-white p-4 rounded-[2rem] inline-block mx-auto group cursor-pointer transition-transform hover:scale-105 active:scale-95 shadow-inner">
-                                <div className="relative w-48 h-48 md:w-56 md:h-56">
-                                    <Image
-                                        src={orderData.qrCodeUrl}
-                                        alt="eSIM QR Code"
-                                        fill
-                                        className="object-contain"
-                                    />
+                                <div className="relative w-48 h-48 md:w-56 md:h-56 flex items-center justify-center">
+                                    {orderData.qrCodeUrl ? (
+                                        <Image
+                                            src={orderData.qrCodeUrl}
+                                            alt="eSIM QR Code"
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    ) : (
+                                        <div className="text-xs font-bold text-black/40 text-center">
+                                            QR-Code wird vorbereitet
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="space-y-1">
@@ -195,16 +204,22 @@ function SuccessContent() {
                                     {/* One-Click iOS */}
                                     <div className="space-y-4">
                                         <p className="text-[10px] font-black text-black/30 uppercase tracking-widest italic">Option A: Schnellste Methode</p>
-                                        <a
-                                            href={`apple-esim://install?address=${orderData.smdpAddress || 'rsp.esim-go.com'}&matchingId=${orderData.matchingId}`}
-                                            onClick={() => trackEvent('INSTALL_START', 'DEEP_LINK')}
-                                            className="w-full bg-electric text-white p-6 rounded-3xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-blue-100 group"
-                                        >
-                                            <Zap className="w-5 h-5 fill-white" />
-                                            Direkt auf iPhone installieren
-                                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                        </a>
-                                        <p className="text-[10px] text-center font-bold text-gray-400">Öffnet automatisch die Systemeinstellungen</p>
+                                        {hasActivation ? (
+                                            <>
+                                                <a
+                                                    href={`apple-esim://install?address=${orderData.smdpAddress}&matchingId=${orderData.matchingId}`}
+                                                    onClick={() => trackEvent('INSTALL_START', 'DEEP_LINK')}
+                                                    className="w-full bg-electric text-white p-6 rounded-3xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-blue-100 group"
+                                                >
+                                                    <Zap className="w-5 h-5 fill-white" />
+                                                    Direkt auf iPhone installieren
+                                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                                </a>
+                                                <p className="text-[10px] text-center font-bold text-gray-400">Öffnet automatisch die Systemeinstellungen</p>
+                                            </>
+                                        ) : (
+                                            <p className="text-[10px] text-center font-bold text-gray-400">Aktivierungsdaten werden vorbereitet.</p>
+                                        )}
                                     </div>
 
                                     <div className="relative">
@@ -233,24 +248,30 @@ function SuccessContent() {
                                     <div className="space-y-4">
                                         <p className="text-[10px] font-black text-black/30 uppercase tracking-widest italic">Aktivierungscode (Zur manuellen Eingabe)</p>
                                         <div className="bg-gray-50 border border-gray-100 p-6 rounded-[2rem] space-y-4 shadow-inner">
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">SM-DP+ Adresse</p>
-                                                <div className="flex items-center justify-between text-xs font-mono font-bold text-navy truncate">
-                                                    {orderData.smdpAddress || 'rsp.esim-go.com'}
-                                                    <button onClick={() => handleCopy(orderData.smdpAddress || 'rsp.esim-go.com')} className="p-2 hover:bg-black/5 rounded-lg transition-colors">
-                                                        <Copy className="w-4 h-4 text-gray-400 hover:text-black" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1 pt-4 border-t border-gray-200/50">
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Matching ID</p>
-                                                <div className="flex items-center justify-between text-xs font-mono font-bold text-navy">
-                                                    {orderData.matchingId}
-                                                    <button onClick={() => handleCopy(orderData.matchingId || '')} className="p-2 hover:bg-black/5 rounded-lg transition-colors">
-                                                        <Copy className="w-4 h-4 text-gray-400 hover:text-black" />
-                                                    </button>
-                                                </div>
-                                            </div>
+                                            {hasActivation ? (
+                                                <>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">SM-DP+ Adresse</p>
+                                                        <div className="flex items-center justify-between text-xs font-mono font-bold text-navy truncate">
+                                                            {orderData.smdpAddress}
+                                                            <button onClick={() => handleCopy(orderData.smdpAddress || '')} className="p-2 hover:bg-black/5 rounded-lg transition-colors">
+                                                                <Copy className="w-4 h-4 text-gray-400 hover:text-black" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-1 pt-4 border-t border-gray-200/50">
+                                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Matching ID</p>
+                                                        <div className="flex items-center justify-between text-xs font-mono font-bold text-navy">
+                                                            {orderData.matchingId}
+                                                            <button onClick={() => handleCopy(orderData.matchingId || '')} className="p-2 hover:bg-black/5 rounded-lg transition-colors">
+                                                                <Copy className="w-4 h-4 text-gray-400 hover:text-black" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <p className="text-xs font-bold text-gray-400 text-center">Aktivierungsdaten werden vorbereitet.</p>
+                                            )}
                                         </div>
                                         <button
                                             onClick={() => {
@@ -287,16 +308,9 @@ function SuccessContent() {
                     {/* Sidebar Actions */}
                     <div className="bg-gray-50 rounded-[3rem] p-10 flex flex-col justify-between border border-gray-100 shadow-sm">
                         <div className="space-y-10">
-                            <div className="space-y-3 p-6 bg-white rounded-[2rem] border border-gray-100 shadow-sm">
-                                <p className="text-[10px] font-black tracking-[0.3em] uppercase text-gray-400 italic">Support & Hilfe</p>
-                                <p className="text-sm font-bold leading-relaxed text-gray-600">
-                                    Probleme bei der Installation? Wir helfen dir sofort! <br />
-                                    <strong>hello@simfly.me</strong>
-                                </p>
-                            </div>
 
-                            <div className="flex flex-col gap-4">
-                                {orderData.receiptUrl ? (
+                            {orderData.receiptUrl ? (
+                                <div className="flex flex-col gap-4">
                                     <a
                                         href={orderData.receiptUrl}
                                         target="_blank"
@@ -309,12 +323,8 @@ function SuccessContent() {
                                         </div>
                                         <ExternalLink className="w-4 h-4 text-black/40 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                                     </a>
-                                ) : (
-                                    <div className="p-6 bg-white/50 rounded-[2rem] border border-dashed border-gray-200 text-center">
-                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">Rechnung wird generiert...</span>
-                                    </div>
-                                )}
-                            </div>
+                                </div>
+                            ) : null}
 
                             <div className="p-8 bg-black text-white rounded-[2.5rem] space-y-4">
                                 <h4 className="text-xl font-black italic uppercase tracking-tight italic">🌍 Gute Reise!</h4>

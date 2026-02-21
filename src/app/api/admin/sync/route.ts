@@ -31,6 +31,7 @@ export async function POST(request: Request) {
     }
 
     try {
+        console.log('[SYNC] Request received');
         console.log('[SYNC-ENTERPRISE] Starting optimized sync...');
         const providers = getAllProviders();
         const results = [];
@@ -79,9 +80,7 @@ export async function POST(request: Request) {
         // After pricing engine confirms new winners, purge the frontend cache at the Edge
         console.log('[SYNC-CACHE] Purging global catalogue cache...');
         try {
-            // Some environments/linters expect 2 args, but standard Next.js revalidateTag is 1.
-            // Using as any to bypass potential regional linter confusion if necessary.
-            (revalidateTag as any)('catalogue');
+            revalidateTag('catalogue', {});
         } catch (e) {
             console.error('Revalidation failed:', e);
         }
@@ -111,6 +110,7 @@ async function syncProviderOptimized(provider: EsimProvider) {
     }
 
     const products = await provider.fetchCatalog();
+    const debugSnapshot = (provider as any).getDebugSnapshot?.();
 
     const BATCH_SIZE = 100;
     for (let i = 0; i < products.length; i += BATCH_SIZE) {
@@ -123,16 +123,34 @@ async function syncProviderOptimized(provider: EsimProvider) {
                     providerId: dbProvider.id, providerProductId: p.id,
                     name: p.name, countryCode: p.countryCode, dataAmountMB: p.dataAmountMB,
                     validityDays: p.validityDays, price: p.price, currency: p.currency,
-                    networkType: p.networkType, isUnlimited: p.isUnlimited
+                    networkType: p.networkType, isUnlimited: p.isUnlimited,
+                    regionType: p.regionType, dataType: p.dataType, billingStarts: p.billingStarts,
+                    topUpType: p.topUpType, planValidityDays: p.planValidityDays,
+                    breakoutIp: p.breakoutIp, isResaleable: p.isResaleable
                 },
                 update: {
-                    price: p.price, name: p.name, lastUpdated: new Date()
+                    name: p.name,
+                    price: p.price,
+                    currency: p.currency,
+                    countryCode: p.countryCode,
+                    dataAmountMB: p.dataAmountMB,
+                    validityDays: p.validityDays,
+                    isUnlimited: p.isUnlimited,
+                    networkType: p.networkType,
+                    regionType: p.regionType,
+                    dataType: p.dataType,
+                    billingStarts: p.billingStarts,
+                    topUpType: p.topUpType,
+                    planValidityDays: p.planValidityDays,
+                    breakoutIp: p.breakoutIp,
+                    isResaleable: p.isResaleable,
+                    lastUpdated: new Date()
                 }
             })
         ));
     }
 
-    return { provider: provider.name, success: true, count: products.length };
+    return { provider: provider.name, success: true, count: products.length, debug: debugSnapshot };
 }
 
 async function updateBestOffersEnterprise() {

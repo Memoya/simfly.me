@@ -47,6 +47,15 @@ model ProviderProduct {
   isUnlimited  Boolean @default(false)
   networkType  String? // "4G", "5G"
 
+  // eSIMAccess Metadata (optional)
+  regionType       String? // e.g. "Single", "Multi"
+  dataType         String? // e.g. "Data in Total"
+  billingStarts    String? // e.g. "First connection"
+  topUpType        String? // e.g. "Data Reloadable"
+  planValidityDays Int? // e.g. 180 (days)
+  breakoutIp       String? // e.g. "FR/NL"
+  isResaleable     Boolean?
+
   // Cost
   price    Float // Wholesale Price
   currency String @default("USD")

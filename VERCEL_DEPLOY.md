@@ -27,7 +27,9 @@ In the Vercel Project Settings, add the following Environment Variables:
 | :--- | :--- |
 | `DATABASE_URL` | `postgresql://neondb_owner:npg_8zbgBFPMorL3@ep-small-hall-ai23z11f-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require` |
 | `NEXT_PUBLIC_BASE_URL` | `https://your-project.vercel.app` (or your custom domain). |
-| `ESIM_GO_API_KEY` | Your eSIM Go API Key. |
+| `ESIM_ACCESS_CODE` | Your eSIMAccess API code. |
+| `ESIM_ACCESS_SECRET` | Your eSIMAccess API secret. |
+| `ESIM_ACCESS_TEST_MODE` | Use safe test mode (no paid orders). |
 | `STRIPE_SECRET_KEY` | Your Stripe Secret Key. |
 | `ADMIN_PASSWORD` | Your robust Admin Password. |
 | `RESEND_API_KEY` | Your Resend API Key. |

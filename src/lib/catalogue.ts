@@ -46,8 +46,11 @@ export const getCatalogue = unstable_cache(
                 // Helper to get full country name
                 let countryFullName = offer.countryCode;
                 try {
-                    const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
-                    countryFullName = regionNames.of(offer.countryCode.toUpperCase()) || offer.countryCode;
+                    // Only attempt to map if it looks like a valid ISO code (2-3 chars)
+                    if (offer.countryCode && offer.countryCode.length <= 3 && /^[A-Z]+$/.test(offer.countryCode)) {
+                        const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+                        countryFullName = regionNames.of(offer.countryCode.toUpperCase()) || offer.countryCode;
+                    }
                 } catch (e) {
                     console.warn(`[CATALOGUE] Failed to map ISO ${offer.countryCode} to name`, e);
                 }
@@ -65,7 +68,14 @@ export const getCatalogue = unstable_cache(
                     groups: [],
                     providerId: offer.providerId,
                     providerProductId: offer.providerProductId,
-                    speed: pp?.networkType || '4G/5G'
+                    speed: pp?.networkType || '4G/5G',
+                    regionType: pp?.regionType,
+                    dataType: pp?.dataType,
+                    billingStarts: pp?.billingStarts,
+                    topUpType: pp?.topUpType,
+                    planValidityDays: pp?.planValidityDays,
+                    breakoutIp: pp?.breakoutIp,
+                    isResaleable: pp?.isResaleable
                 } as any;
             });
         } catch (error) {
@@ -81,5 +91,12 @@ export const getCatalogue = unstable_cache(
 );
 
 export async function updateCatalogue(): Promise<{ success: boolean; count: number; changes: number; error?: string }> {
-    return { success: true, count: 0, changes: 0 };
+    try {
+        const { revalidateTag } = await import('next/cache');
+        revalidateTag('catalogue', {});
+        const count = await prisma.bestOffer.count();
+        return { success: true, count, changes: 0 };
+    } catch (error: any) {
+        return { success: false, count: 0, changes: 0, error: error?.message || 'Unknown error' };
+    }
 }

@@ -10,15 +10,63 @@ export interface FulfillmentOptions {
 
 export async function fulfillProduct(
     bundleId: string,
-    preferredProviderId: string,
+    preferredProviderId?: string,
     options: FulfillmentOptions = {}
 ): Promise<OrderResult & { finalProviderId: string }> {
     const { maxRetries = 3, allowCrossProviderFailover = true } = options;
 
-    // 1. Try preferred provider first
-    let currentProviderId = preferredProviderId;
+    // 0. If no provider specified, auto-select from BestOffer
+    let currentProviderId: string = preferredProviderId || '';
+    if (!currentProviderId) {
+        console.log(`[Fulfillment] No provider specified, looking up best offer for ${bundleId}`);
+        
+        // Try to find by providerProductId first
+        const bestOffer = await prisma.bestOffer.findFirst({
+            where: { 
+                providerProductId: bundleId
+            }
+        });
+        
+        if (bestOffer) {
+            currentProviderId = bestOffer.providerId;
+            bundleId = bestOffer.providerProductId;
+            console.log(`[Fulfillment] Auto-selected provider ${currentProviderId} for SKU ${bundleId}`);
+        } else {
+            // Fallback: try finding ANY matching product by providerProductId
+            const anyProduct = await prisma.providerProduct.findFirst({
+                where: { 
+                    providerProductId: bundleId,
+                    provider: { isActive: true }
+                },
+                orderBy: { provider: { priority: 'desc' } }
+            });
+            
+            if (anyProduct) {
+                currentProviderId = anyProduct.providerId;
+                console.log(`[Fulfillment] Fallback selected provider ${currentProviderId}`);
+            } else {
+                return {
+                    success: false,
+                    providerOrderReference: '',
+                    error: `No active provider found for product ${bundleId}`,
+                    finalProviderId: 'none'
+                };
+            }
+        }
+    }
+
+    // 1. Try preferred/selected provider first
     let attempts = 0;
     let lastError = '';
+
+    if (!currentProviderId) {
+        return {
+            success: false,
+            providerOrderReference: '',
+            error: 'No provider could be determined',
+            finalProviderId: 'none'
+        };
+    }
 
     while (attempts < maxRetries) {
         attempts++;

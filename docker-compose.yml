@@ -13,10 +13,12 @@ services:
       - DATABASE_URL=file:/app/data/prod.db
       - NEXT_PUBLIC_BASE_URL=http://localhost:3000
       # Add other env vars here or use an env_file
-      # - ESIM_GO_API_KEY=${ESIM_GO_API_KEY}
-      # - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      # - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      # - RESEND_API_KEY=${RESEND_API_KEY}
+      - ESIM_ACCESS_CODE=${ESIM_ACCESS_CODE}
+      - ESIM_ACCESS_SECRET=${ESIM_ACCESS_SECRET}
+      - ESIM_ACCESS_TEST_MODE=${ESIM_ACCESS_TEST_MODE}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - RESEND_API_KEY=${RESEND_API_KEY}
     volumes:
       - ./data:/app/data
       # Mount .env.local if you prefer file-based config (optional but riskier for secrets in repo)

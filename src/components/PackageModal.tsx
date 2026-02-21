@@ -31,7 +31,13 @@ export default function PackageModal({ country, iso, packages, isOpen, onClose, 
             .sort((a, b) => b - a),
         [packages]);
 
-    const [selectedDuration, setSelectedDuration] = useState<number>(7);
+    // Initialize duration based on initialPackage if available
+    const [selectedDuration, setSelectedDuration] = useState<number>(() => {
+        if (initialPackage?.durationRaw && typeof initialPackage.durationRaw === 'number') {
+            return initialPackage.durationRaw;
+        }
+        return durations.includes(30) ? 30 : (durations[0] || 7);
+    });
 
 
     // 2. Filtered & Sorted Packages for current Duration
@@ -74,23 +80,37 @@ export default function PackageModal({ country, iso, packages, isOpen, onClose, 
 
 
 
-    // Reset to default (30 days) when modal opens
+    // Reset when modal opens - respect initialPackage duration
     React.useEffect(() => {
         if (isOpen) {
-            if (durations.includes(30)) {
-                setSelectedDuration(30);
-            } else if (initialPackage?.durationRaw && typeof initialPackage.durationRaw === 'number') {
+            // Set duration: prioritize initialPackage if available
+            if (initialPackage?.durationRaw && typeof initialPackage.durationRaw === 'number') {
                 setSelectedDuration(initialPackage.durationRaw);
+            } else if (durations.includes(30)) {
+                setSelectedDuration(30);
             } else if (durations.length > 0) {
                 setSelectedDuration(durations[0]);
             }
-            // Also reset selection modes
-            setIsUnlimitedSelected(!!initialPackage?.data.startsWith('Unlimited'));
-            if (initialPackage?.data.startsWith('Unlimited')) {
-                setSelectedUnlimitedId(initialPackage.id);
+            
+            // Set selection modes
+            const isUnlimited = !!initialPackage?.data.startsWith('Unlimited');
+            setIsUnlimitedSelected(isUnlimited);
+            
+            if (isUnlimited) {
+                setSelectedUnlimitedId(initialPackage?.id || null);
             }
         }
     }, [isOpen, durations, initialPackage]);
+
+    // Update slider index when fixedPackages change and we have an initialPackage
+    React.useEffect(() => {
+        if (isOpen && initialPackage && !initialPackage.data.startsWith('Unlimited') && fixedPackages.length > 0) {
+            const idx = fixedPackages.findIndex(p => p.id === initialPackage.id);
+            if (idx !== -1) {
+                setSliderIndex(idx);
+            }
+        }
+    }, [isOpen, initialPackage, fixedPackages]);
 
     // Final selected package
     const selectedPkg = useMemo(() => {

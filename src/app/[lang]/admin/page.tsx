@@ -447,9 +447,13 @@ export default function AdminPage() {
                         className="w-full p-3 border border-gray-200 rounded-lg mb-4 focus:ring-2 focus:ring-electric outline-none"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && login()}
                     />
-                    <button onClick={login} className="w-full bg-electric text-white py-3 rounded-lg font-bold">Einloggen</button>
+                    <button
+                        onClick={login}
+                        className="w-full bg-navy text-white py-3 rounded-lg font-bold hover:bg-black transition-all"
+                    >
+                        Login
+                    </button>
                 </div>
             </div>
         );
@@ -457,7 +461,6 @@ export default function AdminPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col xl:flex-row max-w-[1600px] mx-auto overflow-hidden">
-            {/* Sidebar Navigation */}
             <aside className="w-full xl:w-80 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 z-40 hidden xl:flex">
                 <div className="p-8">
                     <div className="flex items-center gap-3 mb-10">
@@ -497,8 +500,8 @@ export default function AdminPage() {
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id as Tab)}
                                 className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all group ${activeTab === item.id
-                                    ? 'bg-navy text-white shadow-xl shadow-navy/20 translate-x-1'
-                                    : 'text-gray-500 hover:bg-gray-50 hover:text-navy'
+                                    ? 'bg-navy text-white shadow-md'
+                                    : 'text-gray-600 hover:bg-gray-50'
                                     }`}
                             >
                                 <item.icon className={`w-5 h-5 transition-transform ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
@@ -1227,10 +1230,18 @@ export default function AdminPage() {
                                                 { label: 'Produkt', key: 'name' },
                                                 { label: 'Dauer', key: 'duration' },
                                                 { label: 'Region', key: 'region' },
+                                                { label: 'ISO', key: 'iso' },
+                                                { label: 'Typ', key: 'regionType' },
+                                                { label: 'Top-up', key: 'topUpType' },
                                                 { label: 'Einkauf (Netto)', key: 'price' },
                                                 { label: 'Verkauf (Brutto)', key: 'sellPrice' },
                                                 { label: 'Speed', key: 'speed' },
-                                                { label: 'Gewinn (ca.)', key: 'profit' }
+                                                { label: 'Gewinn (ca.)', key: 'profit' },
+                                                { label: 'Datentyp', key: 'dataType' },
+                                                { label: 'Billing Start', key: 'billingStarts' },
+                                                { label: 'Validity', key: 'planValidityDays' },
+                                                { label: 'Breakout IP', key: 'breakoutIp' },
+                                                { label: 'Resale', key: 'isResaleable' }
                                             ].map((h) => (
                                                 <th
                                                     key={h.key}
@@ -1278,6 +1289,13 @@ export default function AdminPage() {
                                                     </td>
                                                     <td className="py-3 px-4 text-sm text-gray-600">{p.duration || 'N/A'}</td>
                                                     <td className="py-3 px-4 text-sm text-gray-600">{p.region}</td>
+                                                    <td className="py-3 px-4">
+                                                        <span className="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded">
+                                                            {p.iso || 'N/A'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 px-4 text-sm text-gray-600">{p.regionType || 'N/A'}</td>
+                                                    <td className="py-3 px-4 text-sm text-gray-600">{p.topUpType || 'N/A'}</td>
                                                     <td className="py-3 px-4 text-sm text-gray-600">{Number(p.price).toFixed(2)}€</td>
                                                     <td className="py-3 px-4 font-bold text-navy flex items-center gap-2">
                                                         {Number(sellPrice).toFixed(2)}€
@@ -1294,6 +1312,15 @@ export default function AdminPage() {
                                                     </td>
                                                     <td className={`py-3 px-4 font-bold ${profit > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                                         +{Number(profit).toFixed(2)}€
+                                                    </td>
+                                                    <td className="py-3 px-4 text-sm text-gray-600">{p.dataType || 'N/A'}</td>
+                                                    <td className="py-3 px-4 text-sm text-gray-600">{p.billingStarts || 'N/A'}</td>
+                                                    <td className="py-3 px-4 text-sm text-gray-600">
+                                                        {typeof p.planValidityDays === 'number' ? `${p.planValidityDays} Tage` : 'N/A'}
+                                                    </td>
+                                                    <td className="py-3 px-4 text-sm text-gray-600">{p.breakoutIp || 'N/A'}</td>
+                                                    <td className="py-3 px-4 text-sm text-gray-600">
+                                                        {typeof p.isResaleable === 'boolean' ? (p.isResaleable ? 'Ja' : 'Nein') : 'N/A'}
                                                     </td>
                                                 </tr>
                                             );
@@ -1508,13 +1535,19 @@ export default function AdminPage() {
                                                             <p className="font-bold text-sm">{e.status || 'Unknown'}</p>
                                                             <p className="text-xs text-gray-600 font-mono">{e.iccid}</p>
                                                             <p className="text-xs text-blue-600">{e.bundle}</p>
-                                                            <a
-                                                                href={`/${lang}/install?address=rsp.esim-go.com&matchingId=${orderDetail.local?.items[0]?.matchingId}`}
-                                                                className="text-[10px] text-electric hover:underline font-bold mt-1 inline-block mr-3"
-                                                                target="_blank"
-                                                            >
-                                                                iOS Deep Link Testen
-                                                            </a>
+                                                            {orderDetail.local?.items?.[0]?.smdpAddress && orderDetail.local?.items?.[0]?.matchingId ? (
+                                                                <a
+                                                                    href={`/${lang}/install?address=${orderDetail.local.items[0].smdpAddress}&matchingId=${orderDetail.local.items[0].matchingId}`}
+                                                                    className="text-[10px] text-electric hover:underline font-bold mt-1 inline-block mr-3"
+                                                                    target="_blank"
+                                                                >
+                                                                    iOS Deep Link Testen
+                                                                </a>
+                                                            ) : (
+                                                                <span className="text-[10px] text-gray-400 font-bold mt-1 inline-block mr-3">
+                                                                    Aktivierungsdaten fehlen
+                                                                </span>
+                                                            )}
 
                                                             <div className="mt-2 flex gap-2">
                                                                 <button
@@ -1585,20 +1618,26 @@ export default function AdminPage() {
                                                     <div key={i} className="space-y-3 text-xs">
                                                         <div className="flex justify-between items-center">
                                                             <span className="text-gray-500">SM-DP+ Adresse:</span>
-                                                            <span className="font-mono font-bold">{item.smdpAddress || 'rsp.esim-go.com'}</span>
+                                                            <span className="font-mono font-bold">{item.smdpAddress || '-'}</span>
                                                         </div>
                                                         <div className="flex justify-between items-center">
                                                             <span className="text-gray-500">Matching ID:</span>
                                                             <span className="font-mono font-bold select-all bg-white px-1 border rounded">{item.matchingId}</span>
                                                         </div>
                                                         <div className="pt-2">
-                                                            <a
-                                                                href={`/${lang}/install?address=${item.smdpAddress || 'rsp.esim-go.com'}&matchingId=${item.matchingId}`}
-                                                                className="block text-center bg-navy text-white py-2 rounded-lg font-bold hover:opacity-90 transition-all"
-                                                                target="_blank"
-                                                            >
-                                                                iOS Direct Link testen
-                                                            </a>
+                                                            {item.smdpAddress ? (
+                                                                <a
+                                                                    href={`/${lang}/install?address=${item.smdpAddress}&matchingId=${item.matchingId}`}
+                                                                    className="block text-center bg-navy text-white py-2 rounded-lg font-bold hover:opacity-90 transition-all"
+                                                                    target="_blank"
+                                                                >
+                                                                    iOS Direct Link testen
+                                                                </a>
+                                                            ) : (
+                                                                <div className="block text-center bg-gray-200 text-gray-600 py-2 rounded-lg font-bold">
+                                                                    Aktivierungsdaten fehlen
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 ) : null)}

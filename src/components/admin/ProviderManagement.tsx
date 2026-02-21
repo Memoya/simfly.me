@@ -109,7 +109,18 @@ export default function ProviderManagement({ token }: ProviderManagementProps) {
                 headers: { 'Authorization': token, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ providerId })
             });
-            const data = await res.json();
+            let data: any = null;
+            try {
+                data = await res.json();
+            } catch {
+                data = null;
+            }
+
+            if (!res.ok) {
+                setSyncResult({ results: [], error: data?.error || `Sync failed (${res.status})` });
+                return;
+            }
+
             setSyncResult(data);
             fetchData();
         } catch {
@@ -276,9 +287,9 @@ export default function ProviderManagement({ token }: ProviderManagementProps) {
                 <AnimatePresence>
                     {scanResults && (
                         <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            className="mt-8 border-t border-white/10 pt-8"
+                            initial={{ maxHeight: 0, opacity: 0 }}
+                            animate={{ maxHeight: 720, opacity: 1 }}
+                            className="mt-8 border-t border-white/10 pt-8 overflow-hidden"
                         >
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {scanResults.results.map((r: any, i: number) => (
@@ -356,13 +367,11 @@ export default function ProviderManagement({ token }: ProviderManagementProps) {
                     <div className="grid grid-cols-1 gap-4">
                         {providers.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((p) => {
                             const brandColors: Record<string, string> = {
-                                'esim-go': 'bg-blue-600',
                                 'airalo': 'bg-orange-600',
                                 'esim-access': 'bg-cyan-600'
                             };
 
                             const brandTags: Record<string, string[]> = {
-                                'esim-go': ['Wholesale', 'Direct API', 'Global'],
                                 'airalo': ['Market Leader', 'Travel Focus'],
                                 'esim-access': ['High-Speed', 'Enterprise API']
                             };
@@ -488,9 +497,19 @@ export default function ProviderManagement({ token }: ProviderManagementProps) {
                                 <div className="flex justify-between items-start relative z-10">
                                     <div>
                                         <h4 className="text-lg font-black flex items-center gap-2">
-                                            <CheckCircle className="text-green-400 w-5 h-5" /> Sync Operation Completed
+                                            {syncResult.error ? (
+                                                <>
+                                                    <XCircle className="text-red-400 w-5 h-5" /> Sync Failed
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CheckCircle className="text-green-400 w-5 h-5" /> Sync Operation Completed
+                                                </>
+                                            )}
                                         </h4>
-                                        <p className="text-blue-300 text-xs font-bold mt-1">Pricing materialization and cache invalidation succeeded.</p>
+                                        <p className={`text-xs font-bold mt-1 ${syncResult.error ? 'text-red-300' : 'text-blue-300'}`}>
+                                            {syncResult.error || 'Pricing materialization and cache invalidation succeeded.'}
+                                        </p>
                                     </div>
                                     <button onClick={() => setSyncResult(null)} className="p-2 hover:bg-white/10 rounded-xl transition-all">
                                         <XCircle className="w-5 h-5" />
@@ -506,6 +525,11 @@ export default function ProviderManagement({ token }: ProviderManagementProps) {
                                                 </span>
                                                 <span className="text-white font-mono text-xs">{r.count || 0}</span>
                                             </div>
+                                            {r.debug?.keys?.length ? (
+                                                <p className="mt-2 text-[9px] text-blue-200/80 font-bold break-words">
+                                                    Keys: {r.debug.keys.slice(0, 8).join(', ')}{r.debug.keys.length > 8 ? '...' : ''}
+                                                </p>
+                                            ) : null}
                                         </div>
                                     ))}
                                 </div>

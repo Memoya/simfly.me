@@ -10,23 +10,18 @@ export async function GET(request: Request) {
             return unauthorizedResponse();
         }
 
-        const apiKey = process.env.ESIM_GO_API_KEY;
-
-        if (!apiKey) {
-            return NextResponse.json({ error: 'ESIM_GO_API_KEY missing' }, { status: 500 });
-        }
-
         try {
-            const res = await fetch('https://api.esim-go.com/v2.2/balance', {
-                headers: { 'X-API-Key': apiKey }
-            });
+            const { getProvider } = await import('@/lib/providers');
+            const provider = getProvider('esim-access');
 
-            if (!res.ok) throw new Error('Failed to fetch balance');
+            if (!provider) {
+                return NextResponse.json({ error: 'Provider not configured' }, { status: 500 });
+            }
 
-            const data = await res.json();
+            const balance = await provider.getBalance();
             return NextResponse.json({
-                balance: data.balance || 0,
-                currency: data.currency || 'USD'
+                balance,
+                currency: 'USD'
             });
         } catch (error) {
             return NextResponse.json({ balance: 0, currency: 'USD', error: 'Failed to fetch' }, { status: 500 });

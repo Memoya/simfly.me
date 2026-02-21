@@ -43,12 +43,11 @@ export async function POST(request: Request) {
                 productName = item.productName;
                 iccid = item.iccid || undefined;
                 matchingId = item.matchingId || undefined;
-                smdpAddress = 'rsp.esim-go.com'; // Default for eSIM Go
+                smdpAddress = item.smdpAddress || undefined;
 
-                if (item.matchingId) {
-                    const smdp = 'rsp.esim-go.com';
+                if (item.matchingId && smdpAddress) {
                     // Generate local QR Code
-                    const qrData = `LPA:1$${smdp}$${item.matchingId}`;
+                    const qrData = `LPA:1$${smdpAddress}$${item.matchingId}`;
                     qrCodeUrl = await QRCode.toDataURL(qrData);
                 } else {
                     // Fallback or error QR
