@@ -6,6 +6,7 @@ import "./../globals.css";
 import { LANG_TO_OG_LOCALE } from "@/lib/lang-locale-map";
 import StructuredData from "@/components/SEO/StructuredData";
 import { VisitorTracker } from "@/components/VisitorTracker";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export async function generateMetadata(props: {
   params: Promise<{ lang: string }>;
@@ -150,6 +151,7 @@ export default async function RootLayout(props: {
           <VisitorTracker />
           {props.children}
         </CurrencyProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
