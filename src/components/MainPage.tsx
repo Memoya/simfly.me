@@ -231,10 +231,10 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
       )}
       <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100 transition-all">
         <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <Link href={`/${lang}`} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
             <Globe className="w-8 h-8 text-electric animate-pulse-slow" />
             <span className="text-xl md:text-2xl font-black tracking-tighter text-navy uppercase italic">Simfly<span className="text-electric">.me</span></span>
-          </div>
+          </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8 font-semibold text-gray-600">
@@ -630,7 +630,7 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                   </div>
                   <div className="space-y-0.5 md:space-y-1">
                     <h3 className="font-black text-base md:text-lg text-black tracking-tight">{country.country}</h3>
-                    <p className="text-[10px] font-bold text-black/20 uppercase tracking-[0.2em] group-hover:text-electric transition-colors">
+                    <p className="text-[10px] font-bold text-black/60 md:text-black/40 uppercase tracking-[0.2em] group-hover:text-electric transition-colors">
                       {dictionary.destinations.from} {formatPrice(country.minPrice || 0)}
                     </p>
                   </div>
