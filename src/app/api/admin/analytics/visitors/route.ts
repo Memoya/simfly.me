@@ -8,7 +8,10 @@ export async function GET(req: NextRequest) {
         const token = authHeader?.replace('Bearer ', '');
         const adminPassword = process.env.ADMIN_PASSWORD || 'admin';
 
+        console.log('[VISITOR-API] Auth check:', { token: token?.substring(0, 5) + '...', adminPassword: adminPassword?.substring(0, 5) + '...' });
+
         if (token !== adminPassword) {
+            console.log('[VISITOR-API] Unauthorized access attempt');
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -33,7 +36,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Get all visitor data within the time range
-        const visitors = await (prisma as any).visitorActivity.findMany({
+        const visitors = await prisma.visitorActivity.findMany({
             where: {
                 lastActive: { gte: timeThreshold }
             },
@@ -42,21 +45,31 @@ export async function GET(req: NextRequest) {
             }
         });
 
+        console.log('[VISITOR-API] Query result:', { timeRange, timeThreshold: timeThreshold.toISOString(), count: visitors.length });
+
         // Calculate stats
         const activeThreshold = new Date(Date.now() - 15 * 60 * 1000); // Active in last 15 minutes
         const activeNow = visitors.filter((v: any) => new Date(v.lastActive) >= activeThreshold).length;
         const uniqueVisitors = Array.from(new Set(visitors.map((v: any) => v.sessionId))).length;
 
-        return NextResponse.json({
+        const response = {
             visitors,
             stats: {
                 activeNow,
                 uniqueVisitors,
                 totalSessions: visitors.length
             }
-        });
+        };
+
+        console.log('[VISITOR-API] Sending response:', { activeNow, uniqueVisitors, totalSessions: visitors.length });
+
+        return NextResponse.json(response);
     } catch (error) {
         console.error('[ADMIN-VISITORS-API] Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        if (error instanceof Error) {
+            console.error('[ADMIN-VISITORS-API] Message:', error.message);
+            console.error('[ADMIN-VISITORS-API] Stack:', error.stack);
+        }
+        return NextResponse.json({ error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }
