@@ -68,9 +68,11 @@ export default function VisitorAnalytics({ password }: VisitorAnalyticsProps) {
     const fetchVisitorData = async () => {
         setLoading(true);
         try {
+            console.log('[VisitorAnalytics] Fetching with password:', password?.substring(0, 5) + '...');
             const res = await fetch(`/api/admin/analytics/visitors?timeRange=${timeRange}`, {
                 headers: { 'Authorization': `Bearer ${password}` }
             });
+            console.log('[VisitorAnalytics] Response status:', res.status);
             if (res.ok) {
                 const data = await res.json();
                 setVisitors(data.visitors || []);
@@ -215,11 +217,37 @@ export default function VisitorAnalytics({ password }: VisitorAnalyticsProps) {
                 };
 
                 setStats(computedStats);
+            } else if (res.status === 401) {
+                console.error('[VisitorAnalytics] Authentication failed - wrong password?');
+                setVisitors([]);
+                setStats({
+                    activeNow: 0,
+                    uniqueVisitors: 0,
+                    totalSessions: 0,
+                    bounceRate: 0,
+                    avgSessionDuration: 0,
+                    returningVisitors: 0,
+                    topPages: [],
+                    deviceBreakdown: [],
+                    browserBreakdown: [],
+                    osBreakdown: [],
+                    langBreakdown: [],
+                    trafficSources: [],
+                    entryPages: [],
+                    exitPages: [],
+                    visitorTimeline: []
+                });
+                alert('⚠️ Admin-Authentifizierung fehlgeschlagen! Überprüfe dein Passwort.');
             } else {
-                console.error('Failed to fetch visitor data');
+                const text = await res.text();
+                console.error('[VisitorAnalytics] Failed to fetch visitor data:', {
+                    status: res.status,
+                    statusText: res.statusText,
+                    body: text.substring(0, 200)
+                });
             }
         } catch (error) {
-            console.error('Error fetching visitor analytics:', error);
+            console.error('[VisitorAnalytics] Error fetching visitor analytics:', error);
         } finally {
             setLoading(false);
         }
