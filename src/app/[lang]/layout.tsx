@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { i18n, type Locale } from "../../i18n-config";
 import { CurrencyProvider, LOCALE_TO_CURRENCY } from "@/context/CurrencyContext";
 import "./../globals.css";
 
 import { LANG_TO_OG_LOCALE } from "@/lib/lang-locale-map";
+import { isEUCountry } from "@/lib/geo";
 import StructuredData from "@/components/SEO/StructuredData";
 import { VisitorTracker } from "@/components/VisitorTracker";
+import CookieConsent from "@/components/CookieConsent";
 
 export async function generateMetadata(props: {
   params: Promise<{ lang: string }>;
@@ -73,6 +76,12 @@ export default async function RootLayout(props: {
   const lang = params.lang as Locale;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://simfly.me';
   const defaultCurrency = LOCALE_TO_CURRENCY[lang] || 'EUR';
+
+  // Get country from Vercel geolocation header (x-vercel-ip-country)
+  // Fallback to 'DE' for development
+  const headersList = await headers();
+  const country = headersList.get('x-vercel-ip-country') || 'DE';
+  const isEU = isEUCountry(country);
 
   return (
     <html lang={lang} suppressHydrationWarning>
@@ -144,6 +153,7 @@ export default async function RootLayout(props: {
         <CurrencyProvider defaultCurrency={defaultCurrency}>
           <VisitorTracker />
           {props.children}
+          <CookieConsent isEU={isEU} />
         </CurrencyProvider>
       </body>
     </html>

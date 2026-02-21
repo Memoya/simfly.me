@@ -83,18 +83,74 @@ export default function Datenschutz() {
                         </section>
 
                         <section className="space-y-8">
-                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">5. Server-Log-Dateien</h2>
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">5. Email & Service-Provider</h2>
+                            <div className="space-y-6">
+                                <div className="p-6 bg-black/[0.03] rounded-2xl space-y-3">
+                                    <p className="font-black uppercase tracking-widest text-xs">Resend (Email Service)</p>
+                                    <p className="text-black/60 text-sm leading-relaxed font-bold">
+                                        Wir nutzen Resend für den Versand von QR-Codes und Bestellbestätigungen per E-Mail. Ihre E-Mail-Adresse wird an Resend übermittelt. Resend ist GDPR-konform und speichert Ihre Daten nur für die notwendige Zeit (siehe Speicherdauer).
+                                    </p>
+                                </div>
+                                <div className="p-6 bg-black/[0.03] rounded-2xl space-y-3">
+                                    <p className="font-black uppercase tracking-widest text-xs">eSIMAccess API</p>
+                                    <p className="text-black/60 text-sm leading-relaxed font-bold">
+                                        Für eSIM-Aktivierung und Datenverwaltung nutzen wir die eSIMAccess API (eSIMAccess LLC). Ihre Bestelldaten (Name, ICCID, Netzwerknutzung) werden übergeben. Ein Vertrag über Auftragsverarbeitung ist geschlossen.
+                                    </p>
+                                </div>
+                                <div className="p-6 bg-black/[0.03] rounded-2xl space-y-3">
+                                    <p className="font-black uppercase tracking-widest text-xs">FlagCDN (Flaggen-Bilder)</p>
+                                    <p className="text-black/60 text-sm leading-relaxed font-bold">
+                                        Flag-Icons werden über flagcdn.com geladen. Dies erfolgt nur zur Anzeige, ohne dass personenbezogene Daten übermittelt werden (Bilder sind öffentlich).
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="space-y-8">
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">6. Speicherdauer Ihrer Daten</h2>
                             <div className="space-y-4 text-black/60 font-medium leading-relaxed">
-                                <p>Der Provider der Seiten erhebt und speichert automatisch Informationen in so genannten Server-Log-Dateien, die Ihr Browser automatisch an uns übermittelt. Dies sind:</p>
+                                <p>Wir speichern Ihre Daten nur solange, wie erforderlich:</p>
                                 <ul className="list-disc pl-5 space-y-2">
-                                    <li>Browsertyp und Browserversion</li>
-                                    <li>Verwendetes Betriebssystem</li>
-                                    <li>Referrer URL</li>
-                                    <li>Hostname des zugreifenden Rechners</li>
-                                    <li>Uhrzeit der Serveranfrage</li>
-                                    <li>IP-Adresse</li>
+                                    <li><strong>Bestelldaten (Name, E-Mail, ICCID):</strong> 7 Jahre (für Geschäftsabwicklung und steuerliche Anforderungen)</li>
+                                    <li><strong>Zahlungsdaten (Stripe):</strong> Wird von Stripe verwahrt; wir haben keinen Zugriff auf Kartendaten</li>
+                                    <li><strong>Server-Logs:</strong> Maximal 30 Tage</li>
+                                    <li><strong>Cookies & Tracking:</strong> Maximal 12 Monate (je nach Einstellung)</li>
+                                    <li><strong>E-Mail-Liste (Resend):</strong> Solange Sie Kunde sind; nach Opt-Out sofort gelöscht</li>
                                 </ul>
-                                <p>Eine Zusammenführung dieser Daten mit anderen Datenquellen wird nicht vorgenommen. Grundlage für die Datenverarbeitung ist Art. 6 Abs. 1 lit. f DSGVO, der die Verarbeitung von Daten zur Erfüllung eines Vertrags oder vorvertraglicher Maßnahmen gestattet.</p>
+                                <p className="text-lg font-black text-black mt-8">Datenlöschung</p>
+                                <p>Nach Ende des Geschäftsverhältnisses werden Ihre Daten nach Ablauf der gesetzlichen Aufbewahrungsfrist gelöscht, sofern Sie nicht widersprochen haben.</p>
+                            </div>
+                        </section>
+
+                        <section className="space-y-8">
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">7. Cookies</h2>
+                            <div className="space-y-4 text-black/60 font-medium leading-relaxed">
+                                <p>Unsere Website verwendet Cookies, um die Benutzerfreundlichkeit zu verbessern. Cookies sind kleine Textdateien, die auf Ihrem Gerät gespeichert werden.</p>
+                                <p className="text-lg font-black text-black mt-8">Arten von Cookies</p>
+                                <ul className="list-disc pl-5 space-y-2">
+                                    <li><strong>Essenzielle Cookies:</strong> Notwendig für die Funktion der Website (Warenkorb, Zahlungsabwicklung). Diese werden immer gespeichert.</li>
+                                    <li><strong>Analytics-Cookies:</strong> Helfen uns, die Website zu analysieren und zu verbessern. Nur mit Ihrer Einwilligung.</li>
+                                    <li><strong>Marketing-Cookies:</strong> Für personalisierte Werbung. Nur mit Ihrer Einwilligung.</li>
+                                </ul>
+                                <p className="text-lg font-black text-black mt-8">Ihre Rechte</p>
+                                <p>Sie können Ihre Cookie-Einstellungen jederzeit über unser Cookie-Banner am unteren Bildschirmrand anpassen. Cookies können Sie auch in Ihren Browsereinstellungen löschen oder deaktivieren.</p>
+                            </div>
+                        </section>
+
+                        <section className="space-y-8">
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-black border-b border-black/5 pb-4">8. Ihre Datenschutzrechte</h2>
+                            <div className="space-y-4 text-black/60 font-medium leading-relaxed">
+                                <p>Sie haben folgende Rechte bezüglich Ihrer personenbezogenen Daten:</p>
+                                <ul className="list-disc pl-5 space-y-2">
+                                    <li><strong>Auskunftsrecht:</strong> Sie können jederzeit erfragen, welche Daten wir über Sie speichern.</li>
+                                    <li><strong>Recht auf Berichtigung:</strong> Sie können fehlerhafte Daten korrigieren lassen.</li>
+                                    <li><strong>Recht auf Löschung:</strong> Sie können die Löschung Ihrer Daten verlangen (Recht auf Vergessenwerden).</li>
+                                    <li><strong>Recht auf Datenportabilität:</strong> Sie können Ihre Daten in strukturierter Form exportieren.</li>
+                                    <li><strong>Widerspruchsrecht:</strong> Sie können der Verarbeitung widersprechen.</li>
+                                    <li><strong>Beschwerderecht:</strong> Sie können sich bei einer Aufsichtsbehörde beschweren.</li>
+                                </ul>
+                                <p className="text-lg font-black text-black mt-8">Kontakt</p>
+                                <p>Für Anfragen zu Ihren Datenschutzrechten kontaktieren Sie uns unter: <a href="mailto:hello@simfly.me" className="underline hover:opacity-70">hello@simfly.me</a></p>
                             </div>
                         </section>
                     </div>
