@@ -5,133 +5,70 @@ import { Search, Check, X, Smartphone, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import devicesData from '@/data/esim-devices.json';
 
-// Helper function to detect device from user agent and features
-function detectDevice(): { device: string | null; confidence: 'high' | 'medium' | 'low' } {
-    if (typeof navigator === 'undefined' || typeof window === 'undefined') {
-        return { device: null, confidence: 'low' };
+// Helper function to detect device from user agent - simplified for better UX
+function detectDevice(): string | null {
+    if (typeof navigator === 'undefined') {
+        return null;
     }
     
     const ua = navigator.userAgent;
-    const platform = navigator.platform || '';
-    const screenWidth = window.screen?.width || 0;
-    const screenHeight = window.screen?.height || 0;
-    const pixelRatio = window.devicePixelRatio || 1;
     
-    // Debug: Log User Agent (only in development)
-    if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 Device Detection Debug:', {
-            userAgent: ua,
-            platform,
-            screenWidth,
-            screenHeight,
-            pixelRatio
-        });
+    // iPhone detection - alle iPhones ab 11 (2019) sind eSIM-fähig
+    if (ua.includes('iPhone')) {
+        return 'iPhone';
     }
     
-    // iPhone detection with screen size verification
-    if (ua.includes('iPhone') || (platform.includes('iPhone'))) {
-        // Try to detect model by identifier
-        const modelMatch = ua.match(/iPhone(\d+[,\d]*)/);
-        if (modelMatch) {
-            const identifier = modelMatch[1];
-            // iPhone model identifiers (these are rare in modern browsers)
-            if (identifier.startsWith('16')) return { device: 'iPhone 15 Pro', confidence: 'high' };
-            if (identifier.startsWith('15')) return { device: 'iPhone 14', confidence: 'high' };
-            if (identifier.startsWith('14')) return { device: 'iPhone 13', confidence: 'high' };
-            if (identifier.startsWith('13')) return { device: 'iPhone 12', confidence: 'high' };
-            if (identifier.startsWith('12')) return { device: 'iPhone 11', confidence: 'high' };
-        }
-        
-        // Fallback: Use screen dimensions to guess iPhone model
-        // All iPhones since iPhone 11 support eSIM
-        const screenSize = Math.max(screenWidth, screenHeight) * pixelRatio;
-        
-        if (screenSize >= 2796) return { device: 'iPhone 15 Pro Max', confidence: 'medium' }; // 6.7"
-        if (screenSize >= 2556) return { device: 'iPhone 15 Pro', confidence: 'medium' }; // 6.1"
-        if (screenSize >= 2532) return { device: 'iPhone 14 Pro', confidence: 'medium' }; // 6.1"
-        if (screenSize >= 2436) return { device: 'iPhone 13', confidence: 'medium' }; // 6.1"
-        
-        // Generic iPhone (all iPhones from 2018+ support eSIM)
-        return { device: 'iPhone (eSIM kompatibel)', confidence: 'medium' };
-    }
-    
-    // iPad detection
-    if (ua.includes('iPad') || (platform.includes('iPad')) || 
-        (ua.includes('Macintosh') && 'ontouchend' in document)) { // iPadOS 13+ identifies as Mac
-        // Check screen size for iPad Pro
-        const diagonal = Math.sqrt(screenWidth * screenWidth + screenHeight * screenHeight) / pixelRatio;
-        if (diagonal > 11) {
-            return { device: 'iPad Pro (eSIM kompatibel)', confidence: 'medium' };
-        }
-        return { device: 'iPad (eSIM kompatibel)', confidence: 'medium' };
+    // iPad detection - alle iPads mit eSIM
+    if (ua.includes('iPad') || (ua.includes('Macintosh') && 'ontouchend' in document)) {
+        return 'iPad';
     }
     
     // Samsung Galaxy detection
     if (ua.includes('Samsung') || ua.includes('SM-')) {
-        // Try to extract model number
-        const modelMatch = ua.match(/SM-([A-Z]\d+)/);
-        if (modelMatch) {
-            const model = modelMatch[1];
-            if (model.startsWith('S93')) return { device: 'Galaxy S24', confidence: 'high' };
-            if (model.startsWith('S92')) return { device: 'Galaxy S23', confidence: 'high' };
-            if (model.startsWith('S91')) return { device: 'Galaxy S22', confidence: 'high' };
-            if (model.startsWith('S90')) return { device: 'Galaxy S21', confidence: 'high' };
-            if (model.startsWith('F')) return { device: 'Galaxy Z Fold/Flip', confidence: 'medium' };
-        }
-        return { device: 'Samsung Galaxy (eSIM kompatibel)', confidence: 'medium' };
+        return 'Galaxy';
     }
     
     // Google Pixel detection
     if (ua.includes('Pixel')) {
-        if (ua.includes('Pixel 9')) return { device: 'Google Pixel 9', confidence: 'high' };
-        if (ua.includes('Pixel 8')) return { device: 'Google Pixel 8', confidence: 'high' };
-        if (ua.includes('Pixel 7')) return { device: 'Google Pixel 7', confidence: 'high' };
-        if (ua.includes('Pixel 6')) return { device: 'Google Pixel 6', confidence: 'high' };
-        if (ua.includes('Pixel 5')) return { device: 'Google Pixel 5', confidence: 'high' };
-        if (ua.includes('Pixel 4')) return { device: 'Google Pixel 4', confidence: 'high' };
-        return { device: 'Google Pixel (eSIM kompatibel)', confidence: 'medium' };
+        return 'Pixel';
     }
     
-    // Xiaomi detection
-    if (ua.includes('Xiaomi') || ua.includes('Redmi') || ua.includes('MI ')) {
-        return { device: 'Xiaomi (neuere Modelle eSIM-fähig)', confidence: 'low' };
+    // Xiaomi/Redmi detection
+    if (ua.includes('Xiaomi') || ua.includes('Redmi')) {
+        return 'Xiaomi';
     }
     
     // Oppo detection
-    if (ua.includes('OPPO') || ua.includes('CPH')) {
-        return { device: 'Oppo (neuere Modelle eSIM-fähig)', confidence: 'low' };
+    if (ua.includes('OPPO')) {
+        return 'Oppo';
     }
     
     // OnePlus detection  
     if (ua.includes('OnePlus')) {
-        return { device: 'OnePlus (neuere Modelle eSIM-fähig)', confidence: 'low' };
+        return 'OnePlus';
     }
     
     // Motorola detection
     if (ua.includes('Motorola') || ua.includes('moto')) {
-        return { device: 'Motorola (neuere Modelle eSIM-fähig)', confidence: 'low' };
+        return 'Motorola';
     }
     
-    return { device: null, confidence: 'low' };
+    return null;
 }
 
 export default function CompatibilityCheck() {
     const [search, setSearch] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [detectedDevice, setDetectedDevice] = useState<string | null>(null);
-    const [deviceConfidence, setDeviceConfidence] = useState<'high' | 'medium' | 'low'>('low');
-    const [showDetection, setShowDetection] = useState(false);
     const [showDebug, setShowDebug] = useState(false);
 
-    // Detect device on mount
+    // Detect device on mount and set it in search field
     useEffect(() => {
-        const detection = detectDevice();
-        if (detection.device) {
-            setDetectedDevice(detection.device);
-            setDeviceConfidence(detection.confidence);
-            setShowDetection(true);
-            // Auto-hide after 8 seconds
-            setTimeout(() => setShowDetection(false), 8000);
+        const device = detectDevice();
+        if (device) {
+            setDetectedDevice(device);
+            setSearch(device); // Direkt ins Suchfeld
+            setIsFocused(true); // Zeige Ergebnisse an
         }
     }, []);
 
@@ -150,7 +87,16 @@ export default function CompatibilityCheck() {
                 d.model.toLowerCase().includes(searchLower) || 
                 d.brand.toLowerCase().includes(searchLower)
             )
-            .slice(0, 12); // Show more results
+            .slice(0, 50); // Zeige bis zu 50 Ergebnisse
+    }, [search, allDevices]);
+    
+    const totalMatchingDevices = useMemo(() => {
+        if (!search) return 0;
+        const searchLower = search.toLowerCase();
+        return allDevices.filter(d => 
+            d.model.toLowerCase().includes(searchLower) || 
+            d.brand.toLowerCase().includes(searchLower)
+        ).length;
     }, [search, allDevices]);
 
     const popularDevices = useMemo(() => {
@@ -171,34 +117,6 @@ export default function CompatibilityCheck() {
                     }}
                     className="bg-black/5 rounded-[3rem] md:rounded-[4rem] relative overflow-hidden border border-black/5 transition-all duration-500"
                 >
-                    {/* Auto-detected device notification */}
-                    <AnimatePresence>
-                        {showDetection && detectedDevice && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className={`absolute top-4 right-4 px-4 py-3 rounded-2xl shadow-lg flex flex-col gap-1 z-20 text-xs font-bold max-w-xs ${
-                                    deviceConfidence === 'high' ? 'bg-green-500 text-white' :
-                                    deviceConfidence === 'medium' ? 'bg-blue-500 text-white' :
-                                    'bg-yellow-500 text-black'
-                                }`}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                                    <span className="font-black">{detectedDevice}</span>
-                                </div>
-                                {deviceConfidence !== 'high' && (
-                                    <span className="text-[9px] opacity-80 leading-tight">
-                                        {deviceConfidence === 'medium' 
-                                            ? 'Wahrscheinlich eSIM-kompatibel'
-                                            : 'Bitte manuell prüfen'}
-                                    </span>
-                                )}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
                     <div className="relative z-10 space-y-8 md:space-y-12">
                         <div className="space-y-4 text-center px-4">
                             <h2 className="text-xl sm:text-3xl md:text-6xl font-black tracking-tighter italic uppercase leading-tight break-words">
@@ -219,19 +137,28 @@ export default function CompatibilityCheck() {
                                     onFocus={() => setIsFocused(true)}
                                     onBlur={() => setTimeout(() => setIsFocused(false), 200)}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full bg-white border border-black/5 rounded-3xl py-6 pl-16 pr-8 font-bold text-sm focus:outline-none focus:ring-4 focus:ring-black/5 transition-all shadow-soft"
+                                    className="w-full bg-white border border-black/5 rounded-3xl py-6 pl-16 pr-14 font-bold text-sm focus:outline-none focus:ring-4 focus:ring-black/5 transition-all shadow-soft"
                                 />
+                                {/* Green checkmark if device was auto-detected */}
+                                {detectedDevice && search.toLowerCase().includes(detectedDevice.toLowerCase()) && (
+                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                        <span className="text-[9px] font-bold text-green-600 uppercase tracking-wider hidden sm:inline">
+                                            Erkannt
+                                        </span>
+                                        <CheckCircle2 className="w-5 h-5 text-green-500 fill-green-50" />
+                                    </div>
+                                )}
                             </div>
 
                             <AnimatePresence>
                                 {(search || isFocused) && (
                                     <motion.div
                                         initial={{ opacity: 0, maxHeight: 0 }}
-                                        animate={{ opacity: 1, maxHeight: 480 }}
+                                        animate={{ opacity: 1, maxHeight: 600 }}
                                         exit={{ opacity: 0, maxHeight: 0 }}
                                         className="mt-6 bg-white rounded-[2rem] p-4 shadow-xl border border-black/5 overflow-hidden"
                                     >
-                                        <div className="space-y-4 max-h-[420px] overflow-y-auto">
+                                        <div className="space-y-4 max-h-[540px] overflow-y-auto scrollbar-thin scrollbar-thumb-black/10 scrollbar-track-transparent">{
                                             {!search && (
                                                 <div className="px-2 pt-2">
                                                     <p className="text-[10px] font-black uppercase tracking-widest text-black/30 mb-4">Beliebte Modelle</p>
@@ -251,6 +178,20 @@ export default function CompatibilityCheck() {
 
                                             {search && (
                                                 <div className="space-y-2">
+                                                    {/* Anzahl der Ergebnisse */}
+                                                    {filteredDevices.length > 0 && (
+                                                        <div className="px-2 pb-2 flex items-center justify-between">
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-green-600">
+                                                                {totalMatchingDevices} {totalMatchingDevices === 1 ? 'Gerät' : 'Geräte'} gefunden
+                                                            </p>
+                                                            {totalMatchingDevices > 50 && (
+                                                                <p className="text-[9px] text-black/40">
+                                                                    Top 50 angezeigt
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    
                                                     {filteredDevices.length > 0 ? (
                                                         <>
                                                             {filteredDevices.map((device) => (
@@ -270,21 +211,33 @@ export default function CompatibilityCheck() {
                                                                     </div>
                                                                 </div>
                                                             ))}
-                                                            {filteredDevices.length >= 12 && (
-                                                                <p className="text-center text-[10px] text-black/30 font-bold pt-2">
-                                                                    ...und viele weitere Modelle
-                                                                </p>
-                                                            )}
                                                         </>
                                                     ) : (
                                                         <div className="p-8 text-center space-y-4">
-                                                            <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
-                                                                <X className="w-6 h-6 text-red-500" />
+                                                            <div className="w-12 h-12 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto">
+                                                                <Smartphone className="w-6 h-6 text-yellow-600" />
                                                             </div>
-                                                            <div className="space-y-2">
-                                                                <p className="text-sm font-bold opacity-40">Modell nicht gefunden.</p>
-                                                                <p className="text-[10px] text-black/30">
-                                                                    Versuche es mit Marke + Modellnummer<br />
+                                                            <div className="space-y-3">
+                                                                <div>
+                                                                    <p className="text-sm font-bold text-black/60 mb-1">
+                                                                        Gerät nicht in unserer Liste?
+                                                                    </p>
+                                                                    <p className="text-[11px] text-black/40 leading-relaxed">
+                                                                        Kein Problem! Die meisten Smartphones ab 2020 unterstützen eSIM.
+                                                                    </p>
+                                                                </div>
+                                                                <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                                                                    <p className="text-[10px] font-bold text-blue-900 mb-1">
+                                                                        💡 So prüfen Sie es selbst:
+                                                                    </p>
+                                                                    <ul className="text-[10px] text-blue-800 text-left space-y-1 leading-relaxed">
+                                                                        <li>• Einstellungen → Mobilfunk/Netzwerk</li>
+                                                                        <li>• Suchen Sie nach "eSIM hinzufügen"</li>
+                                                                        <li>• Oder scannen Sie einen QR-Code</li>
+                                                                    </ul>
+                                                                </div>
+                                                                <p className="text-[9px] text-black/30 pt-2">
+                                                                    Versuchen Sie es mit: Marke + Modellnummer<br />
                                                                     (z.B. "Samsung S24" oder "iPhone 15")
                                                                 </p>
                                                             </div>
@@ -334,13 +287,9 @@ export default function CompatibilityCheck() {
                                             )}
                                             {detectedDevice && (
                                                 <p className="mt-2 pt-2 border-t border-black/5">
-                                                    <strong>Erkannt als:</strong> {detectedDevice} 
-                                                    <span className={`ml-2 px-2 py-0.5 rounded text-[8px] ${
-                                                        deviceConfidence === 'high' ? 'bg-green-500 text-white' :
-                                                        deviceConfidence === 'medium' ? 'bg-blue-500 text-white' :
-                                                        'bg-yellow-500 text-black'
-                                                    }`}>
-                                                        {deviceConfidence}
+                                                    <strong>Erkannt als:</strong> {detectedDevice}
+                                                    <span className="ml-2 px-2 py-0.5 rounded text-[8px] bg-green-500 text-white">
+                                                        ✓ Auto-erkannt
                                                     </span>
                                                 </p>
                                             )}
