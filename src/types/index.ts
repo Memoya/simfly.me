@@ -94,6 +94,8 @@ export interface AdminSettings {
     autoDiscountEnabled?: boolean;
     autoDiscountPercent?: number;
     autoDiscountThreshold?: number;
+    duoDiscountEnabled?: boolean;
+    duoDiscountPercent?: number;
     catalogueLastUpdated?: string;
     catalogueLastChangeCount?: number;
     // New fields for auto-alert

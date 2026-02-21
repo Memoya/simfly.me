@@ -30,7 +30,9 @@ export default function AdminPage() {
         autoDiscountPercent: 10,
         autoDiscountThreshold: 50,
         minMarginFixed: 1.0,
-        minMarginPercent: 5.0
+        minMarginPercent: 5.0,
+        duoDiscountEnabled: true,
+        duoDiscountPercent: 10
     });
     const [orders, setOrders] = useState<any[]>([]);
     const [customers, setCustomers] = useState<any[]>([]);
@@ -890,6 +892,53 @@ export default function AdminPage() {
                                     <div className="mt-8 p-4 bg-white/50 rounded-xl border border-blue-50 text-xs text-blue-600 font-medium leading-relaxed">
                                         ℹ️ <strong>Logik:</strong> Wenn der Warenkorb-Wert (Brutto) den Schwellenwert erreicht, wird der Rabatt automatisch auf alle Artikel angewendet.
                                         Dies geschieht unabhängig von weiteren Gutscheincodes und wird dem Kunden direkt im Warenkorb als Fortschrittsbalken visualisiert.
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Duo-Paket (Partner Card) Settings */}
+                            <div className="mt-12 border-t pt-10">
+                                <h3 className="text-xl font-bold text-navy mb-6 flex items-center gap-2">
+                                    <Users className="w-5 h-5 text-green-600" /> Duo-Paket (Partner-Karte)
+                                </h3>
+                                <div className="bg-gradient-to-br from-green-50 to-white p-6 rounded-[2rem] border border-green-100 shadow-sm">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="flex flex-col justify-center">
+                                            <label className="flex items-center gap-3 cursor-pointer group">
+                                                <div className="relative">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="sr-only peer"
+                                                        checked={settings.duoDiscountEnabled ?? true}
+                                                        onChange={(e) => setSettings({ ...settings, duoDiscountEnabled: e.target.checked })}
+                                                    />
+                                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                                </div>
+                                                <span className="font-bold text-navy group-hover:text-green-600 transition-colors">Duo-Paket aktiviert</span>
+                                            </label>
+                                            <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-black italic">Zweite Karte mit Rabatt</p>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Rabatt auf 2. Karte (%)</label>
+                                            <div className="relative">
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    step="1"
+                                                    className="w-full p-4 bg-white border border-gray-100 rounded-2xl focus:ring-2 focus:ring-green-600 outline-none font-black text-navy"
+                                                    value={settings.duoDiscountPercent ?? 10}
+                                                    onChange={(e) => setSettings({ ...settings, duoDiscountPercent: Number(e.target.value) })}
+                                                />
+                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-gray-300">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-8 p-4 bg-white/50 rounded-xl border border-green-50 text-xs text-green-700 font-medium leading-relaxed">
+                                        💡 <strong>Funktion:</strong> Kunden können im Warenkorb eine zweite identische eSIM-Karte mit Rabatt hinzufügen (z.B. für Partner oder Familie).
+                                        Der festgelegte Rabatt wird automatisch auf die Duo-Karte angewendet und als grüne Karte im Warenkorb gekennzeichnet.
                                     </div>
                                 </div>
                             </div>

@@ -1,17 +1,18 @@
 'use client';
 
 import { useCartStore } from '@/store/cart';
-import { X, Trash2, ShoppingBag, ChevronRight, Zap, ShieldCheck } from 'lucide-react';
+import { X, Trash2, ShoppingBag, ChevronRight, Zap, ShieldCheck, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { getCountryFlag } from '@/lib/flags';
+import { getCountryFlagUrl } from '@/lib/flags';
 import { VisaLogo, MastercardLogo, ApplePayLogo, GooglePayLogo, KlarnaLogo } from './PaymentIcons';
-
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 
 export default function CartSidebar() {
-    const { items, isOpen, closeCart, removeItem } = useCartStore();
+    const { items, isOpen, closeCart, removeItem, addItem } = useCartStore();
     const [loading, setLoading] = useState(false);
+    const [selectedItem, setSelectedItem] = useState<any>(null);
     const params = useParams();
     const lang = params.lang as string || 'de';
 
@@ -19,10 +20,14 @@ export default function CartSidebar() {
         autoDiscountEnabled: boolean;
         autoDiscountPercent: number;
         autoDiscountThreshold: number;
+        duoDiscountEnabled: boolean;
+        duoDiscountPercent: number;
     }>({
         autoDiscountEnabled: false,
         autoDiscountPercent: 10,
-        autoDiscountThreshold: 50
+        autoDiscountThreshold: 50,
+        duoDiscountEnabled: true,
+        duoDiscountPercent: 10
     });
 
     useEffect(() => {
@@ -33,12 +38,29 @@ export default function CartSidebar() {
                     setAdminSettings({
                         autoDiscountEnabled: data.autoDiscountEnabled ?? false,
                         autoDiscountPercent: data.autoDiscountPercent ?? 10,
-                        autoDiscountThreshold: data.autoDiscountThreshold ?? 50
+                        autoDiscountThreshold: data.autoDiscountThreshold ?? 50,
+                        duoDiscountEnabled: data.duoDiscountEnabled ?? true,
+                        duoDiscountPercent: data.duoDiscountPercent ?? 10
                     });
                 })
                 .catch(err => console.error('Failed to fetch settings:', err));
         }
     }, [isOpen]);
+
+    const handleAddDuoCard = () => {
+        if (items.length > 0) {
+            const firstItem = items[0];
+            const discountedPrice = firstItem.price * (1 - adminSettings.duoDiscountPercent / 100);
+            const { quantity, ...itemWithoutQuantity } = firstItem;
+            addItem({
+                ...itemWithoutQuantity,
+                id: `${firstItem.id}-duo`,
+                price: discountedPrice,
+            });
+        }
+    };
+
+    const hasDuoCard = items.some(item => item.id.includes('-duo'));
 
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -141,9 +163,19 @@ export default function CartSidebar() {
                                 </div>
                             ) : (
                                 items.map((item) => (
-                                    <div key={item.id} className="group relative bg-white rounded-[2rem] p-6 border border-black/5 shadow-soft hover:border-black/10 transition-all flex items-center gap-5">
-                                        <div className="w-14 h-14 bg-black/5 rounded-2xl flex items-center justify-center shrink-0 text-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,1)]">
-                                            {getCountryFlag(item.iso)}
+                                    <div 
+                                        key={item.id} 
+                                        className="group relative bg-white rounded-[2rem] p-6 border border-black/5 shadow-soft hover:border-black/10 transition-all flex items-center gap-5 cursor-pointer"
+                                        onClick={() => setSelectedItem(item)}
+                                    >
+                                        <div className="w-14 h-14 bg-black/5 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,1)]">
+                                            <Image 
+                                                src={getCountryFlagUrl(item.iso, 'w80') || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="56" height="56"%3E%3Crect fill="%23e5e7eb" width="56" height="56"/%3E%3C/svg%3E'} 
+                                                alt={item.name}
+                                                width={56}
+                                                height={56}
+                                                className="object-cover rounded-xl"
+                                            />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-black text-black text-sm tracking-tight truncate leading-none mb-1">
@@ -163,7 +195,10 @@ export default function CartSidebar() {
                                         </div>
                                         <div className="flex flex-col items-end gap-3">
                                             <button
-                                                onClick={() => removeItem(item.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeItem(item.id);
+                                                }}
                                                 className="p-2 text-black/10 hover:text-black hover:bg-black/5 rounded-xl transition-all"
                                                 aria-label="Entfernen"
                                             >
@@ -174,22 +209,30 @@ export default function CartSidebar() {
                                 ))
                             )}
 
-                            {/* Top-Ups & Add-ons */}
-                            {items.length > 0 && (
+                            {/* Duo-Paket (Partner-Karte) */}
+                            {items.length > 0 && !hasDuoCard && adminSettings.duoDiscountEnabled && (
                                 <div className="pt-6 border-t border-black/5">
                                     <h4 className="text-[10px] font-black text-black/30 uppercase tracking-[0.2em] mb-4">Wird oft dazu gekauft</h4>
                                     <div className="space-y-3">
-                                        <div className="bg-black/[0.02] hover:bg-black/[0.04] transition-all rounded-2xl p-4 flex items-center justify-between border border-black/5 group cursor-pointer">
+                                        <div 
+                                            onClick={handleAddDuoCard}
+                                            className="bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 transition-all rounded-2xl p-4 flex items-center justify-between border-2 border-green-200/50 group cursor-pointer"
+                                        >
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-electric/10 text-electric flex items-center justify-center">
-                                                    <Zap className="w-4 h-4 fill-electric" />
+                                                <div className="w-10 h-10 rounded-xl bg-green-500 text-white flex items-center justify-center shadow-lg">
+                                                    <Users className="w-5 h-5" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-[11px] font-bold text-black">Global HighSpeed Top-Up (+2GB)</p>
-                                                    <p className="text-[9px] text-black/40">Zusatz-Daten für Notfälle</p>
+                                                    <p className="text-[12px] font-black text-green-900 flex items-center gap-2">
+                                                        Partner-Karte (Duo-Paket)
+                                                        <span className="px-2 py-0.5 bg-green-500 text-white text-[9px] font-black rounded-full uppercase tracking-wider">{adminSettings.duoDiscountPercent}% OFF</span>
+                                                    </p>
+                                                    <p className="text-[10px] text-green-700 font-medium">Zweite Karte mit {adminSettings.duoDiscountPercent}% Rabatt</p>
                                                 </div>
                                             </div>
-                                            <div className="text-[11px] font-black text-electric group-hover:scale-110 transition-transform">+ 4,99€</div>
+                                            <div className="text-[13px] font-black text-green-600 group-hover:scale-110 transition-transform">
+                                                +{(items[0].price * (1 - adminSettings.duoDiscountPercent / 100)).toFixed(2)}€
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

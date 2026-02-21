@@ -13,6 +13,18 @@ export function getCountryFlagUrl(isoCode: string | undefined, size: 'w20' | 'w4
 }
 
 /**
+ * Get mascot image URL for a given country ISO code.
+ * Mascots are stored as /public/mascots/{iso}.webp
+ * Returns null if no mascot image is available yet.
+ * @param isoCode - Two-letter country code (e.g., "US", "DE", "TH")
+ */
+export function getCountryMascotUrl(isoCode: string | undefined): string | null {
+    if (!isoCode || isoCode.length !== 2) return null;
+    // Checked at runtime via the browser; Next.js will 404 if missing → component handles fallback
+    return `/mascots/${isoCode.toLowerCase()}.png`;
+}
+
+/**
  * DEPRECATED: Use getCountryFlagUrl instead
  * Convert ISO 3166-1 alpha-2 country code to flag emoji
  * @param isoCode - Two-letter country code (e.g., "US", "DE", "TH")
