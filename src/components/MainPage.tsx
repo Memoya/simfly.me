@@ -22,12 +22,14 @@ import { ShinyButton } from '@/components/ShinyButton';
 import { AnimatedBeam } from '@/components/AnimatedBeam';
 import { SpotlightCard } from '@/components/SpotlightCard';
 import CountrySearch from '@/components/CountrySearch';
+import CountryMascot from '@/components/CountryMascot';
 
-const popularCountriesList = [
-  'Thailand', 'United States', 'Turkey', 'Japan',
-  'Germany', 'Spain', 'France', 'Italy',
-  'United Kingdom', 'Greece', 'Switzerland', 'Vietnam',
-  'Portugal', 'Indonesia', 'South Korea', 'Mexico', 'United Arab Emirates'
+// BUG 3 fix: Use ISO codes instead of English names for popular countries filter
+const popularCountriesIso = [
+  'th', 'us', 'tr', 'jp',
+  'de', 'es', 'fr', 'it',
+  'gb', 'gr', 'ch', 'vn',
+  'pt', 'id', 'kr', 'mx', 'ae'
 ];
 
 // Featured deals configuration
@@ -160,9 +162,15 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
       }
     });
     return map;
-  }, [products]);
+  }, [products, lang]);
 
   const allCountries = useMemo(() => Object.values(countriesMap), [countriesMap]);
+
+  const popularCountriesList = useMemo(() => {
+    return popularCountriesIso
+      .map(iso => allCountries.find(c => c.iso?.toLowerCase() === iso.toLowerCase())?.country)
+      .filter((name): name is string => name !== undefined);
+  }, [allCountries]);
 
   const regions = useMemo(() => {
     const rawRegions = Array.from(new Set(allCountries.map((c) => c.regionGroup || 'Other')));
@@ -183,15 +191,15 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
 
   const sortedCountries = useMemo(() => {
     const sorted = [...filteredCountries].sort((a, b) =>
-      a.country.localeCompare(b.country, 'de')
+      a.country.localeCompare(b.country, lang)
     );
 
     if (!showAllCountries && searchTerm === '' && selectedRegion === 'All') {
-      return sorted.filter((c: CountryGroup) => popularCountriesList.includes(c.country));
+      return sorted.filter((c: CountryGroup) => popularCountriesIso.includes(c.iso?.toLowerCase()));
     }
 
     return sorted;
-  }, [filteredCountries, showAllCountries, searchTerm, selectedRegion]);
+  }, [filteredCountries, showAllCountries, searchTerm, selectedRegion, lang]);
 
   const displayedCountries = sortedCountries.slice(0, visibleCount);
 
@@ -232,7 +240,6 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
           <div className="hidden md:flex items-center space-x-8 font-semibold text-gray-600">
             <a href="#destinations" className="hover:text-electric transition-colors">{dictionary.nav.destinations}</a>
             <a href="#how-it-works" className="hover:text-electric transition-colors">{dictionary.nav.howItWorks}</a>
-            <a href="#reviews" className="hover:text-electric transition-colors">{dictionary.nav.reviews}</a>
             <Link href={`/${lang}/check`} className="hover:text-electric transition-colors">{dictionary.nav.checkData}</Link>
             <LanguageCurrencySelector />
             <button
@@ -287,7 +294,6 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
               <div className="flex flex-col p-4 space-y-4 font-semibold text-gray-600">
                 <a href="#destinations" onClick={() => setIsMenuOpen(false)}>{dictionary.nav.destinations}</a>
                 <a href="#how-it-works" onClick={() => setIsMenuOpen(false)}>{dictionary.nav.howItWorks}</a>
-                <a href="#reviews" onClick={() => setIsMenuOpen(false)}>{dictionary.nav.reviews}</a>
                 <Link href={`/${lang}/check`} onClick={() => setIsMenuOpen(false)} className="text-electric">
                   {dictionary.nav.checkData}
                 </Link>
@@ -614,21 +620,12 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
                   className="group bg-white/40 backdrop-blur-md rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 text-center shadow-soft hover:shadow-card transition-all duration-500 border border-white/50 hover:border-black/10 overflow-hidden relative"
                 >
                   <div className="relative w-16 h-16 md:w-24 md:h-24 mx-auto">
-                    {(() => {
-                      const flagUrl = getCountryFlagUrl(country.iso, 'w160');
-                      return flagUrl ? (
-                        <Image
-                          src={flagUrl}
-                          alt={country.country}
-                          fill
-                          sizes="(max-width: 768px) 64px, 96px"
-                          loading="lazy"
-                          className="rounded-[2rem] object-cover shadow-sm grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-                        />
-                      ) : (
-                        <div className="w-full h-full rounded-[2rem] bg-gray-100 flex items-center justify-center text-gray-400 text-2xl">-</div>
-                      );
-                    })()}
+                    <CountryMascot
+                      iso={country.iso}
+                      country={country.country}
+                      size={96}
+                      sizes="(max-width: 768px) 64px, 96px"
+                    />
                     <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-[2rem]" />
                   </div>
                   <div className="space-y-0.5 md:space-y-1">
@@ -784,10 +781,10 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
         <div className="max-w-6xl mx-auto px-6 md:px-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 mb-16 md:mb-32">
             <div className="space-y-8">
-              <div className="flex items-center gap-3">
+              <Link href={`/${lang}`} className="flex items-center gap-3 hover:opacity-70 transition-opacity">
                 <Globe className="w-8 h-8 text-black" />
                 <span className="text-3xl font-black tracking-tighter italic">SIMFLY.ME</span>
-              </div>
+              </Link>
               <p className="text-black/30 font-bold text-sm leading-relaxed max-w-xs">
                 Premium eSIM Solutions for the modern traveler. Minimalist infrastructure, maximum speed.
               </p>
@@ -820,9 +817,8 @@ export default function Home({ dictionary, lang }: { dictionary: Dictionary, lan
           </div>
 
           <div className="pt-12 border-t border-black/5 flex flex-col md:flex-row justify-between items-center gap-10">
-            <div className="text-[10px] font-black tracking-widest uppercase text-black/10 flex gap-10">
+            <div className="text-[10px] font-black tracking-widest uppercase text-black/10">
               <span>©2026 Simfly</span>
-              <span>EST. Berlin</span>
             </div>
             <div className="flex gap-10">
               {/* Payment logos removed for cleaner aesthetic */}

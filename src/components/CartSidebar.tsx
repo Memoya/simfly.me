@@ -212,7 +212,7 @@ export default function CartSidebar() {
                             {/* Duo-Paket (Partner-Karte) */}
                             {items.length > 0 && !hasDuoCard && adminSettings.duoDiscountEnabled && (
                                 <div className="pt-6 border-t border-black/5">
-                                    <h4 className="text-[10px] font-black text-black/30 uppercase tracking-[0.2em] mb-4">Wird oft dazu gekauft</h4>
+                                    <h4 className="text-[10px] md:text-[10px] font-black text-black/60 md:text-black/30 uppercase tracking-[0.2em] mb-4">Wird oft dazu gekauft</h4>
                                     <div className="space-y-3">
                                         <div 
                                             onClick={handleAddDuoCard}
@@ -244,7 +244,7 @@ export default function CartSidebar() {
                             <div className="px-6 md:px-8 pt-6 pb-6 md:pb-10 bg-white border-t border-black/5 space-y-6 shadow-[0_-20px_40px_rgba(0,0,0,0.02)]">
                                 <div className="flex justify-between items-end">
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-black/30 uppercase tracking-[0.2em]">Gesamtbetrag</p>
+                                        <p className="text-[10px] font-black text-black/60 md:text-black/30 uppercase tracking-[0.2em]">Gesamtbetrag</p>
                                         <p className="text-4xl font-black text-black tracking-tighter">
                                             {total.toFixed(2).replace('.', ',')}€
                                         </p>
@@ -254,7 +254,7 @@ export default function CartSidebar() {
                                         {adminSettings.autoDiscountEnabled && total < adminSettings.autoDiscountThreshold && (
                                             <div className="w-48 space-y-2">
                                                 <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
-                                                    <span className="text-black/40">Noch {(adminSettings.autoDiscountThreshold - total).toFixed(2)}€ bis {adminSettings.autoDiscountPercent}% Rabatt</span>
+                                                    <span className="text-black/60 md:text-black/40">Noch {(adminSettings.autoDiscountThreshold - total).toFixed(2)}€ bis {adminSettings.autoDiscountPercent}% Rabatt</span>
                                                     <span className="text-electric">{adminSettings.autoDiscountPercent}% OFF</span>
                                                 </div>
                                                 <div className="h-1.5 w-full bg-black/5 rounded-full overflow-hidden">
@@ -276,17 +276,17 @@ export default function CartSidebar() {
                                 </div>
 
                                 {/* Social Proof Badges */}
-                                <div className="p-4 bg-gray-50 rounded-2xl border border-black/5 flex items-center gap-4">
+                                <div className="p-3 md:p-4 bg-gray-50 rounded-xl md:rounded-2xl border border-black/5 flex items-center gap-3">
                                     <div className="flex -space-x-2">
                                         {[1, 2, 3].map(i => (
-                                            <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-gray-200 overflow-hidden flex items-center justify-center text-[8px] font-bold text-gray-500 italic">
+                                            <div key={i} className="w-5 h-5 md:w-6 md:h-6 rounded-full border-2 border-white bg-gray-200 overflow-hidden flex items-center justify-center text-[7px] md:text-[8px] font-bold text-gray-500 italic">
                                                 {String.fromCharCode(65 + i)}
                                             </div>
                                         ))}
                                     </div>
-                                    <p className="text-[10px] font-bold text-black/50 leading-tight">
-                                        🔥 <span className="text-black">32 Personen</span> haben heute USA eSIM gekauft. <br />
-                                        <span className="text-[9px] opacity-60">Zertifizierter Premium Provider</span>
+                                    <p className="text-[9px] md:text-[10px] font-bold text-black/70 md:text-black/60 leading-tight">
+                                        🔥 <span className="text-black">32 Personen</span> haben heute USA eSIM gekauft. <br className="hidden md:block" />
+                                        <span className="text-[8px] md:text-[9px] text-black/60 md:opacity-60">Zertifizierter Premium Provider</span>
                                     </p>
                                 </div>
 
@@ -308,8 +308,8 @@ export default function CartSidebar() {
                                 </button>
 
                                 {/* Trust Elements */}
-                                <div className="space-y-4 pt-2">
-                                    <div className="flex justify-center gap-4 text-black/20">
+                                <div className="space-y-3 md:space-y-4 pt-2">
+                                    <div className="flex justify-center gap-3 md:gap-4 text-black/50 md:text-black/20">
                                         <div className="flex items-center gap-1.5">
                                             <ShieldCheck className="w-3 h-3 md:w-4 md:h-4 stroke-[2.5px]" />
                                             <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">SSL Secure</span>
@@ -320,29 +320,29 @@ export default function CartSidebar() {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-center items-center gap-4 pt-4 bg-gray-50/50 rounded-xl p-3 border border-gray-100">
-                                        <div className="h-5 w-8 relative flex items-center justify-center">
+                                    <div className="flex justify-center items-center gap-2 md:gap-4 pt-2 md:pt-4 bg-gray-50/50 rounded-lg md:rounded-xl p-2 md:p-3 border border-gray-100">
+                                        <div className="h-4 w-7 md:h-5 md:w-8 relative flex items-center justify-center">
                                             <VisaLogo className="h-full w-full object-contain" />
                                         </div>
-                                        <div className="h-6 w-9 relative flex items-center justify-center">
+                                        <div className="h-5 w-7 md:h-6 md:w-9 relative flex items-center justify-center">
                                             <MastercardLogo className="h-full w-full object-contain" />
                                         </div>
-                                        <div className="h-5 w-10 relative flex items-center justify-center">
+                                        <div className="h-4 w-8 md:h-5 md:w-10 relative flex items-center justify-center">
                                             <ApplePayLogo className="h-full w-full object-contain" />
                                         </div>
-                                        <div className="h-5 w-10 relative flex items-center justify-center">
+                                        <div className="h-4 w-8 md:h-5 md:w-10 relative flex items-center justify-center">
                                             <GooglePayLogo className="h-full w-full object-contain" />
                                         </div>
-                                        <div className="h-5 w-10 relative flex items-center justify-center">
+                                        <div className="h-4 w-8 md:h-5 md:w-10 relative flex items-center justify-center">
                                             <KlarnaLogo className="h-full w-full object-contain" />
                                         </div>
                                     </div>
                                 </div>
 
-                                <span className="text-[8px] font-black tracking-[0.3em] text-black uppercase text-center block w-full opacity-40">Sicherer Checkout</span>
+                                <span className="text-[8px] font-black tracking-[0.3em] text-black uppercase text-center block w-full opacity-60 md:opacity-40">Sicherer Checkout</span>
 
-                                <div className="p-5 bg-black/[0.02] rounded-[1.5rem] border border-black/5">
-                                    <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest text-center leading-relaxed">
+                                <div className="p-4 md:p-5 bg-black/[0.02] rounded-[1.5rem] border border-black/5">
+                                    <p className="text-[10px] font-bold text-black/60 md:text-black/40 uppercase tracking-widest text-center leading-relaxed">
                                         🌍 Bereit für die Reise? <br />
                                         <span className="text-black/60">QR-Code wird nach dem Kauf sofort per E-Mail zugestellt.</span>
                                     </p>
