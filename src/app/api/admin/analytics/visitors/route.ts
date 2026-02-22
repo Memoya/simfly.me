@@ -1,42 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { verifyAuth, unauthorizedResponse } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
     try {
-        // Authentication
-        const authHeader = req.headers.get('authorization');
-        const token = authHeader?.replace('Bearer ', '');
-        const adminPassword = process.env.ADMIN_PASSWORD;
-
-        console.log('[VISITOR-API] Auth Debug:', {
-            hasToken: !!token,
-            tokenLength: token?.length,
-            hasAdminPassword: !!adminPassword,
-            passwordLength: adminPassword?.length,
-            passwordFromEnv: adminPassword ? 'SET' : 'MISSING',
-            isProduction: process.env.NODE_ENV === 'production'
-        });
-
-        if (!adminPassword) {
-            console.error('[VISITOR-API] CRITICAL: ADMIN_PASSWORD not set in environment!');
-            return NextResponse.json({ error: 'Server error: ADMIN_PASSWORD not configured' }, { status: 500 });
-        }
-
-        if (token !== adminPassword) {
-            console.log('[VISITOR-API] Unauthorized - password mismatch', {
-                receivedLength: token?.length,
-                expectedLength: adminPassword.length,
-                match: token === adminPassword
-            });
-            return NextResponse.json({ 
-                error: 'Unauthorized', 
-                debug: {
-                    tokenProvided: !!token,
-                    tokenLength: token?.length,
-                    expectedLength: adminPassword.length,
-                    message: 'Password does not match ADMIN_PASSWORD environment variable'
-                }
-            }, { status: 401 });
+        // Authentication using shared verifyAuth function
+        if (!verifyAuth(req)) {
+            return unauthorizedResponse();
         }
 
         // Get timeRange from query params
