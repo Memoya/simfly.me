@@ -72,6 +72,17 @@ export default function AdminPage() {
     const [esimDetails, setEsimDetails] = useState<Record<string, any>>({});
     const [loadingEsimAction, setLoadingEsimAction] = useState<string | null>(null);
 
+    // Load password from localStorage on mount
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const savedPassword = localStorage.getItem('admin_password');
+            if (savedPassword) {
+                setPassword(savedPassword);
+                setIsAuthenticated(true);
+            }
+        }
+    }, []);
+
     const checkEsimStatus = async (iccid: string) => {
         setLoadingEsimAction(iccid);
         try {
@@ -160,7 +171,11 @@ export default function AdminPage() {
                 throw new Error('Login fehlgeschlagen');
             }
 
-            // Password is correct!
+            // Password is correct! Store it in localStorage for persistence
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('admin_password', password);
+            }
+
             setIsAuthenticated(true);
             await fetchSettings();
             alert('✅ Erfolgreich eingeloggt!');
