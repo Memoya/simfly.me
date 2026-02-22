@@ -28,7 +28,15 @@ export async function GET(req: NextRequest) {
                 expectedLength: adminPassword.length,
                 match: token === adminPassword
             });
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            return NextResponse.json({ 
+                error: 'Unauthorized', 
+                debug: {
+                    tokenProvided: !!token,
+                    tokenLength: token?.length,
+                    expectedLength: adminPassword.length,
+                    message: 'Password does not match ADMIN_PASSWORD environment variable'
+                }
+            }, { status: 401 });
         }
 
         // Get timeRange from query params
