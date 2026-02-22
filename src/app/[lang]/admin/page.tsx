@@ -136,10 +136,40 @@ export default function AdminPage() {
         await fetchSettings(); // Update cache
     };
 
-    const login = () => {
-        if (password) {
+    const login = async () => {
+        if (!password) {
+            alert('Passwort erforderlich!');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // Validate password by making a request to a protected endpoint
+            const res = await fetch('/api/admin/settings', {
+                headers: { 'Authorization': `Bearer ${password}` }
+            });
+
+            if (res.status === 401) {
+                alert('❌ Falsches Passwort! Versuche es nochmal.');
+                setPassword('');
+                setLoading(false);
+                return;
+            }
+
+            if (!res.ok) {
+                throw new Error('Login fehlgeschlagen');
+            }
+
+            // Password is correct!
             setIsAuthenticated(true);
-            fetchSettings();
+            await fetchSettings();
+            alert('✅ Erfolgreich eingeloggt!');
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('❌ Fehler beim Login: ' + (error instanceof Error ? error.message : String(error)));
+            setPassword('');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -449,12 +479,22 @@ export default function AdminPage() {
                         className="w-full p-3 border border-gray-200 rounded-lg mb-4 focus:ring-2 focus:ring-electric outline-none"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && login()}
+                        disabled={loading}
                     />
                     <button
                         onClick={login}
-                        className="w-full bg-navy text-white py-3 rounded-lg font-bold hover:bg-black transition-all"
+                        disabled={loading}
+                        className="w-full bg-navy text-white py-3 rounded-lg font-bold hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                        Login
+                        {loading ? (
+                            <>
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                Validierung läuft...
+                            </>
+                        ) : (
+                            'Login'
+                        )}
                     </button>
                 </div>
             </div>
