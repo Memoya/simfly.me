@@ -1330,22 +1330,19 @@ export default function AdminPage() {
                                     <thead>
                                         <tr className="border-b border-gray-100 text-left">
                                             {[
-                                                { label: 'Daten', key: 'data' },
                                                 { label: 'Produkt', key: 'name' },
                                                 { label: 'Dauer', key: 'duration' },
                                                 { label: 'Region', key: 'region' },
                                                 { label: 'ISO', key: 'iso' },
                                                 { label: 'Typ', key: 'regionType' },
                                                 { label: 'Top-up', key: 'topUpType' },
-                                                { label: 'Einkauf (Netto)', key: 'price' },
-                                                { label: 'Verkauf (Brutto)', key: 'sellPrice' },
+                                                { label: 'Einkauf', key: 'price' },
+                                                { label: 'Verkauf', key: 'sellPrice' },
+                                                { label: 'Gewinn', key: 'profit' },
+                                                { label: 'Marge %', key: 'margin' },
                                                 { label: 'Speed', key: 'speed' },
-                                                { label: 'Gewinn (ca.)', key: 'profit' },
                                                 { label: 'Datentyp', key: 'dataType' },
-                                                { label: 'Billing Start', key: 'billingStarts' },
-                                                { label: 'Validity', key: 'planValidityDays' },
-                                                { label: 'Breakout IP', key: 'breakoutIp' },
-                                                { label: 'Resale', key: 'isResaleable' }
+                                                { label: 'Billing', key: 'billingStarts' },
                                             ].map((h) => (
                                                 <th
                                                     key={h.key}
@@ -1369,23 +1366,14 @@ export default function AdminPage() {
                                             // Use backend values if available, else fallback to local calc
                                             const sellPrice = p.sellPrice ?? applyMargin(p.price, settings, p.region, p.name);
                                             const profit = p.profit ?? (sellPrice - p.price);
+                                            const marginPercent = p.price > 0 ? ((profit / p.price) * 100).toFixed(0) : 0;
 
                                             return (
                                                 <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
                                                     <td className="py-3 px-4">
-                                                        <div className="font-bold text-electric">
-                                                            {p.data || 'N/A'}
-                                                        </div>
-                                                        {p.unlimitedDetails && (
-                                                            <div className="text-[10px] text-gray-500 leading-tight mt-1">
-                                                                {p.unlimitedDetails.highSpeed} HighSpeed,<br />
-                                                                danach {p.unlimitedDetails.throttle}
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                    <td className="py-3 px-4">
                                                         <div className="flex flex-col">
                                                             <span className="font-medium text-navy">{p.name}</span>
+                                                            <span className="text-[10px] text-gray-400">{p.data || ''}</span>
                                                             <span className="text-[10px] font-bold text-electric px-1.5 py-0.5 bg-blue-50 rounded w-fit mt-1">
                                                                 {p.providerName || 'eSIMAccess'}
                                                             </span>
@@ -1400,32 +1388,31 @@ export default function AdminPage() {
                                                     </td>
                                                     <td className="py-3 px-4 text-sm text-gray-600">{p.regionType || 'N/A'}</td>
                                                     <td className="py-3 px-4 text-sm text-gray-600">{p.topUpType || 'N/A'}</td>
-                                                    <td className="py-3 px-4 text-sm text-gray-600">{Number(p.price).toFixed(2)}€</td>
-                                                    <td className="py-3 px-4 font-bold text-navy flex items-center gap-2">
-                                                        {Number(sellPrice).toFixed(2)}€
-                                                        <button
-                                                            onClick={() => { setSelectedProductForEdit(p); setIsPriceEditorOpen(true); }}
-                                                            className="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-electric transition-colors"
-                                                            title="Preis bearbeiten"
-                                                        >
-                                                            <Tag className="w-4 h-4" />
-                                                        </button>
-                                                    </td>
-                                                    <td className="py-3 px-4 text-sm font-medium text-gray-600">
-                                                        <span className="bg-gray-100 px-2 py-1 rounded text-xs">{p.speed || '4G/5G'}</span>
+                                                    {/* Einkauf, Verkauf, Gewinn, Marge - nebeneinander */}
+                                                    <td className="py-3 px-4 text-sm text-gray-500">{Number(p.price).toFixed(2)}€</td>
+                                                    <td className="py-3 px-4 font-bold text-navy">
+                                                        <div className="flex items-center gap-1">
+                                                            {Number(sellPrice).toFixed(2)}€
+                                                            <button
+                                                                onClick={() => { setSelectedProductForEdit(p); setIsPriceEditorOpen(true); }}
+                                                                className="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-electric transition-colors"
+                                                                title="Preis bearbeiten"
+                                                            >
+                                                                <Tag className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                     <td className={`py-3 px-4 font-bold ${profit > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                                         +{Number(profit).toFixed(2)}€
                                                     </td>
+                                                    <td className={`py-3 px-4 font-bold ${Number(marginPercent) >= 100 ? 'text-green-600' : Number(marginPercent) >= 50 ? 'text-yellow-600' : 'text-red-500'}`}>
+                                                        {marginPercent}%
+                                                    </td>
+                                                    <td className="py-3 px-4 text-sm font-medium text-gray-600">
+                                                        <span className="bg-gray-100 px-2 py-1 rounded text-xs">{p.speed || '4G/5G'}</span>
+                                                    </td>
                                                     <td className="py-3 px-4 text-sm text-gray-600">{p.dataType || 'N/A'}</td>
                                                     <td className="py-3 px-4 text-sm text-gray-600">{p.billingStarts || 'N/A'}</td>
-                                                    <td className="py-3 px-4 text-sm text-gray-600">
-                                                        {typeof p.planValidityDays === 'number' ? `${p.planValidityDays} Tage` : 'N/A'}
-                                                    </td>
-                                                    <td className="py-3 px-4 text-sm text-gray-600">{p.breakoutIp || 'N/A'}</td>
-                                                    <td className="py-3 px-4 text-sm text-gray-600">
-                                                        {typeof p.isResaleable === 'boolean' ? (p.isResaleable ? 'Ja' : 'Nein') : 'N/A'}
-                                                    </td>
                                                 </tr>
                                             );
                                         })}
