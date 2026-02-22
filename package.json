@@ -16,6 +16,7 @@
   "dependencies": {
     "@formatjs/intl-localematcher": "^0.8.1",
     "@prisma/client": "^6.2.1",
+    "@react-email/components": "^1.0.8",
     "@stripe/stripe-js": "^8.7.0",
     "@types/qrcode": "^1.5.6",
     "clsx": "^2.1.1",
@@ -28,7 +29,9 @@
     "qrcode": "^1.5.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-email": "^5.2.8",
     "react-pay-icons": "^4.0.0",
+    "resend": "^6.9.2",
     "stripe": "^20.3.1",
     "tailwind-merge": "^3.4.0",
     "ua-parser-js": "^2.0.9",

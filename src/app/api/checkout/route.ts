@@ -37,7 +37,8 @@ export async function POST(request: Request) {
                 let basePrice: number;
                 const bundle = item.id ? catalogue.find((b: Bundle) => b.name === item.id) : undefined;
                 if (bundle) {
-                    basePrice = applyMargin(bundle.price, settings, item.metadata?.region as string);
+                    // Pass item.id (SKU) so price overrides are applied
+                    basePrice = applyMargin(bundle.price, settings, item.metadata?.region as string, item.id);
                 } else {
                     basePrice = item.amount / 100;
                 }

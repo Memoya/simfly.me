@@ -65,7 +65,7 @@ export async function GET(request: Request) {
             return {
                 id: b.name,
                 name: `${countryName} ${dataSize}`,
-                price: applyMargin(b.price || 0, settings, countryName),
+                price: applyMargin(b.price || 0, settings, countryName, b.name),
                 region: countryName,
                 regionGroup: regionName || 'Other',
                 data: dataSize,

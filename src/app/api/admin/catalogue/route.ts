@@ -73,7 +73,8 @@ export async function GET(request: Request) {
             const iso = b.countries && b.countries.length > 0 ? b.countries[0].iso : '';
             const regionGroup = b.groups && b.groups.length > 0 ? b.groups[0] : 'Global';
             const price = b.price || 0;
-            const sellPrice = applyMargin(price, settings, region);
+            // Pass SKU (b.name) so applyMargin can check for price overrides
+            const sellPrice = applyMargin(price, settings, region, b.name);
             const profit = sellPrice - price;
 
             // Extract data amount (e.g., "1GB", "10GB", "Unlimited")

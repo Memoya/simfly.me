@@ -1367,7 +1367,7 @@ export default function AdminPage() {
                                     <tbody>
                                         {rawProducts.map((p, i) => {
                                             // Use backend values if available, else fallback to local calc
-                                            const sellPrice = p.sellPrice ?? applyMargin(p.price, settings, p.region);
+                                            const sellPrice = p.sellPrice ?? applyMargin(p.price, settings, p.region, p.name);
                                             const profit = p.profit ?? (sellPrice - p.price);
 
                                             return (

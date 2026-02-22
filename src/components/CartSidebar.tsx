@@ -1,7 +1,7 @@
 'use client';
 
 import { useCartStore } from '@/store/cart';
-import { X, Trash2, ShoppingBag, ChevronRight, Zap, ShieldCheck, Users } from 'lucide-react';
+import { X, Trash2, ShoppingBag, ChevronRight, Zap, ShieldCheck, Users, Tag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { getCountryFlagUrl } from '@/lib/flags';
@@ -13,6 +13,9 @@ export default function CartSidebar() {
     const { items, isOpen, closeCart, removeItem, addItem } = useCartStore();
     const [loading, setLoading] = useState(false);
     const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [discountCode, setDiscountCode] = useState('');
+    const [discountError, setDiscountError] = useState('');
+    const [discountApplied, setDiscountApplied] = useState<{ code: string; type: string; value: number } | null>(null);
     const params = useParams();
     const lang = params.lang as string || 'de';
 
@@ -64,6 +67,42 @@ export default function CartSidebar() {
 
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+    // Apply discount to total
+    const calculateDiscountedTotal = () => {
+        if (!discountApplied) return total;
+        if (discountApplied.type === 'percent') {
+            return total * (1 - discountApplied.value / 100);
+        } else {
+            return Math.max(0, total - discountApplied.value);
+        }
+    };
+
+    const finalTotal = calculateDiscountedTotal();
+
+    const handleApplyDiscount = async () => {
+        if (!discountCode.trim()) return;
+        
+        setDiscountError('');
+        try {
+            const res = await fetch('/api/validate-discount', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: discountCode.trim().toUpperCase() })
+            });
+            const data = await res.json();
+            
+            if (data.valid) {
+                setDiscountApplied({ code: discountCode.trim().toUpperCase(), type: data.type, value: data.value });
+                setDiscountError('');
+            } else {
+                setDiscountError(data.error || 'Ungültiger Code');
+                setDiscountApplied(null);
+            }
+        } catch (error) {
+            setDiscountError('Fehler beim Prüfen');
+        }
+    };
+
     const handleCheckout = async () => {
         setLoading(true);
         try {
@@ -72,6 +111,7 @@ export default function CartSidebar() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     lang,
+                    discountCode: discountApplied?.code || undefined,
                     items: items.map(item => ({
                         id: item.id,
                         productName: item.name,
@@ -241,16 +281,61 @@ export default function CartSidebar() {
 
                         {/* Minimalist Footer */}
                         {items.length > 0 && (
-                            <div className="px-4 md:px-8 pt-4 pb-4 md:pb-8 bg-white border-t border-black/5 space-y-4 md:space-y-5 shadow-[0_-20px_40px_rgba(0,0,0,0.02)]">
+                            <div className="px-4 md:px-8 pt-4 pb-4 md:pb-8 bg-white border-t border-black/5 space-y-3 md:space-y-5 shadow-[0_-20px_40px_rgba(0,0,0,0.02)] max-h-[40vh] md:max-h-none overflow-y-auto">
+                                {/* Discount Code Input */}
+                                <div className="flex gap-2">
+                                    <div className="flex-1 relative">
+                                        <input
+                                            type="text"
+                                            value={discountCode}
+                                            onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                                            placeholder="RABATTCODE"
+                                            className={`w-full px-4 py-2.5 md:py-3 bg-gray-50 border ${discountError ? 'border-red-300' : discountApplied ? 'border-green-300' : 'border-black/10'} rounded-xl text-xs font-bold uppercase tracking-widest placeholder:text-black/30 focus:outline-none focus:border-black/30 transition-colors`}
+                                        />
+                                        {discountApplied && (
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                <span className="text-green-500 text-xs">✓</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={handleApplyDiscount}
+                                        className="px-4 py-2.5 md:py-3 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black/80 transition-colors shrink-0"
+                                    >
+                                        Anwenden
+                                    </button>
+                                </div>
+                                {discountError && (
+                                    <p className="text-red-500 text-[10px] font-bold -mt-2">{discountError}</p>
+                                )}
+                                {discountApplied && (
+                                    <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2 -mt-1">
+                                        <span className="text-green-700 text-[10px] font-bold">
+                                            Code {discountApplied.code} aktiv: {discountApplied.type === 'percent' ? `${discountApplied.value}%` : `${discountApplied.value}€`} Rabatt
+                                        </span>
+                                        <button 
+                                            onClick={() => { setDiscountApplied(null); setDiscountCode(''); }}
+                                            className="text-green-600 hover:text-green-800 text-xs"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+
                                 <div className="flex justify-between items-end">
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black text-black/60 md:text-black/30 uppercase tracking-[0.2em]">Gesamtbetrag</p>
-                                        <p className="text-4xl font-black text-black tracking-tighter">
-                                            {total.toFixed(2).replace('.', ',')}€
+                                        {discountApplied && (
+                                            <p className="text-sm text-black/40 line-through">
+                                                {total.toFixed(2).replace('.', ',')}€
+                                            </p>
+                                        )}
+                                        <p className="text-3xl md:text-4xl font-black text-black tracking-tighter">
+                                            {finalTotal.toFixed(2).replace('.', ',')}€
                                         </p>
                                     </div>
-                                    <div className="flex flex-col items-end gap-2">
-                                        {/* Upselling Progress Bar */}
+                                    <div className="hidden md:flex flex-col items-end gap-2">
+                                        {/* Upselling Progress Bar - Desktop only */}
                                         {adminSettings.autoDiscountEnabled && total < adminSettings.autoDiscountThreshold && (
                                             <div className="w-48 space-y-2">
                                                 <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
@@ -275,8 +360,8 @@ export default function CartSidebar() {
                                     </div>
                                 </div>
 
-                                {/* Social Proof Badges */}
-                                <div className="p-2.5 md:p-3 bg-gray-50 rounded-lg md:rounded-xl border border-black/5 flex items-center gap-2">
+                                {/* Social Proof Badges - Hidden on mobile */}
+                                <div className="hidden md:flex p-2.5 md:p-3 bg-gray-50 rounded-lg md:rounded-xl border border-black/5 items-center gap-2">
                                     <div className="flex -space-x-1.5">
                                         {[1, 2, 3].map(i => (
                                             <div key={i} className="w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-white bg-gray-200 overflow-hidden flex items-center justify-center text-[6px] md:text-[7px] font-bold text-gray-500 italic">
@@ -307,9 +392,9 @@ export default function CartSidebar() {
                                     <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                 </button>
 
-                                {/* Trust Elements */}
+                                {/* Trust Elements - Simplified on mobile */}
                                 <div className="space-y-2 md:space-y-3">
-                                    <div className="flex justify-center gap-2 md:gap-3 text-black/50 md:text-black/20">
+                                    <div className="hidden md:flex justify-center gap-2 md:gap-3 text-black/50 md:text-black/20">
                                         <div className="flex items-center gap-1">
                                             <ShieldCheck className="w-3 h-3 stroke-[2.5px]" />
                                             <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest">SSL Secure</span>
@@ -339,7 +424,7 @@ export default function CartSidebar() {
                                     </div>
                                 </div>
 
-                                <div className="p-3 md:p-4 bg-black/[0.02] rounded-xl md:rounded-[1.5rem] border border-black/5">
+                                <div className="hidden md:block p-3 md:p-4 bg-black/[0.02] rounded-xl md:rounded-[1.5rem] border border-black/5">
                                     <p className="text-[9px] md:text-[10px] font-bold text-black/60 md:text-black/40 uppercase tracking-widest text-center leading-relaxed">
                                         🌍 Bereit für die Reise? <br />
                                         <span className="text-black/60">QR-Code wird nach dem Kauf sofort per E-Mail zugestellt.</span>
