@@ -6,12 +6,28 @@ export async function GET(req: NextRequest) {
         // Authentication
         const authHeader = req.headers.get('authorization');
         const token = authHeader?.replace('Bearer ', '');
-        const adminPassword = process.env.ADMIN_PASSWORD || 'admin';
+        const adminPassword = process.env.ADMIN_PASSWORD;
 
-        console.log('[VISITOR-API] Auth check:', { token: token?.substring(0, 5) + '...', adminPassword: adminPassword?.substring(0, 5) + '...' });
+        console.log('[VISITOR-API] Auth Debug:', {
+            hasToken: !!token,
+            tokenLength: token?.length,
+            hasAdminPassword: !!adminPassword,
+            passwordLength: adminPassword?.length,
+            passwordFromEnv: adminPassword ? 'SET' : 'MISSING',
+            isProduction: process.env.NODE_ENV === 'production'
+        });
+
+        if (!adminPassword) {
+            console.error('[VISITOR-API] CRITICAL: ADMIN_PASSWORD not set in environment!');
+            return NextResponse.json({ error: 'Server error: ADMIN_PASSWORD not configured' }, { status: 500 });
+        }
 
         if (token !== adminPassword) {
-            console.log('[VISITOR-API] Unauthorized access attempt');
+            console.log('[VISITOR-API] Unauthorized - password mismatch', {
+                receivedLength: token?.length,
+                expectedLength: adminPassword.length,
+                match: token === adminPassword
+            });
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -45,7 +61,7 @@ export async function GET(req: NextRequest) {
             }
         });
 
-        console.log('[VISITOR-API] Query result:', { timeRange, timeThreshold: timeThreshold.toISOString(), count: visitors.length });
+        console.log('[VISITOR-API] ✅ Authenticated! Query result:', { timeRange, timeThreshold: timeThreshold.toISOString(), count: visitors.length });
 
         // Calculate stats
         const activeThreshold = new Date(Date.now() - 15 * 60 * 1000); // Active in last 15 minutes
