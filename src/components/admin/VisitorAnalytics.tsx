@@ -43,6 +43,8 @@ interface VisitorAnalyticsProps {
 }
 
 export default function VisitorAnalytics({ password }: VisitorAnalyticsProps) {
+    console.log('[VisitorAnalytics] Component mounted with password:', password ? '***' : 'UNDEFINED!');
+    
     const [visitors, setVisitors] = useState<VisitorSession[]>([]);
     const [stats, setStats] = useState<VisitorStats>({
         activeNow: 0,
@@ -66,6 +68,12 @@ export default function VisitorAnalytics({ password }: VisitorAnalyticsProps) {
     const [activeFilter, setActiveFilter] = useState<'all' | 'active'>('active');
 
     const fetchVisitorData = async () => {
+        if (!password) {
+            console.warn('[VisitorAnalytics] Cannot fetch - password is undefined!');
+            setLoading(false);
+            return;
+        }
+        
         setLoading(true);
         try {
             console.log('[VisitorAnalytics] Fetching with password:', password?.substring(0, 5) + '...');
@@ -75,6 +83,7 @@ export default function VisitorAnalytics({ password }: VisitorAnalyticsProps) {
             console.log('[VisitorAnalytics] Response status:', res.status);
             if (res.ok) {
                 const data = await res.json();
+                console.log('[VisitorAnalytics] Received data:', { visitorsCount: data.visitors?.length, stats: data.stats });
                 setVisitors(data.visitors || []);
                 
                 // Compute comprehensive stats
@@ -216,6 +225,12 @@ export default function VisitorAnalytics({ password }: VisitorAnalyticsProps) {
                         .sort((a, b) => parseInt(a.hour) - parseInt(b.hour))
                 };
 
+                console.log('[VisitorAnalytics] Stats computed:', {
+                    activeNow: computedStats.activeNow,
+                    uniqueVisitors: computedStats.uniqueVisitors,
+                    totalSessions: computedStats.totalSessions,
+                    avgSessionDuration: computedStats.avgSessionDuration
+                });
                 setStats(computedStats);
             } else if (res.status === 401) {
                 console.error('[VisitorAnalytics] Authentication failed - wrong password?');
